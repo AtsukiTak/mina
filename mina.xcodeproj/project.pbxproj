@@ -9,12 +9,14 @@
 /* Begin PBXBuildFile section */
 		ED878A4F2514A3B60030A575 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A4E2514A3B60030A575 /* AppDelegate.swift */; };
 		ED878A512514A3B60030A575 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A502514A3B60030A575 /* SceneDelegate.swift */; };
-		ED878A532514A3B60030A575 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A522514A3B60030A575 /* ContentView.swift */; };
+		ED878A532514A3B60030A575 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A522514A3B60030A575 /* LoginView.swift */; };
 		ED878A552514A3B90030A575 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED878A542514A3B90030A575 /* Assets.xcassets */; };
 		ED878A582514A3B90030A575 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED878A572514A3B90030A575 /* Preview Assets.xcassets */; };
 		ED878A5B2514A3B90030A575 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = ED878A592514A3B90030A575 /* LaunchScreen.storyboard */; };
 		ED878A662514A3B90030A575 /* minaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A652514A3B90030A575 /* minaTests.swift */; };
 		ED878A722514D62C0030A575 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = ED878A712514D62C0030A575 /* SQLite */; };
+		ED878A752514FF730030A575 /* SigninWithAppleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A742514FF730030A575 /* SigninWithAppleButton.swift */; };
+		ED878A79251B65460030A575 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A78251B65460030A575 /* KeychainService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,7 +33,7 @@
 		ED878A4B2514A3B60030A575 /* mina.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mina.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED878A4E2514A3B60030A575 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		ED878A502514A3B60030A575 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		ED878A522514A3B60030A575 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		ED878A522514A3B60030A575 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		ED878A542514A3B90030A575 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		ED878A572514A3B90030A575 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		ED878A5A2514A3B90030A575 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -39,6 +41,9 @@
 		ED878A612514A3B90030A575 /* minaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = minaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED878A652514A3B90030A575 /* minaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = minaTests.swift; sourceTree = "<group>"; };
 		ED878A672514A3B90030A575 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		ED878A732514F32E0030A575 /* mina.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = mina.entitlements; sourceTree = "<group>"; };
+		ED878A742514FF730030A575 /* SigninWithAppleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigninWithAppleButton.swift; sourceTree = "<group>"; };
+		ED878A78251B65460030A575 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,12 +86,15 @@
 		ED878A4D2514A3B60030A575 /* mina */ = {
 			isa = PBXGroup;
 			children = (
+				ED878A732514F32E0030A575 /* mina.entitlements */,
 				ED878A4E2514A3B60030A575 /* AppDelegate.swift */,
 				ED878A502514A3B60030A575 /* SceneDelegate.swift */,
-				ED878A522514A3B60030A575 /* ContentView.swift */,
+				ED878A522514A3B60030A575 /* LoginView.swift */,
 				ED878A542514A3B90030A575 /* Assets.xcassets */,
 				ED878A592514A3B90030A575 /* LaunchScreen.storyboard */,
 				ED878A5C2514A3B90030A575 /* Info.plist */,
+				ED878A76251B63DE0030A575 /* Components */,
+				ED878A77251B63F60030A575 /* Utils */,
 				ED878A562514A3B90030A575 /* Preview Content */,
 			);
 			path = mina;
@@ -107,6 +115,22 @@
 				ED878A672514A3B90030A575 /* Info.plist */,
 			);
 			path = minaTests;
+			sourceTree = "<group>";
+		};
+		ED878A76251B63DE0030A575 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				ED878A742514FF730030A575 /* SigninWithAppleButton.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		ED878A77251B63F60030A575 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				ED878A78251B65460030A575 /* KeychainService.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -216,9 +240,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ED878A752514FF730030A575 /* SigninWithAppleButton.swift in Sources */,
 				ED878A4F2514A3B60030A575 /* AppDelegate.swift in Sources */,
+				ED878A79251B65460030A575 /* KeychainService.swift in Sources */,
 				ED878A512514A3B60030A575 /* SceneDelegate.swift in Sources */,
-				ED878A532514A3B60030A575 /* ContentView.swift in Sources */,
+				ED878A532514A3B60030A575 /* LoginView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -370,8 +396,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = mina/mina.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"mina/Preview Content\"";
+				DEVELOPMENT_TEAM = BN74D86Y99;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = mina/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -389,8 +417,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = mina/mina.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"mina/Preview Content\"";
+				DEVELOPMENT_TEAM = BN74D86Y99;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = mina/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -410,6 +440,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BN74D86Y99;
 				INFOPLIST_FILE = minaTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.7;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -431,6 +462,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = BN74D86Y99;
 				INFOPLIST_FILE = minaTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.7;
 				LD_RUNPATH_SEARCH_PATHS = (
