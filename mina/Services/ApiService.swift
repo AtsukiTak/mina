@@ -7,71 +7,47 @@
 //
 
 import Foundation
+import Combine
 
 struct ApiService {
-    enum ApiResult<T> {
-        case Success(T)
-        case Error(ApiError)
-    }
-    
     enum ApiError: Error {
-        case NetworkError(Error)
-        case InvalidResponse(Data?)
+        case notSuccess(Int) // status code
     }
     
     let baseUrl: String = "https://api.mina.atsuki.me"
     
-    func createUser(password: String,
-                    completeHandler: @escaping (ApiResult<User>) -> Void) {
+    struct CreateUserRes: Codable {
+        let id: String
+    }
+    
+    func createUser(password: String) -> AnyPublisher<CreateUserRes, Error> {
         struct Req: Codable {
             let password: String
         }
         
-        struct Res: Codable {
-            let id: String
-        }
-        
         let body = try! JSONEncoder().encode(Req(password: password))
         
-        self.post("/users", body) { (res: ApiResult<Res>) in
-            switch res {
-            case .Success(let data):
-                return completeHandler(.Success(User(id: data.id)))
-            case .Error(let err):
-                return completeHandler(.Error(err))
-            }
-        }
+        return self.post("/users", body)
     }
     
-    func post<T>(_ endpoint: String,
-                 _ body: Data,
-                 completeHandler: @escaping (ApiResult<T>) -> Void
-    ) where T: Decodable
+    private func post<T>(_ endpoint: String,
+                 _ body: Data) -> AnyPublisher<T, Error>
+        where T: Decodable
     {
         let url = URL(string: self.baseUrl + endpoint)!
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.httpBody = body
         
-        let task = URLSession.shared.dataTask(with: req) { (data, res, err) in
-            if let err = err {
-                print("Network error: \(err)")
-                return completeHandler(.Error(.NetworkError(err)))
+        return URLSession.shared.dataTaskPublisher(for: req)
+            .tryMap { (data, res) in
+                let httpRes = res as! HTTPURLResponse
+                if (200..<300).contains(httpRes.statusCode) == false {
+                    throw ApiError.notSuccess(httpRes.statusCode)
+                }
+                return data
             }
-            
-            guard let data = data else {
-                print("Empty response")
-                return completeHandler(.Error(.InvalidResponse(nil)))
-            }
-            
-            do {
-                let decoded = try JSONDecoder().decode(T.self, from: data)
-                return completeHandler(.Success(decoded))
-            } catch {
-                print("Invalid Response")
-                return completeHandler(.Error(.InvalidResponse(data)))
-            }
-        }
-        task.resume()
+        .decode(type: T.self, decoder: JSONDecoder())
+    .eraseToAnyPublisher()
     }
 }
