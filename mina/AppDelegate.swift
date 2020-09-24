@@ -7,15 +7,23 @@
 //
 
 import UIKit
+import AuthenticationServices
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
-
+    // アプリケーションの起動後に呼ばれる
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
-        return true
+        do {
+            if try KeychainService().readCred() == nil {
+                // TODO
+                // クレデンシャルを作成し保存する
+            }
+            return true
+        } catch {
+            return false
+        }
     }
 
     // MARK: UISceneSession Lifecycle
