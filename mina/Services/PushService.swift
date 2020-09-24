@@ -8,31 +8,44 @@
 
 import Foundation
 import PushKit
+import Combine
 
-class PushService: NSObject, PKPushRegistryDelegate {
-    var userCred: Credential
-    var pushRegistry: PKPushRegistry
+final class PushService {
+    // Push通知用のクレデンシャルの生成を開始する
+    static func register() -> Future<PKPushCredentials, Error> {
+        return Future { promise in
+            
+            let registry = PKPushRegistry(queue: nil)
+            
+            let delegate = PushServiceDelegate(promise: promise)
+            registry.delegate = delegate
+            
+            // ↓の値をassignしたタイミングで登録プロセスが開始される
+            registry.desiredPushTypes = [.voIP]
+        }
+    }
+}
+
+final private class PushServiceDelegate: NSObject, PKPushRegistryDelegate {
     
-    init(_ userCred: Credential) {
-        self.userCred = userCred
-        self.pushRegistry = PKPushRegistry(queue: nil)
+    enum RegisterError: Error {
+        case unhandled
+    }
+    
+    private var promise: Future<PKPushCredentials, Error>.Promise
+    
+    init(promise: @escaping Future<PKPushCredentials, Error>.Promise) {
+        self.promise = promise
         super.init()
-        
-        // pushRegistry.delegateはweak propertyなので循環参照にならない
-        self.pushRegistry.delegate = self
-        
-        // ↓の値をassignしたタイミングで登録プロセスが開始される
-        self.pushRegistry.desiredPushTypes = [.voIP]
     }
     
     // Push通知用クレデンシャルの更新に成功したとき
     func pushRegistry(_ registry: PKPushRegistry, didUpdate pushCredentials: PKPushCredentials, for type: PKPushType) {
-        // TODO
-        // サーバーに通知する
+        self.promise(Result.success(pushCredentials))
     }
     
     // Push通知用クレデンシャルの更新に失敗したとき
     func pushRegistry(_ registry: PKPushRegistry, didInvalidatePushTokenFor type: PKPushType) {
-        // とりあえず何もしない
+        self.promise(.failure(RegisterError.unhandled))
     }
 }
