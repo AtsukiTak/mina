@@ -8,21 +8,24 @@
 
 import Foundation
 
-let serviceName: String = "me.atsuki.mina"
-
-struct Credential {
+struct Credential: Equatable {
     var username: String
     var password: String
 }
 
 struct KeychainService {
     
+    // 基本的にはこのデフォルト値をそのまま使う (KeychainService().readCred()みたいな)
+    // ただし、テスト用とデバッグ用でkeychainを分けるために、テスト時には
+    // KeychainService(serviceName: "me.atsuki.minaTests").readCred()のように使う
+    var serviceName: String = "me.atsuki.mina"
+    
     enum KeychainError: Error {
         case unexpectedCredentialData
         case unhandledError(status: OSStatus)
     }
     
-    static func readCred() throws -> Credential? {
+    func readCred() throws -> Credential? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: serviceName,
@@ -53,7 +56,7 @@ struct KeychainService {
     }
 
     // GenericPasswordとしてkeychainに値を保存する
-    static func saveCred(cred: Credential) throws {
+    func saveCred(cred: Credential) throws {
         let encodedPass = cred.password.data(using: .utf8)
         
         if try readCred() == nil {
@@ -83,5 +86,14 @@ struct KeychainService {
                 throw KeychainError.unhandledError(status: status)
             }
         }
+    }
+    
+    func deleteCred() throws {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: serviceName,
+        ]
+        let status = SecItemDelete(query as CFDictionary)
+        guard status == errSecSuccess || status == errSecItemNotFound else { throw KeychainError.unhandledError(status: status)}
     }
 }
