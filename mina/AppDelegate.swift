@@ -7,22 +7,44 @@
 //
 
 import UIKit
-import AuthenticationServices
+import PushKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
+    
+    private var _userCred: Credential? = nil // インスタンス生成からアプリケーションの起動完了までの間だけnil
+    
+    var userCred: Credential {
+        return self._userCred! // 値がセットされているはず
+    }
+    
+    var pushService: PushService? = nil
+    
+    static func shared() -> AppDelegate {
+        UIApplication.shared.delegate! as! AppDelegate
+    }
 
     // アプリケーションの起動後に呼ばれる
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         do {
-            if try KeychainService().readCred() == nil {
-                // TODO
-                // クレデンシャルを作成し保存する
-            }
+            self._userCred = try self.getCredential()
+            self.pushService = PushService(self.userCred)
             return true
         } catch {
             return false
+        }
+    }
+    
+    // クレデンシャルを取得、または生成する
+    func getCredential() throws -> Credential {
+        if let cred = try KeychainService().readCred(){
+            return cred
+        } else {
+            // TODO
+            // クレデンシャルを適切に生成する
+            let cred = Credential(username: "", password: "")
+            try KeychainService().saveCred(cred: cred)
+            return cred
         }
     }
 
@@ -42,4 +64,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
 }
-
