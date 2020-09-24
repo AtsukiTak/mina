@@ -42,7 +42,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         } else {
             // TODO
             // クレデンシャルを適切に生成する
-            let cred = Credential(username: "", password: "")
+            let cred = Credential(userId: "", password: "")
             try KeychainService().saveCred(cred: cred)
             return cred
         }

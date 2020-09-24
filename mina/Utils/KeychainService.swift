@@ -8,11 +8,6 @@
 
 import Foundation
 
-struct Credential: Equatable {
-    var username: String
-    var password: String
-}
-
 struct KeychainService {
     
     // 基本的にはこのデフォルト値をそのまま使う (KeychainService().readCred()みたいな)
@@ -48,11 +43,11 @@ struct KeychainService {
         guard let existingItem = item as? [String: Any],
             let passwordData = existingItem[kSecValueData as String] as? Data,
             let password = String(data: passwordData, encoding: .utf8),
-            let username = existingItem[kSecAttrAccount as String] as? String
+            let userId = existingItem[kSecAttrAccount as String] as? String
             else {
                 throw KeychainError.unexpectedCredentialData
         }
-        return Credential(username: username, password: password)
+        return Credential(userId: userId, password: password)
     }
 
     // GenericPasswordとしてkeychainに値を保存する
@@ -64,7 +59,7 @@ struct KeychainService {
             let query: [String: Any] = [
                 kSecClass as String: kSecClassGenericPassword,
                 kSecAttrService as String: serviceName,
-                kSecAttrAccount as String: cred.username,
+                kSecAttrAccount as String: cred.userId,
                 kSecValueData as String: encodedPass as Any,
             ]
             let status = SecItemAdd(query as CFDictionary, nil)
@@ -78,7 +73,7 @@ struct KeychainService {
                 kSecAttrService as String: serviceName,
             ]
             let updateQuery: [String: Any] = [
-                kSecAttrAccount as String: cred.username,
+                kSecAttrAccount as String: cred.userId,
                 kSecValueData as String: encodedPass as Any,
             ]
             let status = SecItemUpdate(query as CFDictionary, updateQuery as CFDictionary)
