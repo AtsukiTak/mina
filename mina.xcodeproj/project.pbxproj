@@ -107,7 +107,7 @@
 				ED878A5C2514A3B90030A575 /* Info.plist */,
 				ED878A76251B63DE0030A575 /* Components */,
 				ED26B14F251C9D2700957F06 /* Models */,
-				ED878A77251B63F60030A575 /* Utils */,
+				ED878A77251B63F60030A575 /* Services */,
 				ED878A562514A3B90030A575 /* Preview Content */,
 			);
 			path = mina;
@@ -138,13 +138,13 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
-		ED878A77251B63F60030A575 /* Utils */ = {
+		ED878A77251B63F60030A575 /* Services */ = {
 			isa = PBXGroup;
 			children = (
 				ED26B14D251C969A00957F06 /* PushService.swift */,
 				ED878A78251B65460030A575 /* KeychainService.swift */,
 			);
-			path = Utils;
+			path = Services;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
