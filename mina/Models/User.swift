@@ -7,12 +7,33 @@
 //
 
 import Foundation
+import Combine
 
 struct User {
     let id: String
+    let password: String
+    
+    var credential: Credential {
+        Credential(userId: id, password: password)
+    }
 }
 
 struct Credential {
     let userId: String
     let password: String
+}
+
+struct UserRepository {
+    static func saveUser(password: String) -> AnyPublisher<User, Error> {
+        ApiService()
+            .createUser(password: password)
+            .map { res in User(id: res.id, password: password) }
+            .eraseToAnyPublisher()
+    }
+    
+    static func findUser() throws -> User? {
+        try KeychainService()
+            .readCred()
+            .map { User(id: $0.userId, password: $0.password) }
+    }
 }
