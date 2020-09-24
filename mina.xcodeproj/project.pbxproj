@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		ED26B14E251C969A00957F06 /* PushService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED26B14D251C969A00957F06 /* PushService.swift */; };
 		ED26B151251C9D4200957F06 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED26B150251C9D4200957F06 /* User.swift */; };
+		ED26B153251C9EF400957F06 /* ApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED26B152251C9EF400957F06 /* ApiService.swift */; };
 		ED878A4F2514A3B60030A575 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A4E2514A3B60030A575 /* AppDelegate.swift */; };
 		ED878A512514A3B60030A575 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A502514A3B60030A575 /* SceneDelegate.swift */; };
 		ED878A532514A3B60030A575 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A522514A3B60030A575 /* LoginView.swift */; };
@@ -34,6 +35,7 @@
 /* Begin PBXFileReference section */
 		ED26B14D251C969A00957F06 /* PushService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushService.swift; sourceTree = "<group>"; };
 		ED26B150251C9D4200957F06 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		ED26B152251C9EF400957F06 /* ApiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiService.swift; sourceTree = "<group>"; };
 		ED878A4B2514A3B60030A575 /* mina.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mina.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED878A4E2514A3B60030A575 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		ED878A502514A3B60030A575 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -143,6 +145,7 @@
 			children = (
 				ED26B14D251C969A00957F06 /* PushService.swift */,
 				ED878A78251B65460030A575 /* KeychainService.swift */,
+				ED26B152251C9EF400957F06 /* ApiService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -259,6 +262,7 @@
 				ED878A79251B65460030A575 /* KeychainService.swift in Sources */,
 				ED878A512514A3B60030A575 /* SceneDelegate.swift in Sources */,
 				ED878A532514A3B60030A575 /* LoginView.swift in Sources */,
+				ED26B153251C9EF400957F06 /* ApiService.swift in Sources */,
 				ED26B14E251C969A00957F06 /* PushService.swift in Sources */,
 				ED26B151251C9D4200957F06 /* User.swift in Sources */,
 			);
