@@ -52,4 +52,14 @@ final private class PushServiceDelegate: NSObject, PKPushRegistryDelegate {
     func pushRegistry(_ registry: PKPushRegistry, didInvalidatePushTokenFor type: PKPushType) {
         self.onCompleted(.failure(RegisterError.unhandled))
     }
+    
+    // remote notificationを受け取ったとき
+    func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType, completion: @escaping () -> Void) {
+        
+        defer {
+            completion()
+        }
+        
+        // TODO
+    }
 }
