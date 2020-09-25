@@ -14,8 +14,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var user: User? = nil
     
-    static func shared() -> AppDelegate {
-        UIApplication.shared.delegate! as! AppDelegate
+    class var share: AppDelegate {
+        return UIApplication.shared.delegate! as! AppDelegate
     }
 
     // アプリケーションの起動後に呼ばれる
