@@ -13,6 +13,8 @@ import PushKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var user: User? = nil
+    var callService: CallService?
+    var pushService: PushService?
     
     class var share: AppDelegate {
         return UIApplication.shared.delegate! as! AppDelegate
@@ -22,14 +24,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         print("launched!!")
         
-        PushService.register { res in
-            switch res {
-            case .success(let cred):
-                print(cred.token)
-            case .failure(let e):
-                print(e)
-            }
-        }
+        let callService = CallService()
+        let pushService = PushService(callService: callService)
+        pushService.register()
+        
+        self.callService = callService
+        self.pushService = pushService
         
         do {
             self.user = try UserRepository.findUser()
