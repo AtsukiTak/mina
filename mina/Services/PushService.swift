@@ -8,21 +8,25 @@
 
 import Foundation
 import PushKit
-import Combine
 
 final class PushService {
+    private var delegate: PushServiceDelegate?
+    private var registry: PKPushRegistry?
+    
+    private static let shared = PushService()
+
     // Push通知用のクレデンシャルの生成を開始する
-    static func register() -> Future<PKPushCredentials, Error> {
-        return Future { promise in
-            
-            let registry = PKPushRegistry(queue: nil)
-            
-            let delegate = PushServiceDelegate(promise: promise)
-            registry.delegate = delegate
-            
-            // ↓の値をassignしたタイミングで登録プロセスが開始される
-            registry.desiredPushTypes = [.voIP]
-        }
+    // NOTE
+    // registerプロセスが完了する前に、新しいregisterプロセスを開始してしまうと、
+    // 古いプロセスの結果を受け取ることができなくなる
+    static func register(_ onCompleted: @escaping (Result<PKPushCredentials, Error>) -> Void) {
+        let registry = PKPushRegistry(queue: nil)
+        let delegate = PushServiceDelegate(onCompleted: onCompleted)
+        registry.delegate = delegate
+        registry.desiredPushTypes = [.voIP]
+        
+        shared.delegate = delegate
+        shared.registry = registry
     }
 }
 
@@ -32,20 +36,20 @@ final private class PushServiceDelegate: NSObject, PKPushRegistryDelegate {
         case unhandled
     }
     
-    private var promise: Future<PKPushCredentials, Error>.Promise
+    private let onCompleted: (Result<PKPushCredentials, Error>) -> Void
     
-    init(promise: @escaping Future<PKPushCredentials, Error>.Promise) {
-        self.promise = promise
+    init(onCompleted: @escaping (Result<PKPushCredentials, Error>) -> Void) {
+        self.onCompleted = onCompleted
         super.init()
     }
     
     // Push通知用クレデンシャルの更新に成功したとき
     func pushRegistry(_ registry: PKPushRegistry, didUpdate pushCredentials: PKPushCredentials, for type: PKPushType) {
-        self.promise(Result.success(pushCredentials))
+        self.onCompleted(.success(pushCredentials))
     }
     
     // Push通知用クレデンシャルの更新に失敗したとき
     func pushRegistry(_ registry: PKPushRegistry, didInvalidatePushTokenFor type: PKPushType) {
-        self.promise(.failure(RegisterError.unhandled))
+        self.onCompleted(.failure(RegisterError.unhandled))
     }
 }
