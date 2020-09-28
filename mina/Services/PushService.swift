@@ -9,23 +9,17 @@
 import Foundation
 import PushKit
 
-final class PushService: NSObject, PKPushRegistryDelegate {
+final class PushService {
     
     enum RegisterError: Error {
         case unhandled
     }
     
     private var registry: PKPushRegistry
-    private let callService: CallService
     
-    init(callService: CallService) {
+    init(delegate: PushDelegate) {
         self.registry = PKPushRegistry(queue: nil)
-        self.callService = callService
-        
-        super.init()
-        
-        
-        self.registry.delegate = self
+        self.registry.delegate = delegate
     }
 
     // Push通知用のクレデンシャルの生成を開始する
@@ -33,6 +27,18 @@ final class PushService: NSObject, PKPushRegistryDelegate {
         registry.desiredPushTypes = [.voIP]
     }
     
+    
+    
+}
+
+final class PushDelegate: NSObject, PKPushRegistryDelegate {
+    
+    private let callService: CallService
+    
+    init(callService: CallService) {
+        self.callService = callService
+        super.init()
+    }
     
     // Push通知用クレデンシャルの更新に成功したとき
     func pushRegistry(_ registry: PKPushRegistry, didUpdate pushCredentials: PKPushCredentials, for type: PKPushType) {
@@ -48,7 +54,7 @@ final class PushService: NSObject, PKPushRegistryDelegate {
     // PushPayloadから情報を抽出し、CallServiceに着信を知らせる
     func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType, completion: @escaping () -> Void) {
         
-        let callId = UUID(uuidString: "hoge")!
+        let callId = UUID()
         let callerId = "424242"
         let callerName = "atsuki"
         self.callService.reportIncomingCall(callId: callId, callerId: callerId, callerName: callerName, completion: completion)

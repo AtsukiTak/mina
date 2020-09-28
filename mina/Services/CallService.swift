@@ -12,8 +12,9 @@ import CallKit
 final class CallService: NSObject {
     
     private let provider: CXProvider
+    private let delegate: CallDelegate
     
-    override init() {
+    init(delegate: CallDelegate) {
         let config = CXProviderConfiguration(localizedName: "mina")
         config.maximumCallGroups = 1
         config.maximumCallsPerCallGroup = 1
@@ -22,9 +23,11 @@ final class CallService: NSObject {
         
         self.provider = CXProvider(configuration: config)
         
+        self.delegate = delegate
+        
         super.init()
         
-        self.provider.setDelegate(self, queue: nil)
+        self.provider.setDelegate(delegate, queue: nil)
     }
     
     func reportIncomingCall(callId: UUID,
@@ -41,6 +44,8 @@ final class CallService: NSObject {
         update.supportsHolding = false
         update.supportsDTMF = false
         
+        
+        
         self.provider.reportNewIncomingCall(with: callId, update: update) { err in
             if let err = err {
                 print(err)
@@ -54,8 +59,16 @@ final class CallService: NSObject {
     }
 }
 
-extension CallService: CXProviderDelegate {
+final class CallDelegate: NSObject, CXProviderDelegate {
+    override init() {
+        super.init()
+    }
+    
     func providerDidReset(_ provider: CXProvider) {
-        // TODO
+        print("reset")
+    }
+    
+    func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
+        print("fulfil")
     }
 }

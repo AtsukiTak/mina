@@ -24,8 +24,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         print("launched!!")
         
-        let callService = CallService()
-        let pushService = PushService(callService: callService)
+        let callDelegate = CallDelegate()
+        let callService = CallService(delegate: callDelegate)
+        
+        let pushDelegate = PushDelegate(callService: callService)
+        let pushService = PushService(delegate: pushDelegate)
         pushService.register()
         
         self.callService = callService
