@@ -5,7 +5,7 @@ use chrono::{DateTime, Duration, Utc};
 use jsonwebtoken::{encode, errors::Error as JwtError, Algorithm, EncodingKey, Header};
 use serde::Serialize;
 
-pub struct ApnsAuthorizer {
+pub struct Authorizer {
     iss: String,
 
     key: EncodingKey,
@@ -21,7 +21,7 @@ struct Cache {
     iat: DateTime<Utc>,
 }
 
-impl ApnsAuthorizer {
+impl Authorizer {
     /// # Params
     ///
     /// ## iss
@@ -35,12 +35,12 @@ impl ApnsAuthorizer {
     ///
     /// ## key_secret
     /// Usually, this value is obtained by `include_bytes!("private.pem")`.
-    pub fn new(iss: String, kid: String, key_secret: &[u8]) -> Result<ApnsAuthorizer, JwtError> {
+    pub fn new(iss: String, kid: String, key_secret: &[u8]) -> Result<Authorizer, JwtError> {
         let key = EncodingKey::from_ec_pem(key_secret)?;
         let mut header = Header::new(Algorithm::ES256);
         header.kid = Some(kid);
 
-        Ok(ApnsAuthorizer {
+        Ok(Authorizer {
             iss,
             key,
             header,
@@ -108,7 +108,7 @@ n+y72I7T0/9JOW4kVQrc443CqXVt+ahKZWUtLxSOewvIHItUTOMDdsMw
     fn use_cache_if_within_30min() {
         let iss = "TEST_ISS".to_string();
         let kid = "TEST_KID".to_string();
-        let mut authorizer = ApnsAuthorizer::new(iss, kid, SECRET.as_bytes()).unwrap();
+        let mut authorizer = Authorizer::new(iss, kid, SECRET.as_bytes()).unwrap();
 
         let iat1 = Utc::now();
         let token1 = authorizer.get_token(iat1).unwrap();
@@ -123,7 +123,7 @@ n+y72I7T0/9JOW4kVQrc443CqXVt+ahKZWUtLxSOewvIHItUTOMDdsMw
     fn not_use_cache_if_without_30min() {
         let iss = "TEST_ISS".to_string();
         let kid = "TEST_KID".to_string();
-        let mut authorizer = ApnsAuthorizer::new(iss, kid, SECRET.as_bytes()).unwrap();
+        let mut authorizer = Authorizer::new(iss, kid, SECRET.as_bytes()).unwrap();
 
         let iat1 = Utc::now();
         let token1 = authorizer.get_token(iat1).unwrap();

@@ -1,16 +1,30 @@
 mod apns;
 
-use apns::ApnsAuthorizer;
+use apns::{Authorizer, Client};
 use chrono::Utc;
+use serde::Serialize;
 
-fn main() {
+#[tokio::main]
+async fn main() {
+    // Authorizer の生成
     let iss = "BN74D86Y99".to_string();
     let kid = "6637Y96KAX".to_string();
     let key_bytes = include_bytes!("../AuthKey_6637Y96KAX.p8");
-    let mut apns_authorizer = ApnsAuthorizer::new(iss, kid, key_bytes).unwrap();
+    let authorizer = Authorizer::new(iss, kid, key_bytes).unwrap();
 
-    let iat = Utc::now();
-    let token = apns_authorizer.get_token(iat).unwrap();
+    // Client の生成
+    let bundle_id = "me.atsuki.mina".to_string();
+    let client = Client::new_for_dev(bundle_id, authorizer);
 
-    println!("{}", token);
+    // request の発行
+    let device_token = "TODO";
+    let payload = Payload {
+        msg: "Hello PushKit",
+    };
+    client.req(None, device_token, Utc::now(), &payload).await;
+}
+
+#[derive(Serialize)]
+struct Payload {
+    msg: &'static str,
 }
