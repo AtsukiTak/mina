@@ -13,7 +13,7 @@ async fn main() {
     let authorizer = Authorizer::new(iss, kid, key_bytes).unwrap();
 
     // Client の生成
-    let bundle_id = "me.atsuki.mina".to_string();
+    let bundle_id = "me.atsuki.mina";
     let client = Client::new_for_dev(bundle_id, authorizer);
 
     // request の発行

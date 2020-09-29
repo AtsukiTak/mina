@@ -9,12 +9,12 @@ use uuid::Uuid;
 pub struct Client {
     client: reqwest::Client,
     for_dev: bool,
-    bundle_id: String,
+    apns_topic: String,
     authorizer: Arc<Mutex<Authorizer>>,
 }
 
 impl Client {
-    pub fn new_for_dev(bundle_id: String, authorizer: Authorizer) -> Self {
+    pub fn new_for_dev(bundle_id: &str, authorizer: Authorizer) -> Self {
         let client = reqwest::ClientBuilder::new()
             .http2_prior_knowledge()
             .build()
@@ -22,7 +22,7 @@ impl Client {
         Client {
             client,
             for_dev: true,
-            bundle_id,
+            apns_topic: format!("{}.voip", bundle_id),
             authorizer: Arc::new(Mutex::new(authorizer)),
         }
     }
@@ -34,19 +34,12 @@ impl Client {
         iat: DateTime<Utc>,
         payload: &D,
     ) {
-        let host = if self.for_dev {
-            "api.sandbox.push.apple.com"
-        } else {
-            "api.push.apple.com"
-        };
-        let url_str = format!("https://{}/3/device/{}", host, device_token);
-        let url = Url::parse(url_str.as_str()).unwrap();
-        let req = self.client.post(url);
+        let url = self.gen_url(device_token);
+        let mut req = self.client.post(url);
 
         // Authorize ヘッダーの設定
-        let mut authorizer = self.authorizer.lock().unwrap();
-        let token = authorizer.get_token(iat).unwrap();
-        let mut req = req.bearer_auth(token);
+        let token = self.authorizer.lock().unwrap().get_token(iat).unwrap();
+        req = req.bearer_auth(token);
 
         // apns-push-type ヘッダーの設定
         req = req.header("apns-push-type", "voip");
@@ -59,8 +52,7 @@ impl Client {
         }
 
         // apns-topic ヘッダーの設定
-        let topic = format!("{}.voip", self.bundle_id);
-        req = req.header("apns-topic", topic);
+        req = req.header("apns-topic", self.apns_topic.as_str());
 
         // Payload の設定
         req = req.json(payload);
@@ -69,5 +61,15 @@ impl Client {
             Ok(res) => log::debug!("{:?}", res),
             Err(e) => log::warn!("{:?}", e),
         };
+    }
+
+    fn gen_url(&self, device_token: &str) -> Url {
+        let host = if self.for_dev {
+            "api.sandbox.push.apple.com"
+        } else {
+            "api.push.apple.com"
+        };
+        let url_str = format!("https://{}/3/device/{}", host, device_token);
+        Url::parse(url_str.as_str()).unwrap()
     }
 }
