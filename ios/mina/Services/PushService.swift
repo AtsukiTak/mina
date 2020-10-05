@@ -16,8 +16,10 @@ final class PushService {
     }
     
     private var registry: PKPushRegistry
+    private var delegate: PushDelegate
     
     init(delegate: PushDelegate) {
+        self.delegate = delegate
         self.registry = PKPushRegistry(queue: nil)
         self.registry.delegate = delegate
     }
