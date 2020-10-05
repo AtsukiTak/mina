@@ -11,6 +11,8 @@
 		ED26B151251C9D4200957F06 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED26B150251C9D4200957F06 /* User.swift */; };
 		ED26B153251C9EF400957F06 /* ApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED26B152251C9EF400957F06 /* ApiService.swift */; };
 		ED4FE189251E61A20009420C /* CallService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4FE188251E61A20009420C /* CallService.swift */; };
+		ED51EB09252B14A200E9959B /* SkyWay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED51EB08252B14A200E9959B /* SkyWay.framework */; };
+		ED51EB0A252B14A200E9959B /* SkyWay.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ED51EB08252B14A200E9959B /* SkyWay.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		ED878A4F2514A3B60030A575 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A4E2514A3B60030A575 /* AppDelegate.swift */; };
 		ED878A512514A3B60030A575 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A502514A3B60030A575 /* SceneDelegate.swift */; };
 		ED878A532514A3B60030A575 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A522514A3B60030A575 /* LoginView.swift */; };
@@ -32,11 +34,26 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		ED51EB03252AFFEF00E9959B /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				ED51EB0A252B14A200E9959B /* SkyWay.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		ED26B14D251C969A00957F06 /* PushService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushService.swift; sourceTree = "<group>"; };
 		ED26B150251C9D4200957F06 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		ED26B152251C9EF400957F06 /* ApiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiService.swift; sourceTree = "<group>"; };
 		ED4FE188251E61A20009420C /* CallService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallService.swift; sourceTree = "<group>"; };
+		ED51EB08252B14A200E9959B /* SkyWay.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SkyWay.framework; path = Frameworks/SkyWay.framework; sourceTree = "<group>"; };
 		ED878A4B2514A3B60030A575 /* mina.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mina.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED878A4E2514A3B60030A575 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		ED878A502514A3B60030A575 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -58,6 +75,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ED51EB09252B14A200E9959B /* SkyWay.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,12 +97,21 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		ED51EB07252B14A200E9959B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				ED51EB08252B14A200E9959B /* SkyWay.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		ED878A422514A3B60030A575 = {
 			isa = PBXGroup;
 			children = (
 				ED878A4D2514A3B60030A575 /* mina */,
 				ED878A642514A3B90030A575 /* minaTests */,
 				ED878A4C2514A3B60030A575 /* Products */,
+				ED51EB07252B14A200E9959B /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -161,6 +188,7 @@
 				ED878A472514A3B60030A575 /* Sources */,
 				ED878A482514A3B60030A575 /* Frameworks */,
 				ED878A492514A3B60030A575 /* Resources */,
+				ED51EB03252AFFEF00E9959B /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -422,6 +450,11 @@
 				DEVELOPMENT_ASSET_PATHS = "\"mina/Preview Content\"";
 				DEVELOPMENT_TEAM = BN74D86Y99;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/Frameworks",
+				);
 				INFOPLIST_FILE = mina/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -445,6 +478,11 @@
 				DEVELOPMENT_ASSET_PATHS = "\"mina/Preview Content\"";
 				DEVELOPMENT_TEAM = BN74D86Y99;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/Frameworks",
+				);
 				INFOPLIST_FILE = mina/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
