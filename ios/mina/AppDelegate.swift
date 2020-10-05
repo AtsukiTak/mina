@@ -22,7 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // アプリケーションの起動後に呼ばれる
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        print("launched!!")
+        NSLog("launched!!")
         
         let callDelegate = CallDelegate()
         let callService = CallService(delegate: callDelegate)
@@ -30,6 +30,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let pushDelegate = PushDelegate(callService: callService)
         let pushService = PushService(delegate: pushDelegate)
         pushService.register()
+        if let token = pushService.getTokenHex() {
+            NSLog("Push Token is available : %@", token)
+        } else {
+            NSLog("Push token is unavailable")
+        }
         
         self.callService = callService
         self.pushService = pushService

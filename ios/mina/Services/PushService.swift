@@ -27,10 +27,23 @@ final class PushService {
     // Push通知用のクレデンシャルの生成を開始する
     func register() {
         registry.desiredPushTypes = [.voIP]
+        
+        
     }
     
+    // Push通知用TokenのHex文字列を取得する
+    // すでに以前にAPNsに登録済みの場合にStringが返る
+    func getTokenHex() -> String? {
+        if let token = self.registry.pushToken(for: .voIP) {
+            return PushService.toHex(token: token)
+        } else {
+            return nil
+        }
+    }
     
-    
+    private static func toHex(token: Data) -> String {
+        return token.map { String(format: "%02hhx", $0) }.joined()
+    }
 }
 
 final class PushDelegate: NSObject, PKPushRegistryDelegate {
