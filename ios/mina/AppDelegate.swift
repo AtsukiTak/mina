@@ -15,8 +15,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var user: User? = nil
     var callService: CallService?
     var pushService: PushService?
+    var skywayService: SkyWayService?
+    let apiService: ApiService = ApiService()
     
-    class var share: AppDelegate {
+    class var shared: AppDelegate {
         return UIApplication.shared.delegate! as! AppDelegate
     }
 
@@ -27,7 +29,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let callDelegate = CallDelegate()
         let callService = CallService(delegate: callDelegate)
         
-        let pushDelegate = PushDelegate(callService: callService)
+        let skywayService = SkyWayService(apiKey: "", domain: "")
+        
+        let pushDelegate = PushDelegate(callService, skywayService)
         let pushService = PushService(delegate: pushDelegate)
         pushService.register()
         if let token = pushService.getTokenHex() {

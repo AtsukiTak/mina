@@ -35,6 +35,8 @@ extension SigninWithAppleButton: UIViewRepresentable {
 extension SigninWithAppleButton {
     @objc
     func handleButtonPress() {
+        GlobalEnvironment.shared.callMode = true
+        
         let appleIDProvider = ASAuthorizationAppleIDProvider()
         let request = appleIDProvider.createRequest()
         request.requestedScopes = [.fullName, .email]

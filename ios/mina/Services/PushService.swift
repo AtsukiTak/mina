@@ -49,9 +49,11 @@ final class PushService {
 final class PushDelegate: NSObject, PKPushRegistryDelegate {
     
     private let callService: CallService
+    private let skywayService: SkyWayService
     
-    init(callService: CallService) {
+    init(_ callService: CallService, _ skywayService: SkyWayService) {
         self.callService = callService
+        self.skywayService = skywayService
         super.init()
     }
     

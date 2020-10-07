@@ -7,7 +7,6 @@
 //
 
 import SwiftUI
-import AuthenticationServices
 
 struct LoginView: View {
     var body: some View {

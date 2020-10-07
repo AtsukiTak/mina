@@ -16,6 +16,7 @@ struct ApiService {
     
     let baseUrl: String = "https://api.mina.atsuki.me"
     
+    // MARK: CreateUser
     struct CreateUserRes: Codable {
         let id: String
     }
@@ -30,6 +31,23 @@ struct ApiService {
         return self.post("/users", body)
     }
     
+    // MARK: RegisterPeerId
+    struct RegisterPeerIdRes: Decodable {
+        let targetPeerId: String?
+    }
+    
+    // TODO
+    func registerPeerId(peerId: String) -> AnyPublisher<RegisterPeerIdRes, Error> {
+        struct Req: Encodable {
+            let peerId: String
+        }
+        
+        let body = try! JSONEncoder().encode(Req(peerId: peerId))
+        
+        return self.post("/call", body)
+    }
+    
+    // MARK: Core
     private func post<T>(_ endpoint: String,
                  _ body: Data) -> AnyPublisher<T, Error>
         where T: Decodable
@@ -47,7 +65,7 @@ struct ApiService {
                 }
                 return data
             }
-        .decode(type: T.self, decoder: JSONDecoder())
-    .eraseToAnyPublisher()
+            .decode(type: T.self, decoder: JSONDecoder())
+            .eraseToAnyPublisher()
     }
 }

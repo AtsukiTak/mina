@@ -8,7 +8,6 @@
 
 import Foundation
 import CallKit
-import SkyWay
 
 final class CallService: NSObject {
     
@@ -45,22 +44,19 @@ final class CallService: NSObject {
         update.supportsHolding = false
         update.supportsDTMF = false
         
-        
-        
         self.provider.reportNewIncomingCall(with: callId, update: update) { err in
             if let err = err {
                 print(err)
+                completion()
             } else {
                 // systemが着信を許可したので通話プロセスを開始する
-                // TODO
             }
-            
-            completion()
         }
     }
 }
 
 final class CallDelegate: NSObject, CXProviderDelegate {
+    
     override init() {
         super.init()
     }
