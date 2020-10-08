@@ -9,8 +9,14 @@
 import SwiftUI
 
 struct VideoView: View {
+    
+    @ObservedObject var callManager: CallManager = CallManager.shared
+    
     var localVideoWindow: VideoWindow {
-        VideoWindow(frame: CGRect(x: 0, y: 0, width: 200, height: 200))
+        VideoWindow(
+            frame: CGRect(x: 0, y: 0, width: 200, height: 200),
+            stream: callManager.localStream
+        )
     }
     
     var remoteVideoWindow: VideoWindow {
@@ -22,6 +28,7 @@ struct VideoView: View {
             // remoteVideo
             self.remoteVideoWindow
             Spacer()
+            Text("My PeerId : \(callManager.peerId ?? "")")
             // localVideo
             self.localVideoWindow
                 .frame(width: 200, height: 200, alignment: .bottomLeading)

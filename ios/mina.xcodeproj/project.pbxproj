@@ -12,7 +12,7 @@
 		ED26B153251C9EF400957F06 /* ApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED26B152251C9EF400957F06 /* ApiService.swift */; };
 		ED4FE189251E61A20009420C /* CallService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4FE188251E61A20009420C /* CallService.swift */; };
 		ED51EB09252B14A200E9959B /* SkyWay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED51EB08252B14A200E9959B /* SkyWay.framework */; };
-		ED51EB0A252B14A200E9959B /* SkyWay.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ED51EB08252B14A200E9959B /* SkyWay.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		ED51EB0A252B14A200E9959B /* SkyWay.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ED51EB08252B14A200E9959B /* SkyWay.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ED51EB0E252B16B200E9959B /* CallManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED51EB0D252B16B200E9959B /* CallManager.swift */; };
 		ED878A4F2514A3B60030A575 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A4E2514A3B60030A575 /* AppDelegate.swift */; };
 		ED878A512514A3B60030A575 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A502514A3B60030A575 /* SceneDelegate.swift */; };

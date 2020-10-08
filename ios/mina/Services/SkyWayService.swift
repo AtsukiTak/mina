@@ -22,6 +22,11 @@ final class SkyWayService {
     let apiKey: String
     let domain: String
     
+    static let shared: SkyWayService = SkyWayService(
+        apiKey: "", // TODO
+        domain: "mina.atsuki.me"
+    )
+    
     init(apiKey: String, domain: String) {
         self.apiKey = apiKey
         self.domain = domain

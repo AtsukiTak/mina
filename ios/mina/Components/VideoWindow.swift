@@ -12,25 +12,28 @@ import SkyWay
 final class VideoWindow: NSObject {
     
     let frame: CGRect
-    var video: SKWVideo?
+    var stream: SKWMediaStream?
 
-    init(frame: CGRect) {
+    init(frame: CGRect, stream: SKWMediaStream? = nil) {
+        NSLog("init VideoWindow")
         self.frame = frame
+        self.stream = stream
         super.init()
-    }
-    
-    func attachMediaStream(stream: SKWMediaStream) {
-        stream.addVideoRenderer(self.video!, track: 0)
     }
 }
 
 extension VideoWindow: UIViewRepresentable {
     func makeUIView(context: Context) -> SKWVideo {
-        self.video = SKWVideo(frame: self.frame)
-        return self.video!
+        SKWVideo(frame: self.frame)
     }
     
     func updateUIView(_ uiView: SKWVideo, context: Context) {
+        if let stream = self.stream {
+            NSLog("update VideoWindow. stream is not nil")
+            stream.addVideoRenderer(uiView, track: 0)
+        } else {
+            NSLog("update VideoWindow. stream is nil")
+        }
     }
 }
 

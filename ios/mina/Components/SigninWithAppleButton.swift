@@ -36,6 +36,8 @@ extension SigninWithAppleButton {
     @objc
     func handleButtonPress() {
         GlobalEnvironment.shared.callMode = true
+        CallManager.shared.start()
+        return
         
         let appleIDProvider = ASAuthorizationAppleIDProvider()
         let request = appleIDProvider.createRequest()

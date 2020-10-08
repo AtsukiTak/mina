@@ -15,7 +15,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var user: User? = nil
     var callService: CallService?
     var pushService: PushService?
-    var skywayService: SkyWayService?
     let apiService: ApiService = ApiService()
     
     class var shared: AppDelegate {
@@ -25,13 +24,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // アプリケーションの起動後に呼ばれる
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         NSLog("launched!!")
+        print("hoge")
         
         let callDelegate = CallDelegate()
         let callService = CallService(delegate: callDelegate)
         
-        let skywayService = SkyWayService(apiKey: "", domain: "")
-        
-        let pushDelegate = PushDelegate(callService, skywayService)
+        let pushDelegate = PushDelegate(callService)
         let pushService = PushService(delegate: pushDelegate)
         pushService.register()
         if let token = pushService.getTokenHex() {
