@@ -8,3 +8,4 @@ project.xcworkspace/
 xcuserdata/
 Frameworks/**/*
 !Frameworks/.gitkeep
+mina/Secrets/secrets.plist
