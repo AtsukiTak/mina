@@ -23,8 +23,8 @@ final class SkyWayService {
     let domain: String
     
     static let shared: SkyWayService = SkyWayService(
-        apiKey: "", // TODO
-        domain: "mina.atsuki.me"
+        apiKey: Secrets.shared.skywayApiKey,
+        domain: Secrets.shared.skywayDomain
     )
     
     init(apiKey: String, domain: String) {
@@ -51,37 +51,5 @@ final class SkyWayService {
         let constrains = SKWMediaConstraints()
         SKWNavigator.initialize(peer)
         return SKWNavigator.getUserMedia(constrains)
-    }
-    
-    /// 相手Peerとの接続を開く
-    func openP2PConnection(
-        peer: SKWPeer,
-        target: PeerID,
-        localStream: SKWMediaStream,
-        options: SKWCallOption = SKWCallOption()
-    ) -> Result<SKWMediaConnection, Error> {
-        let res = peer.call(withId: target, stream: localStream, options: options)
-        guard let mediaConnection = res else {
-            return .failure(SkyWayError.failedToMakeCall)
-        }
-        return .success(mediaConnection)
-    }
-    
-    /// 相手Peerが接続を開くのを待つ
-    func receiveP2PConnection(peer: SKWPeer) -> Future<SKWMediaConnection, Error> {
-        Future { promise in
-            peer.on(.PEER_EVENT_CALL) { obj in
-                promise(.success(obj as! SKWMediaConnection))
-            }
-        }
-    }
-    
-    /// remoteStreamを生成する
-    func createRemoteStream(conn: SKWMediaConnection) -> Future<SKWMediaStream, Error> {
-        Future { promise in
-            conn.on(.MEDIACONNECTION_EVENT_STREAM) { obj in
-                promise(.success(obj as! SKWMediaStream))
-            }
-        }
     }
 }

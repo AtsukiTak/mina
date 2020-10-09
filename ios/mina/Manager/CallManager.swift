@@ -14,9 +14,11 @@ import SkyWay
 final class CallManager: ObservableObject {
     
     var skywayPeer: SKWPeer?
+    var mediaConnection: SKWMediaConnection?
+    
     @Published var localStream: SKWMediaStream?
     @Published var remoteStream: SKWMediaStream?
-    var mediaConnection: SKWMediaConnection?
+    @Published var errMsg: String?
     
     // for develop
     @Published var peerId: String?
@@ -25,6 +27,7 @@ final class CallManager: ObservableObject {
     
     private init() {}
     
+    /// 通話プロセスを開始する
     func start() {
         let peerResult = SkyWayService.shared.createPeer()
         if case .failure( _) = peerResult {
@@ -32,88 +35,78 @@ final class CallManager: ObservableObject {
         }
         self.skywayPeer = try! peerResult.get()
         
+        // onOpen
         self.skywayPeer!.on(.PEER_EVENT_OPEN) { [weak self] obj in
-            NSLog("my peer is is : %@", (obj as? String) ?? "nil")
-            self!.peerId = (obj as! String)
-            self!.localStream = SkyWayService.shared.createLocalStream(peer: self!.skywayPeer!)
+            self!.onPeerOpen(peerId: obj as! String)
+        }
+        
+        // onError
+        self.skywayPeer!.on(.PEER_EVENT_ERROR) { [weak self] obj in
+            self!.onPeerError(err: obj as! SKWPeerError)
         }
     }
     
-    /// 通話プロセスを開始する
-    /// (localStream, remoteStream) な値を1度だけ返すPublisherを返す
-    func start2() -> AnyPublisher<(SKWMediaStream, SKWMediaStream), Error> {
-        NSLog("started")
-        let peerResult = SkyWayService.shared.createPeer()
-        if case .failure(let err) = peerResult {
-            return Fail(error: err).eraseToAnyPublisher()
-        }
-        let peer = try! peerResult.get()
-        
-        self.skywayPeer = peer
-        
-        let openFuture = Future<String, Error> { promise in
-            NSLog("hoge")
-            peer.on(.PEER_EVENT_OPEN) { obj in
-                NSLog("fuga")
-                return promise(.success(obj as! String))
-            }
-        }
-        
-        return openFuture
-            .flatMap { [weak self] _ in
-                self!.registerMyPeerId()
-            }
-            .flatMap { [weak self] target -> AnyPublisher<SKWMediaStream, Error> in
-                self?.localStream = SkyWayService.shared.createLocalStream(peer: peer)
-                if let target = target {
-                    return self!.makeCall(target: target)
-                } else {
-                    return self!.waitCall()
-                }
-            }
-            .map { [weak self] remoteStream -> (SKWMediaStream, SKWMediaStream) in
-                self!.remoteStream = remoteStream
-                return (self!.localStream!, self!.remoteStream!)
-            }
-            .eraseToAnyPublisher()
-    }
-    
-    /// 自分のPeerIDをAPIサーバーに通知する
-    private func registerMyPeerId() -> AnyPublisher<String?, Error> {
-        let peerId = self.skywayPeer!.identity!
+    /// SkyWay signaling サーバーとの接続が開かれたとき
+    /// PEER_EVENT_OPEN
+    private func onPeerOpen(peerId: String) {
         self.peerId = peerId
-        NSLog("my peer id is : %@", peerId)
-        return AppDelegate.shared
-            .apiService
-            .registerPeerId(peerId: peerId)
-            .map { res in res.targetPeerId }
-            .eraseToAnyPublisher()
+        // localStreamを生成しセットする
+        self.localStream = SkyWayService.shared.createLocalStream(peer: self.skywayPeer!)
+        
+        // 自分のpeerIdをAPIサーバーに通知する
+        // その結果をもって、自分がcallerなのかcalleeなのか決定する
+        let targetId: String? = nil
+        // let targetId: String? = "uYSwcqMDSX4Kq326" // 適宜変える
+        if let targetId = targetId {
+            self.makeCall(target: targetId)
+        } else {
+            self.waitCall()
+        }
     }
     
-    /// 相手に電話をかける
-    private func makeCall(target: PeerID) -> AnyPublisher<SKWMediaStream, Error> {
-        return SkyWayService.shared.openP2PConnection(peer: self.skywayPeer!, target: target, localStream: self.localStream!)
-            .publisher
-            .flatMap { [weak self] conn -> Future<SKWMediaStream, Error> in
-                self!.mediaConnection = conn
-                return SkyWayService.shared.createRemoteStream(conn: conn)
-            }
-            .eraseToAnyPublisher()
+    /// SkyWay signaling サーバーとの接続中にErrorが発生した時
+    /// PEER_EVENT_ERROR
+    private func onPeerError(err: SKWPeerError) {
+        NSLog("Error on peer : %@", err)
+        self.errMsg = "問題が発生しました"
+    }
+    
+    /// targetに電話をかける
+    /// 成功したら、自分の remoteStream に値がセットされる
+    private func makeCall(target: PeerID) {
+        // 相手PeerとConnectionを開く
+        guard let conn = self.skywayPeer!.call(withId: target, stream: self.localStream!) else {
+            self.errMsg = "相手との接続に失敗しました"
+            return
+        }
+        self.mediaConnection = conn
+        
+        self.setupMediaConnectionCallback()
     }
     
     /// 相手からの着信を待つ
-    private func waitCall() -> AnyPublisher<SKWMediaStream, Error> {
-        return SkyWayService.shared.receiveP2PConnection(peer: self.skywayPeer!)
-            .flatMap { [weak self] conn -> Future<SKWMediaStream, Error> in
-                self!.mediaConnection = conn
-                return SkyWayService.shared.createRemoteStream(conn: conn)
-            }
-            .eraseToAnyPublisher()
+    /// 成功したら、自分のremoteStreamに値がセットされる
+    private func waitCall() {
+        self.skywayPeer!.on(.PEER_EVENT_CALL) { [weak self] obj in
+            self!.mediaConnection = (obj as! SKWMediaConnection)
+            self!.setupMediaConnectionCallback()
+            self!.mediaConnection?.answer(self!.localStream!)
+        }
     }
-}
-
-protocol MediaStreamDelegate {
-    func onOpen(localStream: SKWMediaStream, remoteStream: SKWMediaStream)
     
-    func onError()
+    /// MediaConnectionのcallbackを設定する
+    /// - MediaStream開始時
+    /// - Error時
+    private func setupMediaConnectionCallback() {
+        // 相手PeerとのConnectionからMediaStreamを取得する
+        self.mediaConnection!.on(.MEDIACONNECTION_EVENT_STREAM) { [weak self] obj in
+            NSLog("hogehoge")
+            self!.remoteStream = (obj as! SKWMediaStream)
+        }
+        
+        // Error時
+        self.mediaConnection!.on(.MEDIACONNECTION_EVENT_ERROR) { [weak self] obj in
+            self!.onPeerError(err: obj as! SKWPeerError)
+        }
+    }
 }

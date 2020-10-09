@@ -28,6 +28,9 @@
 		EDFDC8FD252D7CA0004E0C00 /* SkyWayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC8FC252D7CA0004E0C00 /* SkyWayService.swift */; };
 		EDFDC900252E1A0C004E0C00 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC8FF252E1A0C004E0C00 /* RootView.swift */; };
 		EDFDC904252E1AEC004E0C00 /* GlobalEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC903252E1AEC004E0C00 /* GlobalEnvironment.swift */; };
+		EDFDC90A25303189004E0C00 /* secrets.plist in Resources */ = {isa = PBXBuildFile; fileRef = EDFDC90925303189004E0C00 /* secrets.plist */; };
+		EDFDC90D253031F1004E0C00 /* secrets.template.plist in Resources */ = {isa = PBXBuildFile; fileRef = EDFDC90C253031F1004E0C00 /* secrets.template.plist */; };
+		EDFDC910253033FF004E0C00 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC90F253033FF004E0C00 /* Secrets.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -80,6 +83,9 @@
 		EDFDC8FC252D7CA0004E0C00 /* SkyWayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkyWayService.swift; sourceTree = "<group>"; };
 		EDFDC8FF252E1A0C004E0C00 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		EDFDC903252E1AEC004E0C00 /* GlobalEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalEnvironment.swift; sourceTree = "<group>"; };
+		EDFDC90925303189004E0C00 /* secrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = secrets.plist; sourceTree = "<group>"; };
+		EDFDC90C253031F1004E0C00 /* secrets.template.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = secrets.template.plist; sourceTree = "<group>"; };
+		EDFDC90F253033FF004E0C00 /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,6 +159,7 @@
 				ED26B14F251C9D2700957F06 /* Models */,
 				EDFDC8F3252C731D004E0C00 /* Manager */,
 				ED878A77251B63F60030A575 /* Services */,
+				EDFDC9082530314C004E0C00 /* Secrets */,
 				ED878A562514A3B90030A575 /* Preview Content */,
 			);
 			path = mina;
@@ -202,6 +209,16 @@
 				ED51EB0D252B16B200E9959B /* CallManager.swift */,
 			);
 			path = Manager;
+			sourceTree = "<group>";
+		};
+		EDFDC9082530314C004E0C00 /* Secrets */ = {
+			isa = PBXGroup;
+			children = (
+				EDFDC90925303189004E0C00 /* secrets.plist */,
+				EDFDC90C253031F1004E0C00 /* secrets.template.plist */,
+				EDFDC90F253033FF004E0C00 /* Secrets.swift */,
+			);
+			path = Secrets;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -290,7 +307,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EDFDC90A25303189004E0C00 /* secrets.plist in Resources */,
 				ED878A5B2514A3B90030A575 /* LaunchScreen.storyboard in Resources */,
+				EDFDC90D253031F1004E0C00 /* secrets.template.plist in Resources */,
 				ED878A582514A3B90030A575 /* Preview Assets.xcassets in Resources */,
 				ED878A552514A3B90030A575 /* Assets.xcassets in Resources */,
 			);
@@ -311,6 +330,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ED878A752514FF730030A575 /* SigninWithAppleButton.swift in Sources */,
+				EDFDC910253033FF004E0C00 /* Secrets.swift in Sources */,
 				ED878A4F2514A3B60030A575 /* AppDelegate.swift in Sources */,
 				ED878A79251B65460030A575 /* KeychainService.swift in Sources */,
 				EDFDC8FA252CBD0F004E0C00 /* VideoWindow.swift in Sources */,

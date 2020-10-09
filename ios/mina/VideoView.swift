@@ -12,25 +12,23 @@ struct VideoView: View {
     
     @ObservedObject var callManager: CallManager = CallManager.shared
     
-    var localVideoWindow: VideoWindow {
-        VideoWindow(
-            frame: CGRect(x: 0, y: 0, width: 200, height: 200),
-            stream: callManager.localStream
-        )
-    }
-    
-    var remoteVideoWindow: VideoWindow {
-        VideoWindow(frame: CGRect(x: 0, y: 0, width: 200, height: 200))
-    }
-    
     var body: some View {
         VStack {
             // remoteVideo
-            self.remoteVideoWindow
+            VideoWindow(frame: CGRect(x: 0, y: 0, width: 200, height: 200),
+                        stream: callManager.remoteStream)
+            
             Spacer()
+            
             Text("My PeerId : \(callManager.peerId ?? "")")
+            
+            if let errMsg = callManager.errMsg {
+                Text("Error \(errMsg)")
+            }
+            
             // localVideo
-            self.localVideoWindow
+            VideoWindow(frame: CGRect(x: 0, y: 0, width: 200, height: 200),
+                        stream: callManager.localStream)
                 .frame(width: 200, height: 200, alignment: .bottomLeading)
         }
     }

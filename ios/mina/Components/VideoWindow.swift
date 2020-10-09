@@ -13,6 +13,7 @@ final class VideoWindow: NSObject {
     
     let frame: CGRect
     var stream: SKWMediaStream?
+    var isStreamAttached: Bool = false
 
     init(frame: CGRect, stream: SKWMediaStream? = nil) {
         NSLog("init VideoWindow")
@@ -29,11 +30,13 @@ extension VideoWindow: UIViewRepresentable {
     
     func updateUIView(_ uiView: SKWVideo, context: Context) {
         if let stream = self.stream {
-            NSLog("update VideoWindow. stream is not nil")
-            stream.addVideoRenderer(uiView, track: 0)
-        } else {
-            NSLog("update VideoWindow. stream is nil")
+            if self.isStreamAttached == false {
+                stream.addVideoRenderer(uiView, track: 0)
+                self.isStreamAttached = true
+            }
         }
+        
+        NSLog("updated VideoWindow. stream is %@", self.isStreamAttached ? "attached" : "not attached")
     }
 }
 
