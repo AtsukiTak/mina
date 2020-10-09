@@ -44,6 +44,16 @@ final class CallManager: ObservableObject {
         self.skywayPeer!.on(.PEER_EVENT_ERROR) { [weak self] obj in
             self!.onPeerError(err: obj as! SKWPeerError)
         }
+
+        // 相手peerとの接続が切れた時
+        self.skywayPeer!.on(.PEER_EVENT_CLOSE) { [weak self] _ in
+            self!.close()
+        }
+
+        // signalingサーバーとの接続が切れた時
+        self.skywayPeer!.on(.PEER_EVENT_DISCONNECTED) { [weak self] _ in
+            self!.close()
+        }
     }
     
     /// SkyWay signaling サーバーとの接続が開かれたとき
@@ -100,13 +110,38 @@ final class CallManager: ObservableObject {
     private func setupMediaConnectionCallback() {
         // 相手PeerとのConnectionからMediaStreamを取得する
         self.mediaConnection!.on(.MEDIACONNECTION_EVENT_STREAM) { [weak self] obj in
-            NSLog("hogehoge")
             self!.remoteStream = (obj as! SKWMediaStream)
         }
         
+        // Close時
+        self.mediaConnection!.on(.MEDIACONNECTION_EVENT_CLOSE) { [weak self] obj in
+            self!.close()
+        }
+
         // Error時
         self.mediaConnection!.on(.MEDIACONNECTION_EVENT_ERROR) { [weak self] obj in
             self!.onPeerError(err: obj as! SKWPeerError)
         }
+    }
+
+    func close() {
+        if let mediaConnection = self.mediaConnection {
+            mediaConnection.close()
+            mediaConnection.on(.MEDIACONNECTION_EVENT_STREAM, callback: nil)
+            mediaConnection.on(.MEDIACONNECTION_EVENT_CLOSE, callback: nil)
+            mediaConnection.on(.MEDIACONNECTION_EVENT_ERROR, callback: nil)
+            self.mediaConnection = nil
+        }
+        if let peer = self.skywayPeer {
+            peer.on(.PEER_EVENT_CALL, callback: nil)
+            peer.on(.PEER_EVENT_OPEN, callback: nil)
+            peer.on(.PEER_EVENT_ERROR, callback: nil)
+            peer.on(.PEER_EVENT_CLOSE, callback: nil)
+            self.skywayPeer = nil
+        }
+        self.localStream = nil
+        self.remoteStream = nil
+        self.errMsg = nil
+        self.peerId = nil
     }
 }

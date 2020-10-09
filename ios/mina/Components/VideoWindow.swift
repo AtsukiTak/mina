@@ -13,10 +13,10 @@ final class VideoWindow: NSObject {
     
     let frame: CGRect
     var stream: SKWMediaStream?
-    var isStreamAttached: Bool = false
+    
+    private var attachedStream: SKWMediaStream?
 
     init(frame: CGRect, stream: SKWMediaStream? = nil) {
-        NSLog("init VideoWindow")
         self.frame = frame
         self.stream = stream
         super.init()
@@ -30,13 +30,15 @@ extension VideoWindow: UIViewRepresentable {
     
     func updateUIView(_ uiView: SKWVideo, context: Context) {
         if let stream = self.stream {
-            if self.isStreamAttached == false {
+            if self.attachedStream != stream {
+                // 新しいstreamをattachする
                 stream.addVideoRenderer(uiView, track: 0)
-                self.isStreamAttached = true
+                self.attachedStream = stream
             }
+        } else if let attachedStream = self.attachedStream {
+            // 今までattachしていたstreamをdetachする
+            attachedStream.removeVideoRenderer(uiView, track: 0)
         }
-        
-        NSLog("updated VideoWindow. stream is %@", self.isStreamAttached ? "attached" : "not attached")
     }
 }
 
