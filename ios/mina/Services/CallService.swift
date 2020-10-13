@@ -50,6 +50,7 @@ final class CallService: NSObject {
                 completion()
             } else {
                 // systemが着信を許可したので通話プロセスを開始する
+                CallManager.shared.start()
             }
         }
     }
