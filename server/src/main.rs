@@ -1,9 +1,9 @@
-mod apns;
 mod domain;
+mod infra;
 mod usecase;
 
-use apns::{Authorizer, Client};
 use chrono::Utc;
+use infra::apple::push::{Authorizer, Client};
 use serde::Serialize;
 
 #[tokio::main]
