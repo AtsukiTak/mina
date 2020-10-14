@@ -1,5 +1,6 @@
 mod apns;
-mod models;
+mod domain;
+mod usecase;
 
 use apns::{Authorizer, Client};
 use chrono::Utc;

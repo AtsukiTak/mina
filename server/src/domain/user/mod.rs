@@ -1,3 +1,6 @@
+mod repository;
+pub use repository::UserRepository;
+
 use super::id::Id;
 use rego::Error;
 use std::ops::Deref;
