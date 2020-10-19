@@ -744,6 +744,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "mina-domain"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "rand 0.7.3",
+ "rego",
+]
+
+[[package]]
 name = "mio"
 version = "0.6.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"

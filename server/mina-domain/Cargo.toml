@@ -1,0 +1,13 @@
+[package]
+name = "mina-domain"
+version = "0.1.0"
+authors = ["AtsukiTak <takatomgoo@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "0.1.41"
+chrono = "0.4.19"
+rand = "0.7.3"
+rego = "0.1.1"

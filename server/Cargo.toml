@@ -1,4 +1,5 @@
 [workspace]
 members = [
- "mina-app"
+ "mina-app",
+ "mina-domain"
 ]
