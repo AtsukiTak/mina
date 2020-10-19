@@ -1,5 +1,6 @@
 [workspace]
 members = [
  "mina-app",
+ "mina-usecase",
  "mina-domain"
 ]

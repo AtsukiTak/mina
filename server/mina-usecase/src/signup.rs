@@ -1,4 +1,4 @@
-use crate::domain::user::{User, UserRepository};
+use mina_domain::user::{User, UserRepository};
 use rego::Error;
 
 pub struct Params {
