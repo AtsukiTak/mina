@@ -11,7 +11,7 @@ async fn main() {
     // Authorizer の生成
     let iss = "BN74D86Y99".to_string();
     let kid = "6637Y96KAX".to_string();
-    let key_bytes = include_bytes!("../AuthKey_6637Y96KAX.p8");
+    let key_bytes = include_bytes!("../../AuthKey_6637Y96KAX.p8");
     let authorizer = Authorizer::new(iss, kid, key_bytes).unwrap();
 
     // Client の生成
