@@ -2,35 +2,50 @@ mod repository;
 pub use repository::UserRepository;
 
 use super::id::Id;
-use rego::Error;
+use rand::{distributions::Alphanumeric, thread_rng, Rng};
+use rego::{domain::Cred, Error};
 use std::ops::Deref;
 
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct User {
     id: UserId,
-    name: String,
+    name: Option<String>,
+    /// 匿名ユーザーのためのsecret
+    /// 将来、匿名ユーザー以外を導入した時は
+    /// secretによるログインをできないようにしたりする
+    secret: Cred,
     partners: Vec<Partner>,
 }
 
 impl User {
-    pub fn new(name: String) -> Result<User, Error> {
-        if name.is_empty() {
-            return Err(Error::bad_input("name must not be empty"));
-        }
+    /// 匿名ユーザーを新しく生成する
+    /// UserIdはランダムに生成されるので、既存ユーザーと
+    /// 重複してしまう可能性がある。
+    /// そのためユースケース層で重複がないことを必ずチェックする必要がある
+    ///
+    /// 生成したUserとsecretを返す
+    pub fn new_anonymous() -> Result<(User, String), Error> {
+        let secret = thread_rng()
+            .sample_iter(Alphanumeric)
+            .take(16)
+            .collect::<String>();
 
-        Ok(User {
+        let user = User {
             id: UserId::new(),
-            name,
+            name: None,
+            secret: Cred::derive(secret.as_str())?,
             partners: Vec::new(),
-        })
+        };
+
+        Ok((user, secret))
     }
 
     pub fn id(&self) -> &UserId {
         &self.id
     }
 
-    pub fn name(&self) -> &str {
-        self.name.as_str()
+    pub fn name(&self) -> Option<&str> {
+        self.name.as_deref()
     }
 
     pub fn partners(&self) -> &[Partner] {

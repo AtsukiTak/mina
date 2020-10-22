@@ -1,14 +1,15 @@
 use mina_domain::user::{User, UserRepository};
 use rego::Error;
 
-pub struct Params {
-    name: String,
+pub struct Res {
+    pub user: User,
+    pub secret: String,
 }
 
 /// 超絶シンプルな登録プロセス
 /// Appは初回起動時に名前をサーバーに登録し、返されたUserId
-/// をApp内に保存する。
-/// 以降、そのUserIdを使ってAPIリクエストを行う
+/// とパスワードをApp内に保存する。
+/// 以降、それらを使ってAPIリクエストを行う
 ///
 /// ## Production Ready Signup
 /// - Signin with Apple Id を利用する
@@ -23,10 +24,26 @@ pub struct Params {
 /// - Tokenをパースして得られたUserIdとSessionIdを紐づける
 /// - nonceを無効化する
 /// - SessionIdを用いてsignupを行う
-pub async fn signup<R>(Params { name }: Params, repo: &mut R) -> Result<User, Error>
+pub async fn signup_as_anonymous<R>(repo: &mut R) -> Result<Res, Error>
 where
     R: UserRepository,
 {
-    let user = User::new(name)?;
-    repo.save(user).await
+    // 新規匿名ユーザーを生成する
+    // UserIdが重複してしまった場合はリトライする
+    let (user, secret) = loop {
+        let (user, secret) = User::new_anonymous()?;
+        match repo.find_by_id(user.id().as_ref().into()).await {
+            Ok(_) => {
+                // UserIdが重複してしまった場合、リトライする
+            }
+            Err(Error::NotFound { .. }) => {
+                break (user, secret);
+            }
+            Err(e) => return Err(e),
+        }
+    };
+
+    let user = repo.save(user).await?;
+
+    Ok(Res { user, secret })
 }
