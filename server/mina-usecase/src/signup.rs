@@ -30,20 +30,25 @@ where
 {
     // 新規匿名ユーザーを生成する
     // UserIdが重複してしまった場合はリトライする
-    let (user, secret) = loop {
+    // ただしその他の理由によるエラーの可能性もあるので、
+    // 規定回数リトライした後はエラーを返す
+    let mut last_err: Option<Error> = None;
+
+    const RETRY_NUM: u8 = 3;
+
+    for _ in 0..RETRY_NUM {
         let (user, secret) = User::new_anonymous()?;
-        match repo.find_by_id(user.id().as_ref().into()).await {
-            Ok(_) => {
-                // UserIdが重複してしまった場合、リトライする
+        match repo.create(user).await {
+            Ok(user) => {
+                return Ok(Res { user, secret });
             }
-            Err(Error::NotFound { .. }) => {
-                break (user, secret);
+            Err(e) => {
+                // エラーの場合、UserIdの重複によるエラーの可能性がある
+                // ためリトライする
+                last_err = Some(e);
             }
-            Err(e) => return Err(e),
         }
-    };
+    }
 
-    let user = repo.save(user).await?;
-
-    Ok(Res { user, secret })
+    Err(last_err.unwrap())
 }
