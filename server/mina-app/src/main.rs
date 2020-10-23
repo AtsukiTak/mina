@@ -1,6 +1,4 @@
-mod domain;
 mod infra;
-mod usecase;
 
 use chrono::Utc;
 use infra::apple::push::{Authorizer, Client};

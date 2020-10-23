@@ -2,5 +2,6 @@
 members = [
  "mina-app",
  "mina-usecase",
+ "mina-infra",
  "mina-domain"
 ]

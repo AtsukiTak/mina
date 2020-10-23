@@ -1,0 +1,19 @@
+[package]
+name = "mina-infra"
+version = "0.1.0"
+authors = ["AtsukiTak <takatomgoo@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "0.1.41"
+dataloader = { version = "0.12.0", default-features = false, features = ["runtime-tokio"] }
+log = "0.4.11"
+mina-domain = { path = "../mina-domain" }
+native-tls = "0.2.4"
+postgres-native-tls = "0.3.0"
+refinery = { version = "0.4.0", features = ["tokio-postgres"] }
+rego = "0.1.1"
+tokio = { version = "0.2", features = ["rt-core"] }
+tokio-postgres = "0.5.0"

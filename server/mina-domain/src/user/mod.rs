@@ -14,7 +14,6 @@ pub struct User {
     /// 将来、匿名ユーザー以外を導入した時は
     /// secretによるログインをできないようにしたりする
     secret: Cred,
-    partners: Vec<Partner>,
 }
 
 impl User {
@@ -34,7 +33,6 @@ impl User {
             id: UserId::new(),
             name: None,
             secret: Cred::derive(secret.as_str())?,
-            partners: Vec::new(),
         };
 
         Ok((user, secret))
@@ -48,8 +46,15 @@ impl User {
         self.name.as_deref()
     }
 
-    pub fn partners(&self) -> &[Partner] {
-        self.partners.as_slice()
+    pub fn secret(&self) -> &Cred {
+        &self.secret
+    }
+
+    pub fn from_raw_parts(id: String, name: Option<String>, secret: String) -> User {
+        let id = UserId::from(id);
+        let secret = Cred::from(secret);
+
+        User { id, name, secret }
     }
 }
 
@@ -59,11 +64,30 @@ impl User {
  * ===============
  */
 #[derive(PartialEq, Eq, Debug, Clone)]
-pub struct UserId(Id);
+pub struct UserId(String);
 
 impl UserId {
+    /// `PREFIX` を含めない文字数
+    /// つまり、ユニークな部分の文字数
+    pub const LEN: usize = 12;
+
+    /// すべての `UserId` に付与されるprefix
+    pub const PREFIX: &'static str = "usr_";
+
+    /// ランダムにUserIdを生成する
     pub fn new() -> UserId {
-        UserId(Id::new())
+        let uniq = thread_rng().sample_iter(Alphanumeric).take(Self::LEN);
+        let s = Self::PREFIX.chars().chain(uniq).collect::<String>();
+
+        UserId(s)
+    }
+
+    pub fn to_string(&self) -> String {
+        self.0.clone()
+    }
+
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
     }
 }
 
@@ -81,13 +105,15 @@ impl Deref for UserId {
     }
 }
 
-/*
- * ============
- * Partner
- * ============
- */
-#[derive(PartialEq, Eq, Debug, Clone)]
-pub struct Partner {
-    user_id: UserId,
-    nickname: String,
+impl From<String> for UserId {
+    fn from(s: String) -> UserId {
+        if !s.starts_with(Self::PREFIX) {
+            panic!("UserId (${}) starts with invalid prefix.", s);
+        }
+
+        // 将来的に文字数を増やす可能性があるため、
+        // 文字数に対するチェックは行わない
+
+        UserId(s)
+    }
 }
