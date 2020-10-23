@@ -1,7 +1,6 @@
 mod repository;
 pub use repository::UserRepository;
 
-use super::id::Id;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use rego::{domain::Cred, Error};
 use std::ops::Deref;
