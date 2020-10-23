@@ -58,11 +58,6 @@ impl RepositoryFactory {
     }
 }
 
-/*
-pub fn run_migration() -> Result<Report, MigrationError> {
-}
-*/
-
 pub struct RepositoryImpl {
     pg: Arc<Client>,
     user_repo: Option<user::UserRepositoryImpl>,
@@ -92,7 +87,7 @@ impl UserRepository for RepositoryImpl {
         self.user_repo_mut().find_by_id(user_id).await
     }
 
-    async fn save(&mut self, user: User) -> Result<User, Error> {
-        self.user_repo_mut().save(user).await
+    async fn create(&mut self, user: User) -> Result<User, Error> {
+        self.user_repo_mut().create(user).await
     }
 }

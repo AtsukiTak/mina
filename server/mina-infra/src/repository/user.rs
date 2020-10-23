@@ -3,14 +3,16 @@ use mina_domain::user::{User, UserRepository};
 use rego::Error;
 use std::{collections::HashMap, sync::Arc};
 use tokio_postgres::{Client, Row};
+use uuid::Uuid;
 
 /// ## 責務
 /// - DBに対する操作（SQL操作）
 /// - 内部キャッシュ
 /// - dataloader
+/// - 楽観ロック
 pub struct UserRepositoryImpl {
     client: Arc<Client>,
-    loader: Loader<String, Result<User, Error>, UserLoader>,
+    loader: Loader<String, Result<UserWithHash, Error>, UserLoader>,
 }
 
 impl UserRepositoryImpl {
@@ -25,19 +27,20 @@ impl UserRepositoryImpl {
 #[async_trait::async_trait]
 impl UserRepository for UserRepositoryImpl {
     async fn find_by_id(&mut self, user_id: String) -> Result<User, Error> {
-        self.loader.load(user_id).await
+        Ok(self.loader.load(user_id).await?.user)
     }
 
-    async fn save(&mut self, user: User) -> Result<User, Error> {
+    async fn create(&mut self, user: User) -> Result<User, Error> {
         // DBへの挿入
-        insert(&self.client, &user).await?;
+        let new_user_with_hash = insert(&self.client, user).await?;
+        let new_user = new_user_with_hash.user.clone();
 
         // Cacheの更新
         self.loader
-            .prime(user.id().to_string(), Ok(user.clone()))
+            .prime(new_user.id().to_string(), Ok(new_user_with_hash))
             .await;
 
-        Ok(user)
+        Ok(new_user)
     }
 }
 
@@ -57,9 +60,21 @@ impl UserLoader {
 }
 
 #[async_trait::async_trait]
-impl BatchFn<String, Result<User, Error>> for UserLoader {
-    async fn load(&self, keys: &[String]) -> HashMap<String, Result<User, Error>> {
+impl BatchFn<String, Result<UserWithHash, Error>> for UserLoader {
+    async fn load(&self, keys: &[String]) -> HashMap<String, Result<UserWithHash, Error>> {
         load(&self.client, keys).await
+    }
+}
+
+#[derive(Clone, Debug)]
+struct UserWithHash {
+    user: User,
+    hash: Uuid,
+}
+
+impl UserWithHash {
+    fn new(user: User, hash: Uuid) -> Self {
+        UserWithHash { user, hash }
     }
 }
 
@@ -70,12 +85,15 @@ impl BatchFn<String, Result<User, Error>> for UserLoader {
  */
 /// 複数IdからUserをクエリするためのStatement
 const LOAD_STMT: &str = r#"
-SELECT (id, name, secret)
+SELECT (id, name, secret, snapshot_hash)
 FROM users
 WHERE id = ANY $1
 "#;
 
-async fn load(client: &Client, user_ids: &[String]) -> HashMap<String, Result<User, Error>> {
+async fn load(
+    client: &Client,
+    user_ids: &[String],
+) -> HashMap<String, Result<UserWithHash, Error>> {
     let res = client.query(LOAD_STMT, &[&user_ids]).await;
 
     if let Err(e) = res {
@@ -90,26 +108,28 @@ async fn load(client: &Client, user_ids: &[String]) -> HashMap<String, Result<Us
 
     // NotFoundの場合は、対応するkeyにErrorを設定する
     // そのため、まずすべてのkeyがNotFoundなHashMapを作る
-    let mut users: HashMap<String, Result<User, Error>> = user_ids
+    let mut users: HashMap<String, Result<UserWithHash, Error>> = user_ids
         .iter()
         .map(|id| (id.clone(), Err(Error::not_found("user"))))
         .collect();
 
     // 見つかったUserを1つずつinsertしていく
     for row in rows {
-        let user = to_user(row);
-        users.insert(user.id().to_string(), Ok(user));
+        let user_with_hash = to_user_with_hash(row);
+        users.insert(user_with_hash.user.id().to_string(), Ok(user_with_hash));
     }
 
     users
 }
 
-fn to_user(row: Row) -> User {
+fn to_user_with_hash(row: Row) -> UserWithHash {
     let id: String = row.get("id");
     let name: Option<String> = row.get("name");
     let secret: String = row.get("secret");
+    let hash: Uuid = row.get("snapshot_hash");
 
-    User::from_raw_parts(id, name, secret)
+    let user = User::from_raw_parts(id, name, secret);
+    UserWithHash::new(user, hash)
 }
 
 /*
@@ -118,18 +138,26 @@ fn to_user(row: Row) -> User {
  * ==============
  */
 const INSERT_STMT: &str = r#"
-INSERT INTO users (id, name, secret)
-VALUES ($1, $2, $3)
+INSERT INTO users (id, name, secret, snapshot_hash)
+VALUES ($1, $2, $3, $4)
 "#;
 
-async fn insert(client: &Client, user: &User) -> Result<(), Error> {
+/// 新規UserをDBに登録する
+async fn insert(client: &Client, user: User) -> Result<UserWithHash, Error> {
+    let new_hash = Uuid::new_v4();
+
     client
         .execute(
             INSERT_STMT,
-            &[&user.id().as_str(), &user.name(), &user.secret().as_str()],
+            &[
+                &user.id().as_str(),
+                &user.name(),
+                &user.secret().as_str(),
+                &new_hash,
+            ],
         )
         .await
         .map_err(Error::internal)?;
 
-    Ok(())
+    Ok(UserWithHash::new(user, new_hash))
 }
