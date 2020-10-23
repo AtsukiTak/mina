@@ -7,5 +7,5 @@ pub trait UserRepository {
 
     async fn create(&mut self, user: User) -> Result<User, Error>;
 
-    // async fn update(&mut self, user: User) -> Result<User, Error>;
+    async fn update(&mut self, user: User) -> Result<User, Error>;
 }

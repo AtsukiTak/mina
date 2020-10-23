@@ -90,4 +90,8 @@ impl UserRepository for RepositoryImpl {
     async fn create(&mut self, user: User) -> Result<User, Error> {
         self.user_repo_mut().create(user).await
     }
+
+    async fn update(&mut self, user: User) -> Result<User, Error> {
+        self.user_repo_mut().update(user).await
+    }
 }

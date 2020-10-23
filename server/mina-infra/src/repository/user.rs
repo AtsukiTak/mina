@@ -42,6 +42,25 @@ impl UserRepository for UserRepositoryImpl {
 
         Ok(new_user)
     }
+
+    async fn update(&mut self, user: User) -> Result<User, Error> {
+        // snapshot_idを取得するためCacheを取得する
+        // Cacheがヒットしない場合はDBへクエリが行われるが、
+        // これは意図した挙動（必要不可欠な挙動）である
+        let mut cache = self.loader.load(user.id().to_string()).await?;
+        cache.user = user;
+
+        // DBのupdate
+        let new_user_with_hash = update(&self.client, cache).await?;
+        let new_user = new_user_with_hash.user.clone();
+
+        // Cacheの更新
+        self.loader
+            .prime(new_user.id().to_string(), Ok(new_user_with_hash))
+            .await;
+
+        Ok(new_user)
+    }
 }
 
 /*
@@ -154,6 +173,44 @@ async fn insert(client: &Client, user: User) -> Result<UserWithHash, Error> {
                 &user.name(),
                 &user.secret().as_str(),
                 &new_hash,
+            ],
+        )
+        .await
+        .map_err(Error::internal)?;
+
+    Ok(UserWithHash::new(user, new_hash))
+}
+
+/*
+ * ===========
+ * DB Update
+ * ===========
+ */
+const UPDATE_STMT: &str = r#"
+UPDATE users
+SET
+  name = $1,
+  secret = $2,
+  snapshot_hash = $3
+WHERE
+  id = $4,
+  snapshot_hash = $5
+"#;
+
+async fn update(client: &Client, update: UserWithHash) -> Result<UserWithHash, Error> {
+    let user = update.user;
+    let old_hash = update.hash;
+    let new_hash = Uuid::new_v4();
+
+    client
+        .execute(
+            UPDATE_STMT,
+            &[
+                &user.name(),
+                &user.secret().as_str(),
+                &new_hash,
+                &user.id().as_str(),
+                &old_hash,
             ],
         )
         .await
