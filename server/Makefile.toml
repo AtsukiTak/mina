@@ -1,0 +1,28 @@
+[config]
+default_to_workspace = false
+
+
+# Postgresサーバーを起動し、マイグレーションを行う
+# すでに起動済みの場合でもエラーにしない
+[tasks.start-pg]
+script = ['''
+docker run --rm -d --name mina-dev-pg -p 12781:5432 postgres || true
+''']
+
+
+# Postgresサーバーを停止する
+[tasks.stop-pg]
+script = ['''
+docker stop mina-dev-pg
+''']
+
+
+# ローカルサーバーを起動する
+[tasks.dev]
+command = "cargo"
+args = ["run", "--bin", "mina-app"]
+
+[tasks.dev.env]
+DATABASE_URL = "postgres://postgres:postgres@localhost:13974"
+RUST_LOG = "debug,hyper=info"
+PORT = "8080"
