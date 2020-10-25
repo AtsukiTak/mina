@@ -13,19 +13,17 @@ pub struct RepositoryFactory {
 }
 
 impl RepositoryFactory {
-    /// 新しいRepositoryFactoryを生成し、初期化を行う
-    /// 現在のところ、DBのマイグレーションを行うだけ
-    pub async fn new_with_initialize(params: &str) -> Self {
+    pub async fn new(params: &str) -> Self {
         let tls = MakeTlsConnector::new(TlsConnector::new().unwrap());
-        let this = RepositoryFactory {
+        RepositoryFactory {
             params: params.to_string(),
             tls,
-        };
+        }
+    }
 
-        // initialize
-        this.run_migrations().await;
-
-        this
+    /// 現在のところ、DBのマイグレーションを行うだけ
+    pub async fn initialize(&self) {
+        self.run_migrations().await;
     }
 
     async fn run_migrations(&self) {
