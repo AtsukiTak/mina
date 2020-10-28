@@ -17,12 +17,26 @@ docker stop mina-dev-pg
 ''']
 
 
+# DBに接続する
+[tasks.connect-pg]
+script = ['''
+psql "postgres://postgres:postgres@localhost:12781"
+''']
+
+
+# DBのマイグレーションを実行する
+[tasks.migrate]
+script = ['''
+refinery migrate -e DB_URI files -p mina-infra/migrations
+''']
+env = { DB_URI = "postgres://postgres:postgres@localhost:12781" }
+
 # ローカルサーバーを起動する
 [tasks.dev]
 command = "cargo"
 args = ["run", "--bin", "mina-app"]
 
 [tasks.dev.env]
-DATABASE_URL = "postgres://postgres:postgres@localhost:13974"
+DATABASE_URL = "postgres://postgres:postgres@localhost:12781"
 RUST_LOG = "debug,hyper=info"
 PORT = "8080"
