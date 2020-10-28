@@ -1,12 +1,15 @@
 mod user;
 
-use mina_domain::user::{User, UserRepository};
+use self::user::UserRepositoryImpl;
+use mina_domain::RepositorySet;
 use native_tls::TlsConnector;
 use postgres_native_tls::MakeTlsConnector;
 use rego::Error;
 use std::sync::Arc;
+use tokio::sync::{Mutex, MutexGuard};
 use tokio_postgres::Client;
 
+#[derive(Clone)]
 pub struct RepositoryFactory {
     params: String,
     tls: MakeTlsConnector,
@@ -35,10 +38,10 @@ impl RepositoryFactory {
         eprintln!("{:?}", report);
     }
 
-    /// 新しい `RepositoryImpl` を生成する
-    pub async fn create(&self) -> Result<RepositoryImpl, Error> {
+    /// 新しい接続を確立し `RepositorySetImpl` を生成する
+    pub async fn create(&self) -> Result<RepositorySetImpl, Error> {
         let client = self.spawn_client().await?;
-        Ok(RepositoryImpl::new(client))
+        Ok(RepositorySetImpl::new(client))
     }
 
     async fn spawn_client(&self) -> Result<Client, Error> {
@@ -56,40 +59,43 @@ impl RepositoryFactory {
     }
 }
 
-pub struct RepositoryImpl {
-    pg: Arc<Client>,
-    user_repo: Option<user::UserRepositoryImpl>,
+#[derive(Debug, Clone)]
+pub struct PgClient(Arc<Mutex<Client>>);
+
+impl PgClient {
+    fn new(client: Client) -> Self {
+        PgClient(Arc::new(Mutex::new(client)))
+    }
+
+    pub async fn lock(&self) -> MutexGuard<'_, Client> {
+        self.0.lock().await
+    }
 }
 
-impl RepositoryImpl {
+/// すべてのRepositoryをまとめる構造体
+pub struct RepositorySetImpl {
+    client: PgClient,
+    user_repo: Option<UserRepositoryImpl>,
+}
+
+impl RepositorySetImpl {
     fn new(client: Client) -> Self {
-        RepositoryImpl {
-            pg: Arc::new(client),
+        RepositorySetImpl {
+            client: PgClient::new(client),
             user_repo: None,
         }
     }
+}
 
-    fn user_repo_mut(&mut self) -> &mut user::UserRepositoryImpl {
+impl RepositorySet for RepositorySetImpl {
+    type UserRepo = UserRepositoryImpl;
+
+    fn user_repo(&mut self) -> &mut UserRepositoryImpl {
         if self.user_repo.is_none() {
-            let repo = user::UserRepositoryImpl::new(self.pg.clone());
+            let repo = UserRepositoryImpl::new(self.client.clone());
             self.user_repo = Some(repo);
         }
 
         self.user_repo.as_mut().unwrap()
-    }
-}
-
-#[async_trait::async_trait]
-impl UserRepository for RepositoryImpl {
-    async fn find_by_id(&mut self, user_id: String) -> Result<User, Error> {
-        self.user_repo_mut().find_by_id(user_id).await
-    }
-
-    async fn create(&mut self, user: User) -> Result<User, Error> {
-        self.user_repo_mut().create(user).await
-    }
-
-    async fn update(&mut self, user: User) -> Result<User, Error> {
-        self.user_repo_mut().update(user).await
     }
 }

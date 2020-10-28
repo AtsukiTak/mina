@@ -1,4 +1,7 @@
-use mina_domain::user::{User, UserRepository};
+use mina_domain::{
+    user::{User, UserRepository as _},
+    RepositorySet,
+};
 use rego::Error;
 
 pub struct Res {
@@ -24,9 +27,9 @@ pub struct Res {
 /// - Tokenをパースして得られたUserIdとSessionIdを紐づける
 /// - nonceを無効化する
 /// - SessionIdを用いてsignupを行う
-pub async fn signup_as_anonymous<R>(repo: &mut R) -> Result<Res, Error>
+pub async fn signup_as_anonymous<R>(repos: &mut R) -> Result<Res, Error>
 where
-    R: UserRepository,
+    R: RepositorySet,
 {
     // 新規匿名ユーザーを生成する
     // UserIdが重複してしまった場合はリトライする
@@ -38,7 +41,7 @@ where
 
     for _ in 0..RETRY_NUM {
         let (user, secret) = User::new_anonymous()?;
-        match repo.create(user).await {
+        match repos.user_repo().create(user).await {
             Ok(user) => {
                 return Ok(Res { user, secret });
             }

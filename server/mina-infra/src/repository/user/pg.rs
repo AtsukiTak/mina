@@ -27,7 +27,9 @@ FROM users
 WHERE id = ANY $1
 "#;
 
-pub async fn load(client: &Client, user_ids: &[String]) -> Result<Vec<UserWithHash>, Error> {
+pub async fn load(client: &mut Client, user_ids: &[String]) -> Result<Vec<UserWithHash>, Error> {
+    // 1操作しかしないため、transactionを発行していない
+    // 複数操作になったときはtransactionを発行する
     Ok(client
         .query(LOAD_STMT, &[&user_ids])
         .await
@@ -58,9 +60,11 @@ VALUES ($1, $2, $3, $4)
 "#;
 
 /// 新規UserをDBに登録する
-pub async fn insert(client: &Client, user: User) -> Result<UserWithHash, Error> {
+pub async fn insert(client: &mut Client, user: User) -> Result<UserWithHash, Error> {
     let new_hash = Uuid::new_v4();
 
+    // 1操作しかしないため、transactionを発行していない
+    // 複数操作になったときはtransactionを発行する
     client
         .execute(
             INSERT_STMT,
@@ -93,11 +97,13 @@ WHERE
   snapshot_hash = $5
 "#;
 
-pub async fn update(client: &Client, update: UserWithHash) -> Result<UserWithHash, Error> {
+pub async fn update(client: &mut Client, update: UserWithHash) -> Result<UserWithHash, Error> {
     let user = update.user;
     let old_hash = update.hash;
     let new_hash = Uuid::new_v4();
 
+    // 1操作しかしないため、transactionを発行していない
+    // 複数操作になったときはtransactionを発行する
     client
         .execute(
             UPDATE_STMT,
