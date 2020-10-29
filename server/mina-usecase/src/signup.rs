@@ -27,7 +27,7 @@ pub struct Res {
 /// - Tokenをパースして得られたUserIdとSessionIdを紐づける
 /// - nonceを無効化する
 /// - SessionIdを用いてsignupを行う
-pub async fn signup_as_anonymous<R>(repos: &mut R) -> Result<Res, Error>
+pub async fn signup_as_anonymous<R>(repos: &R) -> Result<Res, Error>
 where
     R: RepositorySet,
 {

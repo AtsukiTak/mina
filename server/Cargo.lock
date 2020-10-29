@@ -1131,6 +1131,7 @@ dependencies = [
  "log",
  "mina-domain",
  "mina-infra",
+ "mina-usecase",
  "rand 0.7.3",
  "rego",
  "reqwest",
