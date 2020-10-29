@@ -1,3 +1,4 @@
+mod graphql;
 mod infra;
 
 use chrono::Utc;
