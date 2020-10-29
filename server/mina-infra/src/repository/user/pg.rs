@@ -24,7 +24,7 @@ impl UserWithHash {
 const LOAD_STMT: &str = r#"
 SELECT (id, name, secret, snapshot_hash)
 FROM users
-WHERE id = ANY $1
+WHERE id = ANY( $1 )
 "#;
 
 pub async fn load(client: &mut Client, user_ids: &[String]) -> Result<Vec<UserWithHash>, Error> {

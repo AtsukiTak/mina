@@ -9,5 +9,6 @@ edition = "2018"
 [dependencies]
 async-trait = "0.1.41"
 chrono = "0.4.19"
+pbkdf2 = "0.6.0"
 rand = "0.7.3"
 rego = "0.1.1"

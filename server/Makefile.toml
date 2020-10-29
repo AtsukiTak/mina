@@ -17,6 +17,13 @@ docker stop mina-dev-pg
 ''']
 
 
+# Postgresサーバーを再起動する
+[tasks.restart-pg]
+script = ['''
+cargo make stop-pg && cargo make start-pg
+''']
+
+
 # DBに接続する
 [tasks.connect-pg]
 script = ['''
@@ -33,10 +40,22 @@ env = { DB_URI = "postgres://postgres:postgres@localhost:12781" }
 
 # ローカルサーバーを起動する
 [tasks.dev]
-command = "cargo"
-args = ["run", "--bin", "mina-app"]
+script = ['''
+cargo run --bin mina-app
+''']
 
 [tasks.dev.env]
 DATABASE_URL = "postgres://postgres:postgres@localhost:12781"
 RUST_LOG = "debug,hyper=info"
 PORT = "8080"
+
+
+# テストを実行する
+[tasks.test]
+clear = true
+script = ['''
+cargo make restart-pg
+sleep 5
+cargo test
+cargo make stop-pg
+''']

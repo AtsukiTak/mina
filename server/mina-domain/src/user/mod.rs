@@ -1,11 +1,12 @@
 mod repository;
 pub use repository::UserRepository;
 
+use crate::Cred;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
-use rego::{domain::Cred, Error};
+use rego::Error;
 use std::ops::Deref;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct User {
     id: UserId,
     name: Option<String>,

@@ -1,3 +1,5 @@
+#[cfg(test)]
+pub mod test_utils;
 mod user;
 
 use self::user::UserRepositoryImpl;

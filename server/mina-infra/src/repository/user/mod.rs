@@ -114,3 +114,27 @@ impl BatchFn<String, Result<UserWithHash, Error>> for UserLoader {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::repository::test_utils::connect_isolated_db;
+
+    async fn create_repo() -> UserRepositoryImpl {
+        let client = connect_isolated_db().await;
+        let pg_client = PgClient::new(client);
+        UserRepositoryImpl::new(pg_client)
+    }
+
+    #[tokio::test]
+    async fn properly_create() {
+        let mut repo = create_repo().await;
+
+        let (user, _) = User::new_anonymous().unwrap();
+        let saved = repo.create(user.clone()).await.unwrap();
+        assert_eq!(user, saved);
+
+        let found = repo.find_by_id(user.id().to_string()).await.unwrap();
+        assert_eq!(found, saved);
+    }
+}
