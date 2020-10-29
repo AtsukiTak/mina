@@ -8,5 +8,5 @@ pub use cred::Cred;
 pub trait RepositorySet {
     type UserRepo: user::UserRepository;
 
-    fn user_repo(&mut self) -> &mut Self::UserRepo;
+    fn user_repo(&self) -> &Self::UserRepo;
 }

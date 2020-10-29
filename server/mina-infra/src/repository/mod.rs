@@ -3,6 +3,7 @@ pub mod test_utils;
 mod user;
 
 use self::user::UserRepositoryImpl;
+use lazycell::AtomicLazyCell;
 use mina_domain::RepositorySet;
 use native_tls::TlsConnector;
 use postgres_native_tls::MakeTlsConnector;
@@ -77,14 +78,14 @@ impl PgClient {
 /// すべてのRepositoryをまとめる構造体
 pub struct RepositorySetImpl {
     client: PgClient,
-    user_repo: Option<UserRepositoryImpl>,
+    user_repo: AtomicLazyCell<UserRepositoryImpl>,
 }
 
 impl RepositorySetImpl {
     fn new(client: Client) -> Self {
         RepositorySetImpl {
             client: PgClient::new(client),
-            user_repo: None,
+            user_repo: AtomicLazyCell::new(),
         }
     }
 }
@@ -92,12 +93,14 @@ impl RepositorySetImpl {
 impl RepositorySet for RepositorySetImpl {
     type UserRepo = UserRepositoryImpl;
 
-    fn user_repo(&mut self) -> &mut UserRepositoryImpl {
-        if self.user_repo.is_none() {
+    fn user_repo(&self) -> &UserRepositoryImpl {
+        if !self.user_repo.filled() {
             let repo = UserRepositoryImpl::new(self.client.clone());
-            self.user_repo = Some(repo);
+            // multi-thread環境ではこれがerrorになる可能性もあるが、
+            // その場合でも単純にエラーを無視して良い
+            let _ = self.user_repo.fill(repo);
         }
 
-        self.user_repo.as_mut().unwrap()
+        self.user_repo.borrow().unwrap()
     }
 }
