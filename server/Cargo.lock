@@ -126,6 +126,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-graphql-warp"
+version = "2.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "604bbcc7125ce31a31ed00c175ecf4a3ed17b8f968fd37c81aa36f8ebffcc12b"
+dependencies = [
+ "async-graphql",
+ "futures-util",
+ "serde_json",
+ "warp",
+]
+
+[[package]]
 name = "async-mutex"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1125,6 +1137,7 @@ name = "mina"
 version = "0.1.0"
 dependencies = [
  "async-graphql",
+ "async-graphql-warp",
  "async-trait",
  "chrono",
  "jsonwebtoken",
@@ -1139,6 +1152,7 @@ dependencies = [
  "tokio",
  "tokio-test",
  "uuid",
+ "warp",
 ]
 
 [[package]]
@@ -2136,9 +2150,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.57"
+version = "1.0.59"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "164eacbdb13512ec2745fb09d51fd5b22b0d65ed294a1dcf7285a360c80a675c"
+checksum = "dcac07dbffa1c65e7f816ab9eba78eb142c6d44410f4eeba1e26e4f5dfa56b95"
 dependencies = [
  "indexmap",
  "itoa",
