@@ -22,7 +22,7 @@ impl UserWithHash {
  */
 /// 複数IdからUserをクエリするためのStatement
 const LOAD_STMT: &str = r#"
-SELECT id, name, secret, snapshot_hash
+SELECT id, name, secret, apple_push_token, snapshot_hash
 FROM users
 WHERE id = ANY( $1 )
 "#;
@@ -35,8 +35,6 @@ pub async fn load(client: &mut Client, user_ids: &[String]) -> Result<Vec<UserWi
         .await
         .map_err(Error::internal)?;
 
-    log::debug!("load users : {:?}", rows);
-
     Ok(rows.into_iter().map(to_user_with_hash).collect())
 }
 
@@ -44,9 +42,10 @@ fn to_user_with_hash(row: Row) -> UserWithHash {
     let id: String = row.get("id");
     let name: Option<String> = row.get("name");
     let secret: String = row.get("secret");
+    let apple_push_token: Option<String> = row.get("apple_push_token");
     let hash: Uuid = row.get("snapshot_hash");
 
-    let user = User::from_raw_parts(id, name, secret);
+    let user = User::from_raw_parts(id, name, secret, apple_push_token);
     UserWithHash::new(user, hash)
 }
 
@@ -56,8 +55,8 @@ fn to_user_with_hash(row: Row) -> UserWithHash {
  * ==============
  */
 const INSERT_STMT: &str = r#"
-INSERT INTO users (id, name, secret, snapshot_hash)
-VALUES ($1, $2, $3, $4)
+INSERT INTO users (id, name, secret, apple_push_token, snapshot_hash)
+VALUES ($1, $2, $3, $4, $5)
 "#;
 
 /// 新規UserをDBに登録する
@@ -73,6 +72,7 @@ pub async fn insert(client: &mut Client, user: User) -> Result<UserWithHash, Err
                 &user.id().as_str(),
                 &user.name(),
                 &user.secret().as_str(),
+                &user.apple_push_token(),
                 &new_hash,
             ],
         )
@@ -92,10 +92,12 @@ UPDATE users
 SET
   name = $1,
   secret = $2,
-  snapshot_hash = $3
+  apple_push_token = $3,
+  snapshot_hash = $4
 WHERE
-  id = $4,
-  snapshot_hash = $5
+  id = $5
+  AND
+  snapshot_hash = $6
 "#;
 
 pub async fn update(client: &mut Client, update: UserWithHash) -> Result<UserWithHash, Error> {
@@ -111,6 +113,7 @@ pub async fn update(client: &mut Client, update: UserWithHash) -> Result<UserWit
             &[
                 &user.name(),
                 &user.secret().as_str(),
+                &user.apple_push_token(),
                 &new_hash,
                 &user.id().as_str(),
                 &old_hash,

@@ -10,10 +10,14 @@ use std::ops::Deref;
 pub struct User {
     id: UserId,
     name: Option<String>,
+
     /// 匿名ユーザーのためのsecret
     /// 将来、匿名ユーザー以外を導入した時は
     /// secretによるログインをできないようにしたりする
     secret: Cred,
+
+    /// Push通知に使うためのToken
+    apple_push_token: Option<String>,
 }
 
 impl User {
@@ -33,6 +37,7 @@ impl User {
             id: UserId::new(),
             name: None,
             secret: Cred::derive(secret.as_str())?,
+            apple_push_token: None,
         };
 
         Ok((user, secret))
@@ -50,11 +55,31 @@ impl User {
         &self.secret
     }
 
-    pub fn from_raw_parts(id: String, name: Option<String>, secret: String) -> User {
+    pub fn apple_push_token(&self) -> Option<&str> {
+        self.apple_push_token.as_deref()
+    }
+
+    /// apple_push_tokenの値を更新する
+    /// tokenは更新されうるので、既に登録されている場合でも上書きする
+    pub fn set_apple_push_token(&mut self, token: String) {
+        self.apple_push_token = Some(token);
+    }
+
+    pub fn from_raw_parts(
+        id: String,
+        name: Option<String>,
+        secret: String,
+        apple_push_token: Option<String>,
+    ) -> User {
         let id = UserId::from(id);
         let secret = Cred::from(secret);
 
-        User { id, name, secret }
+        User {
+            id,
+            name,
+            secret,
+            apple_push_token,
+        }
     }
 }
 

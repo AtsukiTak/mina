@@ -129,7 +129,7 @@ mod tests {
 
     #[tokio::test]
     async fn properly_create() {
-        pretty_env_logger::init();
+        // pretty_env_logger::init();
 
         let client = PgClient::new(connect_isolated_db().await);
 
@@ -147,5 +147,27 @@ mod tests {
         let repo = UserRepositoryImpl::new(client);
         let found = repo.find_by_id(user.id().to_string()).await.unwrap();
         assert_eq!(found, saved);
+    }
+
+    #[tokio::test]
+    async fn update_apple_push_token() {
+        // pretty_env_logger::init();
+
+        let client = PgClient::new(connect_isolated_db().await);
+
+        let repo = UserRepositoryImpl::new(client.clone());
+
+        let (user, _) = User::new_anonymous().unwrap();
+        let mut created = repo.create(user.clone()).await.unwrap();
+
+        // set_apple_push_token
+        created.set_apple_push_token("new_token".to_string());
+        repo.update(created.clone()).await.unwrap();
+
+        // test without cache
+        // updateした内容がちゃんと反映されているかテストする
+        let repo = UserRepositoryImpl::new(client);
+        let found = repo.find_by_id(user.id().to_string()).await.unwrap();
+        assert_eq!(found, created);
     }
 }
