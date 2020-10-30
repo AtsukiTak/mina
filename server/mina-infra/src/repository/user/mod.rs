@@ -127,20 +127,24 @@ mod tests {
     use super::*;
     use crate::repository::test_utils::connect_isolated_db;
 
-    async fn create_repo() -> UserRepositoryImpl {
-        let client = connect_isolated_db().await;
-        let pg_client = PgClient::new(client);
-        UserRepositoryImpl::new(pg_client)
-    }
-
     #[tokio::test]
     async fn properly_create() {
-        let mut repo = create_repo().await;
+        pretty_env_logger::init();
+
+        let client = PgClient::new(connect_isolated_db().await);
+
+        let repo = UserRepositoryImpl::new(client.clone());
 
         let (user, _) = User::new_anonymous().unwrap();
         let saved = repo.create(user.clone()).await.unwrap();
         assert_eq!(user, saved);
 
+        // with cache
+        let found = repo.find_by_id(user.id().to_string()).await.unwrap();
+        assert_eq!(found, saved);
+
+        // without cache
+        let repo = UserRepositoryImpl::new(client);
         let found = repo.find_by_id(user.id().to_string()).await.unwrap();
         assert_eq!(found, saved);
     }

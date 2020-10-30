@@ -1212,6 +1212,7 @@ dependencies = [
  "mina-domain",
  "native-tls",
  "postgres-native-tls",
+ "pretty_env_logger",
  "refinery",
  "rego",
  "tokio",

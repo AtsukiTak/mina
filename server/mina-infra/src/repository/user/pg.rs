@@ -22,7 +22,7 @@ impl UserWithHash {
  */
 /// 複数IdからUserをクエリするためのStatement
 const LOAD_STMT: &str = r#"
-SELECT (id, name, secret, snapshot_hash)
+SELECT id, name, secret, snapshot_hash
 FROM users
 WHERE id = ANY( $1 )
 "#;
@@ -30,13 +30,14 @@ WHERE id = ANY( $1 )
 pub async fn load(client: &mut Client, user_ids: &[String]) -> Result<Vec<UserWithHash>, Error> {
     // 1操作しかしないため、transactionを発行していない
     // 複数操作になったときはtransactionを発行する
-    Ok(client
+    let rows = client
         .query(LOAD_STMT, &[&user_ids])
         .await
-        .map_err(Error::internal)?
-        .into_iter()
-        .map(to_user_with_hash)
-        .collect())
+        .map_err(Error::internal)?;
+
+    log::debug!("load users : {:?}", rows);
+
+    Ok(rows.into_iter().map(to_user_with_hash).collect())
 }
 
 fn to_user_with_hash(row: Row) -> UserWithHash {
