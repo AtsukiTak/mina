@@ -1,0 +1,21 @@
+type Query {
+	"""
+	ユーザーをIDで検索する
+	"""
+	user(id: String!): Gqluser!
+}
+type Gqluser {
+	id: String!
+	name: String
+}
+type Mutation {
+	signupAsAnonymous: UserAndSecret!
+}
+type UserAndSecret {
+	user: Gqluser!
+	secret: String!
+}
+schema {
+	query: Query
+	mutation: Mutation
+}
