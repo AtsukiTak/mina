@@ -15,6 +15,12 @@ pub struct Config {
 }
 
 impl Config {
+    pub async fn new(pg_url: &str) -> Self {
+        Config {
+            repository_factory: RepositoryFactory::new(pg_url).await,
+        }
+    }
+
     pub fn to_filter(&self) -> impl Filter<Extract = (Config,), Error = Infallible> + Clone {
         let config = self.clone();
         warp::any().map(move || config.clone())
