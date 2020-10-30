@@ -47,7 +47,6 @@ cargo run --bin mina-app
 [tasks.dev.env]
 DATABASE_URL = "postgres://postgres:postgres@localhost:12781"
 RUST_LOG = "debug,hyper=info"
-PORT = "8080"
 
 
 # テストを実行する
