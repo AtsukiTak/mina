@@ -2,9 +2,9 @@ type Query {
 	"""
 	ユーザーをIDで検索する
 	"""
-	user(id: String!): Gqluser!
+	user(id: String!): User!
 }
-type Gqluser {
+type User {
 	id: String!
 	name: String
 }
@@ -12,7 +12,7 @@ type Mutation {
 	signupAsAnonymous: UserAndSecret!
 }
 type UserAndSecret {
-	user: Gqluser!
+	user: User!
 	secret: String!
 }
 schema {

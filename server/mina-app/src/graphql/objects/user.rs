@@ -5,7 +5,7 @@ pub struct GQLUser {
     user: User,
 }
 
-#[Object]
+#[Object(name = "User")]
 impl GQLUser {
     async fn id(&self) -> &str {
         self.user.id().as_str()
