@@ -1,14 +1,17 @@
 use mina_app::server::{bind, Config};
+use std::net::Ipv4Addr;
 
 #[tokio::main]
 async fn main() {
     let db_url = get_env_var_or_panic("DATABASE_URL");
 
+    let bind_ip_str = std::env::var("BIND").unwrap_or("127.0.0.1".to_string());
+    let bind_ip: Ipv4Addr = bind_ip_str.parse().unwrap();
     let port = get_env_var_u16("PORT").unwrap_or(8080);
 
     let config = Config::new(db_url.as_str()).await;
 
-    bind(([0, 0, 0, 0], port), config).await
+    bind((bind_ip, port), config).await
 }
 
 fn get_env_var_or_panic(key: &'static str) -> String {
