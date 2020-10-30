@@ -1,3 +1,5 @@
+pub mod playground;
+
 use crate::{
     graphql::{GraphQL, MySchema},
     server::Config,
