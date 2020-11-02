@@ -22,7 +22,13 @@ impl UserWithHash {
  */
 /// 複数IdからUserをクエリするためのStatement
 const LOAD_STMT: &str = r#"
-SELECT id, name, secret_cred, apple_push_token, snapshot_hash
+SELECT
+    id,
+    name,
+    secret_cred,
+    apple_push_token,
+    partners,
+    snapshot_hash
 FROM users
 WHERE id = ANY( $1 )
 "#;
@@ -43,9 +49,10 @@ fn to_user_with_hash(row: Row) -> UserWithHash {
     let name: Option<String> = row.get("name");
     let secret_cred: String = row.get("secret_cred");
     let apple_push_token: Option<String> = row.get("apple_push_token");
+    let partners: Vec<String> = row.get("partners");
     let hash: Uuid = row.get("snapshot_hash");
 
-    let user = User::from_raw_parts(id, name, secret_cred, apple_push_token);
+    let user = User::from_raw_parts(id, name, secret_cred, apple_push_token, partners);
     UserWithHash::new(user, hash)
 }
 
@@ -55,12 +62,20 @@ fn to_user_with_hash(row: Row) -> UserWithHash {
  * ==============
  */
 const INSERT_STMT: &str = r#"
-INSERT INTO users (id, name, secret_cred, apple_push_token, snapshot_hash)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO users
+(
+    id,
+    name,
+    secret_cred,
+    apple_push_token,
+    partners,
+    snapshot_hash
+)
+VALUES ($1, $2, $3, $4, $5, $6)
 "#;
 
 /// 新規UserをDBに登録する
-pub async fn insert(client: &mut Client, user: User) -> Result<UserWithHash, Error> {
+pub async fn insert(client: &mut Client, user: &User) -> Result<Uuid, Error> {
     let new_hash = Uuid::new_v4();
 
     // 1操作しかしないため、transactionを発行していない
@@ -73,13 +88,18 @@ pub async fn insert(client: &mut Client, user: User) -> Result<UserWithHash, Err
                 &user.name(),
                 &user.secret_cred().as_str(),
                 &user.apple_push_token(),
+                &user
+                    .partners()
+                    .iter()
+                    .map(|id| id.as_str())
+                    .collect::<Vec<_>>(),
                 &new_hash,
             ],
         )
         .await
         .map_err(Error::internal)?;
 
-    Ok(UserWithHash::new(user, new_hash))
+    Ok(new_hash)
 }
 
 /*
@@ -93,16 +113,16 @@ SET
   name = $1,
   secret_cred = $2,
   apple_push_token = $3,
-  snapshot_hash = $4
+  partners = $4,
+  snapshot_hash = $5
 WHERE
-  id = $5
+  id = $6
   AND
-  snapshot_hash = $6
+  snapshot_hash = $7
 "#;
 
-pub async fn update(client: &mut Client, update: UserWithHash) -> Result<UserWithHash, Error> {
-    let user = update.user;
-    let old_hash = update.hash;
+/// 楽観ロック
+pub async fn update(client: &mut Client, user: &User, old_hash: Uuid) -> Result<Uuid, Error> {
     let new_hash = Uuid::new_v4();
 
     // 1操作しかしないため、transactionを発行していない
@@ -114,6 +134,11 @@ pub async fn update(client: &mut Client, update: UserWithHash) -> Result<UserWit
                 &user.name(),
                 &user.secret_cred().as_str(),
                 &user.apple_push_token(),
+                &user
+                    .partners()
+                    .iter()
+                    .map(|id| id.as_str())
+                    .collect::<Vec<_>>(),
                 &new_hash,
                 &user.id().as_str(),
                 &old_hash,
@@ -122,5 +147,5 @@ pub async fn update(client: &mut Client, update: UserWithHash) -> Result<UserWit
         .await
         .map_err(Error::internal)?;
 
-    Ok(UserWithHash::new(user, new_hash))
+    Ok(new_hash)
 }

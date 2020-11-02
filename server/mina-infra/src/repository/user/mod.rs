@@ -32,48 +32,47 @@ impl UserRepositoryImpl {
 
 #[async_trait::async_trait]
 impl UserRepository for UserRepositoryImpl {
-    async fn find_by_id(&self, user_id: String) -> Result<User, Error> {
+    async fn find_by_id(&self, user_id: &str) -> Result<User, Error> {
         let cache = self.cache.lock().await;
-        if let Some(cached) = cache.get(&user_id).cloned() {
+        if let Some(cached) = cache.get(user_id).cloned() {
             return cached.map(|u| u.user);
         }
         drop(cache);
 
-        Ok(self.loader.load(user_id).await?.user)
+        Ok(self.loader.load(user_id.to_string()).await?.user)
     }
 
-    async fn create(&self, user: User) -> Result<User, Error> {
+    async fn create(&self, user: &User) -> Result<(), Error> {
         // DBへの挿入
-        let new_user_with_hash = insert(self.client.lock().await.deref_mut(), user).await?;
-        let new_user = new_user_with_hash.user.clone();
+        let new_hash = insert(self.client.lock().await.deref_mut(), user).await?;
 
         // Cacheの更新
+        let new_cache = UserWithHash::new(user.clone(), new_hash);
         self.cache
             .lock()
             .await
-            .insert(new_user.id().to_string(), Ok(new_user_with_hash));
+            .insert(user.id().to_string(), Ok(new_cache));
 
-        Ok(new_user)
+        Ok(())
     }
 
-    async fn update(&self, user: User) -> Result<User, Error> {
+    async fn update(&self, user: &User) -> Result<(), Error> {
         // snapshot_idを取得するためCacheを取得する
         // Cacheがヒットしない場合はDBへクエリが行われるが、
         // これは意図した挙動（必要不可欠な挙動）である
-        let mut cached = self.loader.load(user.id().to_string()).await?;
-        cached.user = user;
+        let cached = self.loader.load(user.id().to_string()).await?;
 
         // DBのupdate
-        let new_user_with_hash = update(self.client.lock().await.deref_mut(), cached).await?;
-        let new_user = new_user_with_hash.user.clone();
+        let new_hash = update(self.client.lock().await.deref_mut(), user, cached.hash).await?;
 
         // Cacheの更新
+        let new_cache = UserWithHash::new(user.clone(), new_hash);
         self.cache
             .lock()
             .await
-            .insert(new_user.id().to_string(), Ok(new_user_with_hash));
+            .insert(user.id().to_string(), Ok(new_cache));
 
-        Ok(new_user)
+        Ok(())
     }
 }
 
