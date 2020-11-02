@@ -135,17 +135,16 @@ mod tests {
         let repo = UserRepositoryImpl::new(client.clone());
 
         let (user, _) = User::new_anonymous().unwrap();
-        let saved = repo.create(user.clone()).await.unwrap();
-        assert_eq!(user, saved);
+        repo.create(&user).await.unwrap();
 
         // with cache
-        let found = repo.find_by_id(user.id().to_string()).await.unwrap();
-        assert_eq!(found, saved);
+        let found = repo.find_by_id(user.id().as_str()).await.unwrap();
+        assert_eq!(found, user);
 
         // without cache
         let repo = UserRepositoryImpl::new(client);
-        let found = repo.find_by_id(user.id().to_string()).await.unwrap();
-        assert_eq!(found, saved);
+        let found = repo.find_by_id(user.id().as_str()).await.unwrap();
+        assert_eq!(found, user);
     }
 
     #[tokio::test]
@@ -156,17 +155,17 @@ mod tests {
 
         let repo = UserRepositoryImpl::new(client.clone());
 
-        let (user, _) = User::new_anonymous().unwrap();
-        let mut created = repo.create(user.clone()).await.unwrap();
+        let (mut user, _) = User::new_anonymous().unwrap();
+        repo.create(&user).await.unwrap();
 
         // set_apple_push_token
-        created.set_apple_push_token("new_token".to_string());
-        repo.update(created.clone()).await.unwrap();
+        user.set_apple_push_token("new_token".to_string());
+        repo.update(&user).await.unwrap();
 
         // test without cache
         // updateした内容がちゃんと反映されているかテストする
         let repo = UserRepositoryImpl::new(client);
-        let found = repo.find_by_id(user.id().to_string()).await.unwrap();
-        assert_eq!(found, created);
+        let found = repo.find_by_id(user.id().as_str()).await.unwrap();
+        assert_eq!(found, user);
     }
 }

@@ -12,7 +12,7 @@ impl Query {
             .data::<Params>()?
             .repos
             .user_repo()
-            .find_by_id(id)
+            .find_by_id(id.as_str())
             .await
             .map_err(Error::from)
             .map(GQLUser::from)
