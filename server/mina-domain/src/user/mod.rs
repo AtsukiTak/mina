@@ -20,6 +20,34 @@ pub struct User {
     apple_push_token: Option<String>,
 }
 
+/*
+ * ==============
+ * Query系
+ * ==============
+ */
+impl User {
+    pub fn id(&self) -> &UserId {
+        &self.id
+    }
+
+    pub fn name(&self) -> Option<&str> {
+        self.name.as_deref()
+    }
+
+    pub fn secret(&self) -> &Cred {
+        &self.secret
+    }
+
+    pub fn apple_push_token(&self) -> Option<&str> {
+        self.apple_push_token.as_deref()
+    }
+}
+
+/*
+ * ===============
+ * Command系
+ * ===============
+ */
 impl User {
     /// 匿名ユーザーを新しく生成する
     /// UserIdはランダムに生成されるので、既存ユーザーと
@@ -43,28 +71,14 @@ impl User {
         Ok((user, secret))
     }
 
-    pub fn id(&self) -> &UserId {
-        &self.id
-    }
-
-    pub fn name(&self) -> Option<&str> {
-        self.name.as_deref()
-    }
-
-    pub fn secret(&self) -> &Cred {
-        &self.secret
-    }
-
-    pub fn apple_push_token(&self) -> Option<&str> {
-        self.apple_push_token.as_deref()
-    }
-
     /// apple_push_tokenの値を更新する
     /// tokenは更新されうるので、既に登録されている場合でも上書きする
     pub fn set_apple_push_token(&mut self, token: String) {
         self.apple_push_token = Some(token);
     }
 
+    /// DBなどに保存されている生の値から
+    /// `User` を再構築するときのメソッド
     pub fn from_raw_parts(
         id: String,
         name: Option<String>,
