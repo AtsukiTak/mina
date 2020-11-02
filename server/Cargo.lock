@@ -1198,6 +1198,7 @@ dependencies = [
  "pbkdf2 0.6.0",
  "rand 0.7.3",
  "rego",
+ "uuid",
 ]
 
 [[package]]

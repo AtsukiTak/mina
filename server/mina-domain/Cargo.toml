@@ -12,3 +12,4 @@ chrono = "0.4.19"
 pbkdf2 = "0.6.0"
 rand = "0.7.3"
 rego = "0.1.1"
+uuid = { version = "0.8.1", features = ["v4"] }

@@ -1,6 +1,7 @@
 // pub mod call;
 // pub mod id;
 mod cred;
+pub mod partner_request;
 pub mod user;
 
 pub use cred::Cred;

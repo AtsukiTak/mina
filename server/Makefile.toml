@@ -17,10 +17,12 @@ docker stop mina-dev-pg
 ''']
 
 
-# Postgresサーバーを再起動する
+# Postgresサーバーを再起動/起動する
+# 起動していない場合でもエラーにしない
 [tasks.restart-pg]
 script = ['''
-cargo make stop-pg && cargo make start-pg
+cargo make stop-pg || true
+cargo make start-pg
 ''']
 
 
