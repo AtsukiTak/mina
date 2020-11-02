@@ -45,6 +45,10 @@ impl User {
     pub fn apple_push_token(&self) -> Option<&str> {
         self.apple_push_token.as_deref()
     }
+
+    pub fn partners(&self) -> &[UserId] {
+        self.partners.as_slice()
+    }
 }
 
 /*
@@ -98,24 +102,19 @@ impl User {
 
     /// DBなどに保存されている生の値から
     /// `User` を再構築するときのメソッド
-    ///
-    /// TODO
-    /// partnersをDBから再構築する
     pub fn from_raw_parts(
         id: String,
         name: Option<String>,
         secret_cred: String,
         apple_push_token: Option<String>,
+        partners: Vec<String>,
     ) -> User {
-        let id = UserId::from(id);
-        let secret_cred = Cred::from(secret_cred);
-
         User {
-            id,
+            id: UserId::from(id),
             name,
-            secret_cred,
+            secret_cred: Cred::from(secret_cred),
             apple_push_token,
-            partners: Vec::new(),
+            partners: partners.into_iter().map(UserId::from).collect(),
         }
     }
 }
