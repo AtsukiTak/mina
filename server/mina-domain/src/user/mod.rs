@@ -82,6 +82,20 @@ impl User {
         self.apple_push_token = Some(token);
     }
 
+    /// お互いがPartnerとなる
+    /// # 不変条件
+    /// - 自分が相手のPartnerのとき、相手も自分のPartnerである
+    pub fn become_partner_each_other(user1: &mut User, user2: &mut User) -> Result<(), Error> {
+        if user1.id() == user2.id() {
+            return Err(Error::bad_input("Cannot become a partner of myself"));
+        }
+
+        user1.partners.push(user2.id().clone());
+        user2.partners.push(user1.id().clone());
+
+        Ok(())
+    }
+
     /// DBなどに保存されている生の値から
     /// `User` を再構築するときのメソッド
     ///
