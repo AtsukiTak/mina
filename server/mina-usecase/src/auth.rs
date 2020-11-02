@@ -15,7 +15,7 @@ where
 {
     let user = repos
         .user_repo()
-        .find_by_id(item.user_id.clone())
+        .find_by_id(item.user_id.as_str())
         .await
         .map_err(|e| match e {
             Error::NotFound { .. } => Error::AuthFailed,

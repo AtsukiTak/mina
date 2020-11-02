@@ -41,8 +41,8 @@ where
 
     for _ in 0..RETRY_NUM {
         let (user, secret) = User::new_anonymous()?;
-        match repos.user_repo().create(user).await {
-            Ok(user) => {
+        match repos.user_repo().create(&user).await {
+            Ok(()) => {
                 return Ok(Res { user, secret });
             }
             Err(e) => {

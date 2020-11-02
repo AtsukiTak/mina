@@ -17,9 +17,12 @@ where
 {
     let me = authenticate(&params.auth, repos).await?;
 
-    let to_user = repos.user_repo().find_by_id(params.to_user_id).await?;
+    let to_user = repos
+        .user_repo()
+        .find_by_id(params.to_user_id.as_str())
+        .await?;
 
     let req = PartnerRequest::new(&me, &to_user)?;
-    let req = repos.partner_request_repo().create(req).await?;
+    repos.partner_request_repo().create(&req).await?;
     Ok(req)
 }
