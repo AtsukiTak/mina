@@ -14,7 +14,7 @@ pub struct User {
     /// 匿名ユーザーのためのsecret
     /// 将来、匿名ユーザー以外を導入した時は
     /// secretによるログインをできないようにしたりする
-    secret: Cred,
+    secret_cred: Cred,
 
     /// Push通知に使うためのToken
     /// 初期状態はNoneだが、一度Someになった後は常にSome
@@ -38,8 +38,8 @@ impl User {
         self.name.as_deref()
     }
 
-    pub fn secret(&self) -> &Cred {
-        &self.secret
+    pub fn secret_cred(&self) -> &Cred {
+        &self.secret_cred
     }
 
     pub fn apple_push_token(&self) -> Option<&str> {
@@ -68,7 +68,7 @@ impl User {
         let user = User {
             id: UserId::new(),
             name: None,
-            secret: Cred::derive(secret.as_str())?,
+            secret_cred: Cred::derive(secret.as_str())?,
             apple_push_token: None,
             partners: Vec::new(),
         };
@@ -90,16 +90,16 @@ impl User {
     pub fn from_raw_parts(
         id: String,
         name: Option<String>,
-        secret: String,
+        secret_cred: String,
         apple_push_token: Option<String>,
     ) -> User {
         let id = UserId::from(id);
-        let secret = Cred::from(secret);
+        let secret_cred = Cred::from(secret_cred);
 
         User {
             id,
             name,
-            secret,
+            secret_cred,
             apple_push_token,
             partners: Vec::new(),
         }
