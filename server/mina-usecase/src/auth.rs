@@ -1,5 +1,5 @@
 use mina_domain::{
-    user::{UserId, UserRepository as _},
+    user::{User, UserRepository as _},
     RepositorySet,
 };
 use rego::Error;
@@ -9,7 +9,7 @@ pub struct AuthItem {
     try_secret: String,
 }
 
-pub async fn authenticate<R>(item: &AuthItem, repos: &R) -> Result<UserId, Error>
+pub async fn authenticate<R>(item: &AuthItem, repos: &R) -> Result<User, Error>
 where
     R: RepositorySet,
 {
@@ -24,5 +24,5 @@ where
 
     user.secret_cred().verify(item.try_secret.as_str())?;
 
-    Ok(user.id().clone())
+    Ok(user)
 }
