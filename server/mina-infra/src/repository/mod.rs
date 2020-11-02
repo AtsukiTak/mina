@@ -1,8 +1,9 @@
+mod partner_request;
 #[cfg(test)]
 pub mod test_utils;
 mod user;
 
-use self::user::UserRepositoryImpl;
+use self::{partner_request::PartnerRequestRepositoryImpl, user::UserRepositoryImpl};
 use lazycell::AtomicLazyCell;
 use mina_domain::RepositorySet;
 use native_tls::TlsConnector;
@@ -79,6 +80,7 @@ impl PgClient {
 pub struct RepositorySetImpl {
     client: PgClient,
     user_repo: AtomicLazyCell<UserRepositoryImpl>,
+    partner_request_repo: AtomicLazyCell<PartnerRequestRepositoryImpl>,
 }
 
 impl RepositorySetImpl {
@@ -86,12 +88,14 @@ impl RepositorySetImpl {
         RepositorySetImpl {
             client: PgClient::new(client),
             user_repo: AtomicLazyCell::new(),
+            partner_request_repo: AtomicLazyCell::new(),
         }
     }
 }
 
 impl RepositorySet for RepositorySetImpl {
     type UserRepo = UserRepositoryImpl;
+    type PartnerRequestRepo = PartnerRequestRepositoryImpl;
 
     fn user_repo(&self) -> &UserRepositoryImpl {
         if !self.user_repo.filled() {
@@ -102,5 +106,14 @@ impl RepositorySet for RepositorySetImpl {
         }
 
         self.user_repo.borrow().unwrap()
+    }
+
+    fn partner_request_repo(&self) -> &PartnerRequestRepositoryImpl {
+        if !self.partner_request_repo.filled() {
+            let repo = PartnerRequestRepositoryImpl::new(self.client.clone());
+            let _ = self.partner_request_repo.fill(repo);
+        }
+
+        self.partner_request_repo.borrow().unwrap()
     }
 }

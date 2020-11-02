@@ -20,12 +20,20 @@ pub struct PartnerRequest {
  * ===========
  */
 impl PartnerRequest {
+    pub fn id(&self) -> &Uuid {
+        &self.id
+    }
+
     pub fn from_user(&self) -> &UserId {
         &self.from
     }
 
     pub fn to_user(&self) -> &UserId {
         &self.to
+    }
+
+    pub fn created_at(&self) -> &DateTime<Utc> {
+        &self.created_at
     }
 
     /// 期限が切れていないかチェックする
