@@ -1,3 +1,6 @@
+mod repository;
+pub use repository::PartnerRequestRepository;
+
 use crate::user::{User, UserId};
 use chrono::{DateTime, Duration, Utc};
 use rego::Error;
