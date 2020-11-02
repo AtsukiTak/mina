@@ -17,7 +17,11 @@ pub struct User {
     secret: Cred,
 
     /// Push通知に使うためのToken
+    /// 初期状態はNoneだが、一度Someになった後は常にSome
     apple_push_token: Option<String>,
+
+    /// 自分のPartnerのID一覧
+    partners: Vec<UserId>,
 }
 
 /*
@@ -66,6 +70,7 @@ impl User {
             name: None,
             secret: Cred::derive(secret.as_str())?,
             apple_push_token: None,
+            partners: Vec::new(),
         };
 
         Ok((user, secret))
@@ -79,6 +84,9 @@ impl User {
 
     /// DBなどに保存されている生の値から
     /// `User` を再構築するときのメソッド
+    ///
+    /// TODO
+    /// partnersをDBから再構築する
     pub fn from_raw_parts(
         id: String,
         name: Option<String>,
@@ -93,6 +101,7 @@ impl User {
             name,
             secret,
             apple_push_token,
+            partners: Vec::new(),
         }
     }
 }
