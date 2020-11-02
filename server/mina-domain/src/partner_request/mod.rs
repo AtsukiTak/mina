@@ -70,6 +70,15 @@ impl PartnerRequest {
             created_at: at,
         })
     }
+
+    pub fn from_raw_parts(id: Uuid, from: String, to: String, created_at: DateTime<Utc>) -> Self {
+        PartnerRequest {
+            id,
+            from: UserId::from(from),
+            to: UserId::from(to),
+            created_at,
+        }
+    }
 }
 
 #[cfg(test)]
