@@ -4,11 +4,6 @@ use mina_domain::{
 };
 use rego::Error;
 
-pub struct AuthItem {
-    user_id: String,
-    try_secret: String,
-}
-
 pub struct AuthenticatedUser(User);
 
 impl AsRef<User> for AuthenticatedUser {
@@ -29,20 +24,24 @@ impl Into<User> for AuthenticatedUser {
     }
 }
 
-pub async fn authenticate<R>(item: &AuthItem, repos: &R) -> Result<AuthenticatedUser, Error>
+pub async fn authenticate<R>(
+    user_id: &str,
+    password: &str,
+    repos: &R,
+) -> Result<AuthenticatedUser, Error>
 where
     R: RepositorySet,
 {
     let user = repos
         .user_repo()
-        .find_by_id(item.user_id.as_str())
+        .find_by_id(user_id)
         .await
         .map_err(|e| match e {
             Error::NotFound { .. } => Error::AuthFailed,
             e => e,
         })?;
 
-    user.secret_cred().verify(item.try_secret.as_str())?;
+    user.secret_cred().verify(password)?;
 
     Ok(AuthenticatedUser(user))
 }
