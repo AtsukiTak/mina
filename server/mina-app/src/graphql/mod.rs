@@ -7,6 +7,7 @@ use async_graphql::{EmptySubscription, Error, Request, Response, Schema, ServerE
 use headers::{authorization::Basic, Authorization};
 use mina_infra::repository::{RepositoryFactory, RepositorySetImpl};
 use mina_usecase::auth::{authenticate, AuthenticatedUser};
+use tokio::sync::{Mutex, MutexGuard};
 
 pub type MySchema = Schema<Query, Mutation, EmptySubscription>;
 
@@ -65,23 +66,30 @@ impl GraphQL {
 
 pub struct ContextData {
     repos: RepositorySetImpl,
-    me: Option<AuthenticatedUser>,
+    me: Option<Mutex<AuthenticatedUser>>,
 }
 
 impl ContextData {
     fn new(repos: RepositorySetImpl, me: Option<AuthenticatedUser>) -> Self {
-        ContextData { repos, me }
+        ContextData {
+            repos,
+            me: me.map(Mutex::new),
+        }
     }
 
     pub fn repos(&self) -> &RepositorySetImpl {
         &self.repos
     }
 
-    pub fn me(&self) -> Option<&AuthenticatedUser> {
-        self.me.as_ref()
+    pub async fn me(&self) -> Option<MutexGuard<'_, AuthenticatedUser>> {
+        if let Some(me) = self.me.as_ref() {
+            Some(me.lock().await)
+        } else {
+            None
+        }
     }
 
-    pub fn me_or_err(&self) -> Result<&AuthenticatedUser, Error> {
-        self.me().ok_or_else(|| Error::new("Unauthorized"))
+    pub async fn me_or_err(&self) -> Result<MutexGuard<'_, AuthenticatedUser>, Error> {
+        self.me().await.ok_or_else(|| Error::new("Unauthorized"))
     }
 }

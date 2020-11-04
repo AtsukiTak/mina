@@ -10,11 +10,17 @@ type User {
 }
 type Mutation {
 	signupAsAnonymous: UserAndSecret!
+	"""
+	パートナーリクエストを送信する
+	"""
+	sendPartnerRequest(toUserId: String!): String!
+	acceptPartnerRequest(requestId: UUID!): String!
 }
 type UserAndSecret {
 	user: User!
 	secret: String!
 }
+scalar UUID
 schema {
 	query: Query
 	mutation: Mutation

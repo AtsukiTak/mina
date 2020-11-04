@@ -7,16 +7,9 @@ use mina_domain::{
 use rego::Error;
 use uuid::Uuid;
 
-pub struct Params {
-    pub partner_request_id: Uuid,
-    pub me: AuthenticatedUser,
-}
-
 pub async fn accept_partner_request<R>(
-    Params {
-        partner_request_id,
-        mut me,
-    }: Params,
+    partner_request_id: Uuid,
+    me: &mut AuthenticatedUser,
     repos: &R,
 ) -> Result<(), Error>
 where
