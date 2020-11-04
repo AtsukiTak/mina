@@ -5,6 +5,7 @@ pub mod query;
 use self::{mutation::Mutation, query::Query};
 use async_graphql::{EmptySubscription, Request, Response, Schema, ServerError};
 use mina_infra::repository::{RepositoryFactory, RepositorySetImpl};
+use mina_usecase::auth::AuthenticatedUser;
 
 pub type MySchema = Schema<Query, Mutation, EmptySubscription>;
 
@@ -42,10 +43,11 @@ impl GraphQL {
 
 pub struct ContextData {
     pub repos: RepositorySetImpl,
+    pub me: Option<AuthenticatedUser>,
 }
 
 impl ContextData {
     fn new(repos: RepositorySetImpl) -> Self {
-        ContextData { repos }
+        ContextData { repos, me: None }
     }
 }
