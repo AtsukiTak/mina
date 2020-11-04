@@ -35,17 +35,17 @@ impl GraphQL {
             }
         };
 
-        let params = Params::new(repos);
-        schema.execute(req.data(params)).await
+        let data = ContextData::new(repos);
+        schema.execute(req.data(data)).await
     }
 }
 
-pub struct Params {
+pub struct ContextData {
     pub repos: RepositorySetImpl,
 }
 
-impl Params {
+impl ContextData {
     fn new(repos: RepositorySetImpl) -> Self {
-        Params { repos }
+        ContextData { repos }
     }
 }

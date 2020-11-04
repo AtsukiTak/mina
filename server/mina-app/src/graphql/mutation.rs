@@ -1,4 +1,4 @@
-use super::{objects::user::GQLUser, Params};
+use super::{objects::user::GQLUser, ContextData};
 use async_graphql::{Context, Error, Object, SimpleObject};
 
 pub struct Mutation;
@@ -6,7 +6,7 @@ pub struct Mutation;
 #[Object]
 impl Mutation {
     async fn signup_as_anonymous(&self, context: &Context<'_>) -> Result<UserAndSecret, Error> {
-        let repos = &context.data::<Params>()?.repos;
+        let repos = &context.data::<ContextData>()?.repos;
 
         mina_usecase::signup::signup_as_anonymous(repos)
             .await
