@@ -3,7 +3,7 @@ pub mod objects;
 pub mod query;
 
 use self::{mutation::Mutation, query::Query};
-use async_graphql::{EmptySubscription, Request, Response, Schema, ServerError};
+use async_graphql::{EmptySubscription, Error, Request, Response, Schema, ServerError};
 use headers::{authorization::Basic, Authorization};
 use mina_infra::repository::{RepositoryFactory, RepositorySetImpl};
 use mina_usecase::auth::{authenticate, AuthenticatedUser};
@@ -64,12 +64,24 @@ impl GraphQL {
 }
 
 pub struct ContextData {
-    pub repos: RepositorySetImpl,
-    pub me: Option<AuthenticatedUser>,
+    repos: RepositorySetImpl,
+    me: Option<AuthenticatedUser>,
 }
 
 impl ContextData {
     fn new(repos: RepositorySetImpl, me: Option<AuthenticatedUser>) -> Self {
         ContextData { repos, me }
+    }
+
+    pub fn repos(&self) -> &RepositorySetImpl {
+        &self.repos
+    }
+
+    pub fn me(&self) -> Option<&AuthenticatedUser> {
+        self.me.as_ref()
+    }
+
+    pub fn me_or_err(&self) -> Result<&AuthenticatedUser, Error> {
+        self.me().ok_or_else(|| Error::new("Unauthorized"))
     }
 }

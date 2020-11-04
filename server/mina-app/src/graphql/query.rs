@@ -10,7 +10,7 @@ impl Query {
     async fn user(&self, context: &Context<'_>, id: String) -> Result<GQLUser, Error> {
         context
             .data::<ContextData>()?
-            .repos
+            .repos()
             .user_repo()
             .find_by_id(id.as_str())
             .await

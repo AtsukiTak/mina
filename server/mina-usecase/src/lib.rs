@@ -1,4 +1,7 @@
 pub mod accept_partner_request;
 pub mod auth;
-pub mod publish_partner_request;
-pub mod signup;
+mod send_partner_request;
+mod signup;
+
+pub use send_partner_request::send_partner_request;
+pub use signup::signup_as_anonymous;

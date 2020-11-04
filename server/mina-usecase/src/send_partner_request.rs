@@ -6,13 +6,9 @@ use mina_domain::{
 };
 use rego::Error;
 
-pub struct Params {
+pub async fn send_partner_request<R>(
     to_user_id: String,
-    me: AuthenticatedUser,
-}
-
-pub async fn publish_partner_request<R>(
-    Params { to_user_id, me }: Params,
+    me: &AuthenticatedUser,
     repos: &R,
 ) -> Result<PartnerRequest, Error>
 where
