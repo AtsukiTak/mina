@@ -1,4 +1,4 @@
-use crate::auth::{authenticate, AuthItem};
+use crate::auth::AuthenticatedUser;
 use mina_domain::{
     partner_request::PartnerRequestRepository as _,
     user::{User, UserRepository as _},
@@ -9,24 +9,28 @@ use uuid::Uuid;
 
 pub struct Params {
     pub partner_request_id: Uuid,
-    pub auth: AuthItem,
+    pub me: AuthenticatedUser,
 }
 
-pub async fn accept_partner_request<R>(params: Params, repos: &R) -> Result<(), Error>
+pub async fn accept_partner_request<R>(
+    Params {
+        partner_request_id,
+        mut me,
+    }: Params,
+    repos: &R,
+) -> Result<(), Error>
 where
     R: RepositorySet,
 {
-    let mut me = authenticate(&params.auth, repos).await?;
-
     let partner_req = repos
         .partner_request_repo()
-        .find_by_id(&params.partner_request_id)
+        .find_by_id(&partner_request_id)
         .await?;
 
     // 正当性チェック
     if !partner_req.is_valid() {
         return Err(Error::bad_input("Specified partner request is expired"));
-    } else if partner_req.to_user() != me.id() {
+    } else if partner_req.to_user() != me.as_ref().id() {
         return Err(Error::bad_input("Specified partner request is not for you"));
     }
 
@@ -36,9 +40,9 @@ where
         .await?;
 
     // Userの更新
-    User::become_partner_each_other(&mut me, &mut other)?;
+    User::become_partner_each_other(me.as_mut(), &mut other)?;
 
-    repos.user_repo().update(&me).await?;
+    repos.user_repo().update(me.as_ref()).await?;
     repos.user_repo().update(&other).await?;
 
     Ok(())

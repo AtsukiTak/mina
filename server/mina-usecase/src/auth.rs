@@ -9,7 +9,27 @@ pub struct AuthItem {
     try_secret: String,
 }
 
-pub async fn authenticate<R>(item: &AuthItem, repos: &R) -> Result<User, Error>
+pub struct AuthenticatedUser(User);
+
+impl AsRef<User> for AuthenticatedUser {
+    fn as_ref(&self) -> &User {
+        &self.0
+    }
+}
+
+impl AsMut<User> for AuthenticatedUser {
+    fn as_mut(&mut self) -> &mut User {
+        &mut self.0
+    }
+}
+
+impl Into<User> for AuthenticatedUser {
+    fn into(self) -> User {
+        self.0
+    }
+}
+
+pub async fn authenticate<R>(item: &AuthItem, repos: &R) -> Result<AuthenticatedUser, Error>
 where
     R: RepositorySet,
 {
@@ -24,5 +44,5 @@ where
 
     user.secret_cred().verify(item.try_secret.as_str())?;
 
-    Ok(user)
+    Ok(AuthenticatedUser(user))
 }
