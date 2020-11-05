@@ -4,6 +4,7 @@ use mina_domain::{
 };
 use rego::Error;
 
+#[derive(Clone)]
 pub struct AuthenticatedUser(User);
 
 impl AsRef<User> for AuthenticatedUser {

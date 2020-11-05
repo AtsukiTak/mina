@@ -6,6 +6,7 @@ pub struct Mutation;
 
 #[Object]
 impl Mutation {
+    /// anonymousとして登録する
     async fn signup_as_anonymous(&self, context: &Context<'_>) -> Result<UserAndSecret, Error> {
         let repos = context.data::<ContextData>()?.repos();
 
@@ -34,6 +35,7 @@ impl Mutation {
         Ok("success")
     }
 
+    /// パートナーリクエストを受理する
     async fn accept_partner_request(
         &self,
         context: &Context<'_>,

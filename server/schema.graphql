@@ -1,19 +1,31 @@
 type Query {
+	me: Me!
 	"""
 	ユーザーをIDで検索する
 	"""
 	user(id: String!): User!
+}
+type Me {
+	id: String!
+	name: String
+	partners: [User!]!
 }
 type User {
 	id: String!
 	name: String
 }
 type Mutation {
+	"""
+	anonymousとして登録する
+	"""
 	signupAsAnonymous: UserAndSecret!
 	"""
 	パートナーリクエストを送信する
 	"""
 	sendPartnerRequest(toUserId: String!): String!
+	"""
+	パートナーリクエストを受理する
+	"""
 	acceptPartnerRequest(requestId: UUID!): String!
 }
 type UserAndSecret {
