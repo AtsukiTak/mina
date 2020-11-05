@@ -1,7 +1,9 @@
-use super::{super::ContextData, GQLUser};
+use super::{super::ContextData, GQLPartnerRequest, GQLUser};
 use async_graphql::{Context, Error, Object};
 use futures::stream::{FuturesUnordered, TryStreamExt};
-use mina_domain::{user::UserRepository as _, RepositorySet as _};
+use mina_domain::{
+    partner_request::PartnerRequestRepository as _, user::UserRepository as _, RepositorySet as _,
+};
 use mina_usecase::auth::AuthenticatedUser;
 
 pub struct GQLMe {
@@ -32,6 +34,23 @@ impl GQLMe {
             .try_collect::<Vec<GQLUser>>()
             .await
             .map_err(Error::from)
+    }
+
+    async fn received_partner_requests(
+        &self,
+        context: &Context<'_>,
+    ) -> Result<Vec<GQLPartnerRequest>, Error> {
+        let data = context.data::<ContextData>()?;
+
+        Ok(data
+            .repos()
+            .partner_request_repo()
+            .find_user_received(self.me.as_ref().id().as_str())
+            .await
+            .map_err(Error::from)?
+            .into_iter()
+            .map(GQLPartnerRequest::from)
+            .collect())
     }
 }
 
