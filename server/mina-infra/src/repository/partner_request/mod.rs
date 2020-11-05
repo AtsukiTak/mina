@@ -1,6 +1,6 @@
 mod pg;
 
-use self::pg::{insert, load};
+use self::pg::{insert, load, load_user_received};
 use super::PgClient;
 use mina_domain::partner_request::{PartnerRequest, PartnerRequestRepository};
 use rego::Error;
@@ -25,6 +25,10 @@ impl PartnerRequestRepositoryImpl {
 impl PartnerRequestRepository for PartnerRequestRepositoryImpl {
     async fn find_by_id(&self, id: &Uuid) -> Result<PartnerRequest, Error> {
         load(self.client.lock().await.deref_mut(), id).await
+    }
+
+    async fn find_user_received(&self, user_id: &str) -> Result<Vec<PartnerRequest>, Error> {
+        load_user_received(self.client.lock().await.deref_mut(), user_id).await
     }
 
     async fn create(&self, req: &PartnerRequest) -> Result<(), Error> {

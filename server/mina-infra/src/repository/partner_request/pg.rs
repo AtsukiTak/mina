@@ -9,23 +9,47 @@ use uuid::Uuid;
  * Load
  * =========
  */
-const LOAD_STMG: &str = r#"
-SELECT
-    id,
-    from_user,
-    to_user,
-    created_at
-FROM partner_requests
-WHERE id = $1
-"#;
 
 pub async fn load(client: &mut Client, id: &Uuid) -> Result<PartnerRequest, Error> {
+    const STMT: &str = r#"
+        SELECT
+            id,
+            from_user,
+            to_user,
+            created_at
+        FROM partner_requests
+        WHERE id = $1
+    "#;
+
     client
-        .query_opt(LOAD_STMG, &[id])
+        .query_opt(STMT, &[id])
         .await
         .map_err(Error::internal)?
         .ok_or(Error::not_found("partner request"))
         .map(to_partner_request)
+}
+
+pub async fn load_user_received(
+    client: &mut Client,
+    user_id: &str,
+) -> Result<Vec<PartnerRequest>, Error> {
+    const STMT: &str = r#"
+        SELECT
+            id,
+            from_user,
+            to_user,
+            created_at
+        FROM partner_requests
+        WHERE to_user = $1
+    "#;
+
+    Ok(client
+        .query(STMT, &[&user_id])
+        .await
+        .map_err(Error::internal)?
+        .into_iter()
+        .map(to_partner_request)
+        .collect())
 }
 
 fn to_partner_request(row: Row) -> PartnerRequest {
