@@ -1,3 +1,6 @@
+mod repository;
+pub use repository::RelationshipRepository;
+
 use crate::user::UserId;
 use chrono::{NaiveTime, Weekday};
 use rego::Error;
