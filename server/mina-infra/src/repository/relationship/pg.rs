@@ -1,10 +1,14 @@
 use chrono::NaiveTime;
 use mina_domain::relationship::Relationship;
+use rego::Error;
 use tokio_postgres::{
     types::{Json, ToSql},
-    Client, Error, Row, Transaction,
+    Client, Row, Transaction,
 };
 use uuid::Uuid;
+
+#[derive(Debug, Clone, Copy)]
+pub struct SnapshotHash(Uuid);
 
 /*
  * ===========
@@ -25,12 +29,13 @@ use uuid::Uuid;
 pub async fn load_related_to_user(
     client: &mut Client,
     user_id: &str,
-) -> Result<Vec<Relationship>, Error> {
+) -> Result<Vec<(Relationship, SnapshotHash)>, Error> {
     const STMT: &str = r#"
         SELECT
             relationships.id,
             relationships.user_a,
             relationships.user_b,
+            relationships.snapshot_hash,
             array_remove(
                 array_agg(
                     jsonb_build_array(
@@ -56,18 +61,20 @@ pub async fn load_related_to_user(
         GROUP BY
             relationships.id,
             relationships.user_a,
-            relationships.user_b
+            relationships.user_b,
+            relationships.snapshot_hash
     "#;
 
     Ok(client
         .query(STMT, &[&user_id])
-        .await?
+        .await
+        .map_err(Error::internal)?
         .into_iter()
         .map(to_relationship)
         .collect())
 }
 
-fn to_relationship(row: Row) -> Relationship {
+fn to_relationship(row: Row) -> (Relationship, SnapshotHash) {
     let id: Uuid = row.get("id");
     let user_a: String = row.get("user_a");
     let user_b: String = row.get("user_b");
@@ -80,8 +87,11 @@ fn to_relationship(row: Row) -> Relationship {
             (id, time, weekdays as u8)
         })
         .collect();
+    let relationship = Relationship::from_raw_parts(id, user_a, user_b, schedules);
 
-    Relationship::from_raw_parts(id, user_a, user_b, schedules)
+    let snapshot_hash: Uuid = row.get("snapshot_hash");
+
+    (relationship, SnapshotHash(snapshot_hash))
 }
 
 /*
@@ -89,29 +99,37 @@ fn to_relationship(row: Row) -> Relationship {
  * INSERT
  * ===========
  */
-pub async fn insert(client: &mut Client, relationship: &Relationship) -> Result<(), Error> {
-    let tx = client.transaction().await?;
+pub async fn insert(
+    client: &mut Client,
+    relationship: &Relationship,
+) -> Result<SnapshotHash, Error> {
+    let tx = client.transaction().await.map_err(Error::internal)?;
+    let snapshot_hash = Uuid::new_v4();
 
     (futures::try_join! {
-        insert_relationship(&tx, relationship),
+        insert_relationship(&tx, relationship, &snapshot_hash),
         insert_schedules(&tx, relationship)
     })?;
 
-    tx.commit().await
+    tx.commit().await.map_err(Error::internal)?;
+
+    Ok(SnapshotHash(snapshot_hash))
 }
 
 async fn insert_relationship<'a>(
     tx: &Transaction<'a>,
     relationship: &Relationship,
+    snapshot_hash: &Uuid,
 ) -> Result<(), Error> {
     const STMT: &str = r#"
         INSERT INTO relationships
         (
             id,
             user_a,
-            user_b
+            user_b,
+            snapshot_hash
         )
-        VALUES ($1, $2, $3)
+        VALUES ($1, $2, $3, $4)
     "#;
 
     let (user_a, user_b) = relationship.users();
@@ -121,9 +139,11 @@ async fn insert_relationship<'a>(
             relationship.id().as_ref(),
             &user_a.as_str(),
             &user_b.as_str(),
+            snapshot_hash,
         ],
     )
-    .await?;
+    .await
+    .map_err(Error::internal)?;
 
     Ok(())
 }
@@ -176,7 +196,8 @@ async fn insert_schedules<'a>(
         format!("{} {}", BASE_STMT, values_stmt).as_str(),
         values.as_slice(),
     )
-    .await?;
+    .await
+    .map_err(Error::internal)?;
 
     Ok(())
 }
@@ -186,11 +207,16 @@ async fn insert_schedules<'a>(
  * UPDATE
  * =============
  */
-pub async fn update(client: &mut Client, relationship: &Relationship) -> Result<(), Error> {
-    let tx = client.transaction().await?;
+pub async fn update(
+    client: &mut Client,
+    relationship: &Relationship,
+    old_hash: &SnapshotHash,
+) -> Result<SnapshotHash, Error> {
+    let tx = client.transaction().await.map_err(Error::internal)?;
+    let new_hash = Uuid::new_v4();
 
     (futures::try_join! {
-        update_relationship(&tx, relationship),
+        update_relationship(&tx, relationship, &old_hash.0, &new_hash),
         delete_schedules(&tx, relationship),
     })?;
 
@@ -198,34 +224,51 @@ pub async fn update(client: &mut Client, relationship: &Relationship) -> Result<
     // 順序が逆になってしまう恐れがあるのでpipeliningしない
     insert_schedules(&tx, relationship).await?;
 
-    tx.commit().await
+    tx.commit().await.map_err(Error::internal)?;
+
+    Ok(SnapshotHash(new_hash))
 }
 
+/// 楽観ロック
 async fn update_relationship<'a>(
     tx: &Transaction<'a>,
     relationship: &Relationship,
+    old_hash: &Uuid,
+    new_hash: &Uuid,
 ) -> Result<(), Error> {
     const STMT: &str = r#"
         UPDATE
             relationships
         SET
             user_a = $1,
-            user_b = $2
+            user_b = $2,
+            snapshot_hash = $3
         WHERE
-            id = $3
+            id = $4,
+            snapshot_hash = $5
     "#;
 
     let (user_a, user_b) = relationship.users();
-    tx.execute(
-        STMT,
-        &[
-            &user_a.as_str(),
-            &user_b.as_str(),
-            relationship.id().as_ref(),
-        ],
-    )
-    .await
-    .map(drop)
+    let count = tx
+        .execute(
+            STMT,
+            &[
+                &user_a.as_str(),
+                &user_b.as_str(),
+                new_hash,
+                relationship.id().as_ref(),
+                old_hash,
+            ],
+        )
+        .await
+        .map_err(Error::internal)?;
+
+    if count == 1 {
+        Ok(())
+    } else {
+        // 楽観ロックに失敗した場合
+        Err(rego::Error::conflict("relationship"))
+    }
 }
 
 /// Relationshipに紐づく全てのscheduleを削除する
@@ -242,5 +285,6 @@ async fn delete_schedules<'a>(
 
     tx.execute(STMT, &[relationship.id().as_ref()])
         .await
+        .map_err(Error::internal)
         .map(drop)
 }

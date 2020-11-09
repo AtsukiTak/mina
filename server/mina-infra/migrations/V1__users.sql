@@ -17,7 +17,8 @@ CREATE TABLE partner_requests (
 CREATE TABLE relationships (
   id UUID NOT NULL,
   user_a TEXT NOT NULL,
-  user_b TEXT NOT NULL
+  user_b TEXT NOT NULL,
+  snapshot_hash UUID NOT NULL
 );
 
 CREATE TABLE call_schedules (

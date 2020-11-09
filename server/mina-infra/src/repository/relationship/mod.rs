@@ -1,41 +1,89 @@
 mod pg;
 
+use self::pg::SnapshotHash;
 use super::PgClient;
 use mina_domain::{
-    relationship::{Relationship, RelationshipRepository},
+    relationship::{Relationship, RelationshipId, RelationshipRepository},
     user::UserId,
 };
 use rego::Error;
-use std::ops::DerefMut;
+use std::{collections::HashMap, ops::DerefMut};
+use tokio::sync::Mutex;
 
 pub struct RelationshipRepositoryImpl {
     client: PgClient,
+    // 楽観ロックのためsnapshot_hashを保持しておく
+    // relationship_idとsnapshot_hashのペア
+    hash_store: Mutex<HashMap<RelationshipId, SnapshotHash>>,
 }
 
 impl RelationshipRepositoryImpl {
     pub fn new(client: PgClient) -> Self {
-        RelationshipRepositoryImpl { client }
+        RelationshipRepositoryImpl {
+            client,
+            hash_store: Mutex::new(HashMap::new()),
+        }
     }
 }
 
 #[async_trait::async_trait]
 impl RelationshipRepository for RelationshipRepositoryImpl {
     async fn find_of_user(&self, user_id: &UserId) -> Result<Vec<Relationship>, Error> {
-        pg::load_related_to_user(self.client.lock().await.deref_mut(), user_id.as_str())
-            .await
-            .map_err(Error::internal)
+        let records =
+            pg::load_related_to_user(self.client.lock().await.deref_mut(), user_id.as_str())
+                .await
+                .map_err(Error::internal)?;
+
+        // hash_storeの更新
+        for (relationship, snapshot_hash) in records.iter() {
+            self.hash_store
+                .lock()
+                .await
+                .insert(*relationship.id(), *snapshot_hash);
+        }
+
+        Ok(records
+            .into_iter()
+            .map(|(relationship, _)| relationship)
+            .collect())
     }
 
     async fn create(&self, relationship: &Relationship) -> Result<(), Error> {
-        pg::insert(self.client.lock().await.deref_mut(), relationship)
+        let snapshot_id = pg::insert(self.client.lock().await.deref_mut(), relationship)
             .await
-            .map_err(Error::internal)
+            .map_err(Error::internal)?;
+
+        self.hash_store
+            .lock()
+            .await
+            .insert(*relationship.id(), snapshot_id);
+
+        Ok(())
     }
 
     async fn update(&self, relationship: &Relationship) -> Result<(), Error> {
-        pg::update(self.client.lock().await.deref_mut(), relationship)
+        let snapshot_hash = self
+            .hash_store
+            .lock()
             .await
-            .map_err(Error::internal)
+            .get(relationship.id())
+            .copied()
+            .unwrap(); // 必ずhash_storeにあるはず
+
+        let new_snapshot_hash = pg::update(
+            self.client.lock().await.deref_mut(),
+            relationship,
+            &snapshot_hash,
+        )
+        .await
+        .map_err(Error::internal)?;
+
+        self.hash_store
+            .lock()
+            .await
+            .insert(*relationship.id(), new_snapshot_hash);
+
+        Ok(())
     }
 }
 

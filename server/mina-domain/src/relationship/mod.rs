@@ -107,7 +107,7 @@ impl Relationship {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct RelationshipId(Uuid);
 
 impl AsRef<Uuid> for RelationshipId {
