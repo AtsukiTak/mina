@@ -16,6 +16,30 @@ pub struct Relationship {
     schedules: Vec<CallSchedule>,
 }
 
+/*
+ * ==========
+ * Query系
+ * ==========
+ */
+impl Relationship {
+    pub fn id(&self) -> &RelationshipId {
+        &self.id
+    }
+
+    pub fn users(&self) -> (&UserId, &UserId) {
+        (&self.user_a, &self.user_b)
+    }
+
+    pub fn schedules(&self) -> &[CallSchedule] {
+        self.schedules.as_slice()
+    }
+}
+
+/*
+ * ==========
+ * Command系
+ * ==========
+ */
 impl Relationship {
     pub fn new(user_a: UserId, user_b: UserId) -> Result<Self, Error> {
         if user_a == user_b {
@@ -31,10 +55,37 @@ impl Relationship {
             schedules: Vec::new(),
         })
     }
+
+    pub fn from_raw_parts(
+        id: Uuid,
+        user_a: String,
+        user_b: String,
+        schedules: Vec<(Uuid, NaiveTime, u8)>,
+    ) -> Self {
+        Relationship {
+            id: RelationshipId(id),
+            user_a: UserId::from(user_a),
+            user_b: UserId::from(user_b),
+            schedules: schedules
+                .into_iter()
+                .map(|(id, time, weekdays)| CallSchedule {
+                    id: CallScheduleId(id),
+                    time,
+                    weekdays: Weekdays(weekdays),
+                })
+                .collect(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RelationshipId(Uuid);
+
+impl AsRef<Uuid> for RelationshipId {
+    fn as_ref(&self) -> &Uuid {
+        &self.0
+    }
+}
 
 /*
  * ========
@@ -64,6 +115,20 @@ impl CallSchedule {
 
     pub fn weekdays(&self) -> &Weekdays {
         &self.weekdays
+    }
+}
+
+/*
+ * ===============
+ * CallScheduleId
+ * ===============
+ */
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct CallScheduleId(Uuid);
+
+impl AsRef<Uuid> for CallScheduleId {
+    fn as_ref(&self) -> &Uuid {
+        &self.0
     }
 }
 
@@ -134,11 +199,3 @@ impl fmt::Debug for Weekdays {
         fmt.debug_list().entries(self.iter()).finish()
     }
 }
-
-/*
- * ===============
- * CallScheduleId
- * ===============
- */
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct CallScheduleId(Uuid);

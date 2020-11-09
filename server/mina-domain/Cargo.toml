@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 async-trait = "0.1.41"
+bit-vec = "0.6.2"
 chrono = "0.4.19"
 pbkdf2 = "0.6.0"
 rand = "0.7.3"

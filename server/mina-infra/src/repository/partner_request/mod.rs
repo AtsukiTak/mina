@@ -11,6 +11,11 @@ use uuid::Uuid;
 /// - 楽観ロック
 /// - dataloader
 /// - cache
+///
+/// # Note
+/// - `update` メソッドが導入されたら、楽観ロックを導入する
+/// - 同じidのモデルが複数回queryされるならcacheを導入する
+/// - 複数回repositoryメソッドが呼び出されるなら、dataloaderを導入する
 pub struct PartnerRequestRepositoryImpl {
     client: PgClient,
 }

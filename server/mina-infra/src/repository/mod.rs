@@ -1,9 +1,14 @@
 mod partner_request;
-#[cfg(test)]
-pub mod test_utils;
+mod relationship;
 mod user;
 
-use self::{partner_request::PartnerRequestRepositoryImpl, user::UserRepositoryImpl};
+#[cfg(test)]
+pub mod test_utils;
+
+use self::{
+    partner_request::PartnerRequestRepositoryImpl, relationship::RelationshipRepositoryImpl,
+    user::UserRepositoryImpl,
+};
 use lazycell::AtomicLazyCell;
 use mina_domain::RepositorySet;
 use native_tls::TlsConnector;
@@ -79,8 +84,11 @@ impl PgClient {
 /// すべてのRepositoryをまとめる構造体
 pub struct RepositorySetImpl {
     client: PgClient,
+
+    // repos
     user_repo: AtomicLazyCell<UserRepositoryImpl>,
     partner_request_repo: AtomicLazyCell<PartnerRequestRepositoryImpl>,
+    relationship_repo: AtomicLazyCell<RelationshipRepositoryImpl>,
 }
 
 impl RepositorySetImpl {
@@ -89,6 +97,7 @@ impl RepositorySetImpl {
             client: PgClient::new(client),
             user_repo: AtomicLazyCell::new(),
             partner_request_repo: AtomicLazyCell::new(),
+            relationship_repo: AtomicLazyCell::new(),
         }
     }
 }
@@ -96,6 +105,7 @@ impl RepositorySetImpl {
 impl RepositorySet for RepositorySetImpl {
     type UserRepo = UserRepositoryImpl;
     type PartnerRequestRepo = PartnerRequestRepositoryImpl;
+    type RelationshipRepo = RelationshipRepositoryImpl;
 
     fn user_repo(&self) -> &UserRepositoryImpl {
         if !self.user_repo.filled() {
@@ -115,5 +125,14 @@ impl RepositorySet for RepositorySetImpl {
         }
 
         self.partner_request_repo.borrow().unwrap()
+    }
+
+    fn relationship_repo(&self) -> &RelationshipRepositoryImpl {
+        if !self.relationship_repo.filled() {
+            let repo = RelationshipRepositoryImpl::new(self.client.clone());
+            let _ = self.relationship_repo.fill(repo);
+        }
+
+        self.relationship_repo.borrow().unwrap()
     }
 }

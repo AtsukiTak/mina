@@ -13,3 +13,16 @@ CREATE TABLE partner_requests (
   to_user TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL
 );
+
+CREATE TABLE relationships (
+  id UUID NOT NULL,
+  user_a TEXT NOT NULL,
+  user_b TEXT NOT NULL,
+);
+
+CREATE TABLE call_schedules (
+  id UUID NOT NULL,
+  relationship_id UUID NOT NULL,
+  time TIME NOT NULL,
+  weekdays SMALLINT NOT NULL
+);
