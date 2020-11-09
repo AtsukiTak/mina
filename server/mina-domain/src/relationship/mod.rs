@@ -56,6 +56,35 @@ impl Relationship {
         })
     }
 
+    /// 新しいスケジュールを追加する
+    pub fn add_call_schedlue<W>(&mut self, weekdays: W, time: NaiveTime)
+    where
+        W: Iterator<Item = Weekday>,
+    {
+        let schedule = CallSchedule {
+            id: CallScheduleId(Uuid::new_v4()),
+            time,
+            weekdays: weekdays.collect(),
+        };
+
+        self.schedules.push(schedule);
+    }
+
+    /// 指定したスケジュールを削除する
+    pub fn remove_call_schedule(&mut self, schedule_id: &CallScheduleId) -> Result<(), Error> {
+        if let Some((i, _)) = self
+            .schedules
+            .iter()
+            .enumerate()
+            .find(|(_, schedule)| schedule.id() == schedule_id)
+        {
+            self.schedules.swap_remove(i);
+            Ok(())
+        } else {
+            Err(Error::bad_input("specified schedule not found"))
+        }
+    }
+
     pub fn from_raw_parts(
         id: Uuid,
         user_a: String,
@@ -142,7 +171,7 @@ pub struct Weekdays(u8);
 
 impl Weekdays {
     /// create a new empty `Weekdays` struct.
-    pub fn new() -> Weekdays {
+    fn new() -> Weekdays {
         Weekdays(0)
     }
 
@@ -170,10 +199,12 @@ impl Weekdays {
         Weekdays(self.0 | weekday_to_bit_mask(weekday))
     }
 
+    /// for DB use
     pub fn into_raw_value(&self) -> u8 {
         self.0
     }
 
+    /// for DB use
     pub fn from_raw_value(v: u8) -> Self {
         Weekdays(v)
     }

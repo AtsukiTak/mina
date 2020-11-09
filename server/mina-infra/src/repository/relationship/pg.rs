@@ -1,9 +1,8 @@
 use chrono::NaiveTime;
 use mina_domain::relationship::Relationship;
-use rego::Error;
 use tokio_postgres::{
     types::{Json, ToSql},
-    Client, Row, Transaction,
+    Client, Error, Row, Transaction,
 };
 use uuid::Uuid;
 
@@ -62,8 +61,7 @@ pub async fn load_related_to_user(
 
     Ok(client
         .query(STMT, &[&user_id])
-        .await
-        .map_err(Error::internal)?
+        .await?
         .into_iter()
         .map(to_relationship)
         .collect())
@@ -92,15 +90,14 @@ fn to_relationship(row: Row) -> Relationship {
  * ===========
  */
 pub async fn insert(client: &mut Client, relationship: &Relationship) -> Result<(), Error> {
-    let tx = client.transaction().await.map_err(Error::internal)?;
+    let tx = client.transaction().await?;
 
     (futures::try_join! {
         insert_relationship(&tx, relationship),
         insert_schedules(&tx, relationship)
-    })
-    .map_err(Error::internal)?;
+    })?;
 
-    tx.commit().await.map_err(Error::internal)
+    tx.commit().await
 }
 
 async fn insert_relationship<'a>(
@@ -126,8 +123,7 @@ async fn insert_relationship<'a>(
             &user_b.as_str(),
         ],
     )
-    .await
-    .map_err(Error::internal)?;
+    .await?;
 
     Ok(())
 }
@@ -180,8 +176,71 @@ async fn insert_schedules<'a>(
         format!("{} {}", BASE_STMT, values_stmt).as_str(),
         values.as_slice(),
     )
-    .await
-    .map_err(Error::internal)?;
+    .await?;
 
     Ok(())
+}
+
+/*
+ * =============
+ * UPDATE
+ * =============
+ */
+pub async fn update(client: &mut Client, relationship: &Relationship) -> Result<(), Error> {
+    let tx = client.transaction().await?;
+
+    (futures::try_join! {
+        update_relationship(&tx, relationship),
+        delete_schedules(&tx, relationship),
+    })?;
+
+    // call_schedulesを削除してから改めてinsertする
+    // 順序が逆になってしまう恐れがあるのでpipeliningしない
+    insert_schedules(&tx, relationship).await?;
+
+    tx.commit().await
+}
+
+async fn update_relationship<'a>(
+    tx: &Transaction<'a>,
+    relationship: &Relationship,
+) -> Result<(), Error> {
+    const STMT: &str = r#"
+        UPDATE
+            relationships
+        SET
+            user_a = $1,
+            user_b = $2
+        WHERE
+            id = $3
+    "#;
+
+    let (user_a, user_b) = relationship.users();
+    tx.execute(
+        STMT,
+        &[
+            &user_a.as_str(),
+            &user_b.as_str(),
+            relationship.id().as_ref(),
+        ],
+    )
+    .await
+    .map(drop)
+}
+
+/// Relationshipに紐づく全てのscheduleを削除する
+async fn delete_schedules<'a>(
+    tx: &Transaction<'a>,
+    relationship: &Relationship,
+) -> Result<(), Error> {
+    const STMT: &str = r#"
+        DELETE FROM
+            call_schedules
+        WHERE
+            relationship_id = $1
+    "#;
+
+    tx.execute(STMT, &[relationship.id().as_ref()])
+        .await
+        .map(drop)
 }

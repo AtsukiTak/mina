@@ -21,11 +21,21 @@ impl RelationshipRepositoryImpl {
 #[async_trait::async_trait]
 impl RelationshipRepository for RelationshipRepositoryImpl {
     async fn find_of_user(&self, user_id: &UserId) -> Result<Vec<Relationship>, Error> {
-        pg::load_related_to_user(self.client.lock().await.deref_mut(), user_id.as_str()).await
+        pg::load_related_to_user(self.client.lock().await.deref_mut(), user_id.as_str())
+            .await
+            .map_err(Error::internal)
     }
 
     async fn create(&self, relationship: &Relationship) -> Result<(), Error> {
-        pg::insert(self.client.lock().await.deref_mut(), relationship).await
+        pg::insert(self.client.lock().await.deref_mut(), relationship)
+            .await
+            .map_err(Error::internal)
+    }
+
+    async fn update(&self, relationship: &Relationship) -> Result<(), Error> {
+        pg::update(self.client.lock().await.deref_mut(), relationship)
+            .await
+            .map_err(Error::internal)
     }
 }
 

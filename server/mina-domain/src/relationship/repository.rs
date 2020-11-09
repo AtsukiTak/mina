@@ -7,4 +7,6 @@ pub trait RelationshipRepository {
     async fn find_of_user(&self, user_id: &UserId) -> Result<Vec<Relationship>, Error>;
 
     async fn create(&self, relationship: &Relationship) -> Result<(), Error>;
+
+    async fn update(&self, relationship: &Relationship) -> Result<(), Error>;
 }
