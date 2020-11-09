@@ -12,6 +12,17 @@ use uuid::Uuid;
  * Load
  * ===========
  */
+/// # Note
+/// - `tokio-postgres` crateは今のところRecord型の
+///     デシリアライズに対応していないため、
+///     `jsonb_build_array` 関数を用いてjsonb型に一度変換する
+/// - 対応するcall_schedulesの行が0であることもあるため、
+///     INNER JOINではなくLEFT OUTER JOINを使う
+/// - 対応するcall_schedulesの行が0の場合、LEFT OUTER JOINの
+///     結果として各行にNULLが詰められ、要素が全てNULLの
+///     配列が集約結果として出てくる。
+///     それを削除するためにarray_remove関数を使う
+/// - `json` 型は比較演算子が利用不可能なので `jsonb` 型を使う
 pub async fn load_related_to_user(
     client: &mut Client,
     user_id: &str,
@@ -21,14 +32,19 @@ pub async fn load_related_to_user(
             relationships.id,
             relationships.user_a,
             relationships.user_b,
-            array_agg(json_build_array(
-                schedules.id,
-                schedules.time,
-                schedules.weekdays
-            )) as schedules
+            array_remove(
+                array_agg(
+                    jsonb_build_array(
+                        schedules.id,
+                        schedules.time,
+                        schedules.weekdays
+                    )
+                ),
+                to_jsonb(ARRAY[NULL, NULL, NULL])
+            ) as schedules
         FROM
             relationships
-        INNER JOIN
+        LEFT OUTER JOIN
             call_schedules AS schedules
         ON
             relationships.id = schedules.relationship_id
@@ -38,6 +54,10 @@ pub async fn load_related_to_user(
                 OR
                 relationships.user_b = $1
             )
+        GROUP BY
+            relationships.id,
+            relationships.user_a,
+            relationships.user_b
     "#;
 
     Ok(client
@@ -88,7 +108,7 @@ async fn insert_relationship<'a>(
         (
             id,
             user_a,
-            uesr_b
+            user_b
         )
         VALUES ($1, $2, $3)
     "#;
@@ -112,6 +132,10 @@ async fn insert_schedules<'a>(
     tx: &Transaction<'a>,
     relationship: &Relationship,
 ) -> Result<(), Error> {
+    if relationship.schedules().is_empty() {
+        return Ok(());
+    }
+
     const BASE_STMT: &str = r#"
         INSERT INTO call_schedules
         (

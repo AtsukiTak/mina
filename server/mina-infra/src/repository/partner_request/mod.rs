@@ -48,7 +48,7 @@ mod tests {
     use mina_domain::user::User;
 
     #[tokio::test]
-    async fn create_and_fetch() {
+    async fn create_and_find() {
         let client = PgClient::new(connect_isolated_db().await);
 
         let repo1 = PartnerRequestRepositoryImpl::new(client.clone());

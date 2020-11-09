@@ -60,6 +60,7 @@ sleep 5
 cargo test
 cargo make stop-pg
 ''']
+env = { RUST_LOG = "debug" }
 
 
 [tasks."schema.graphql"]
