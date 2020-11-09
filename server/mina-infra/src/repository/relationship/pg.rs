@@ -74,9 +74,13 @@ fn to_relationship(row: Row) -> Relationship {
     let user_a: String = row.get("user_a");
     let user_b: String = row.get("user_b");
     let schedules: Vec<(Uuid, NaiveTime, u8)> = row
-        .get::<_, Vec<Json<(Uuid, NaiveTime, u8)>>>("schedules")
+        // `weekdays` はi16として保存されている
+        .get::<_, Vec<Json<(Uuid, NaiveTime, i16)>>>("schedules")
         .into_iter()
-        .map(|json| json.0)
+        .map(|json| {
+            let Json((id, time, weekdays)) = json;
+            (id, time, weekdays as u8)
+        })
         .collect();
 
     Relationship::from_raw_parts(id, user_a, user_b, schedules)
