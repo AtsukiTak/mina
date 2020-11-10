@@ -1,5 +1,10 @@
-use super::{objects::user::GQLUser, ContextData};
-use async_graphql::{Context, Error, Object, SimpleObject};
+use super::{
+    objects::{GQLMyRelationship, GQLUser},
+    ContextData,
+};
+use async_graphql::{Context, Error, InputObject, Object, SimpleObject};
+use chrono::{NaiveTime, Weekday};
+use std::str::FromStr;
 use uuid::Uuid;
 
 pub struct Mutation;
@@ -48,10 +53,53 @@ impl Mutation {
 
         Ok("success")
     }
+
+    /// 指定のRelationshipに新しいCallScheduleを追加する
+    ///
+    /// # Params
+    /// - relationship_id: Uuid
+    /// - weekdays: コンマ区切りのString. eg "Sun,Sat"
+    /// - time: "%H:%M"で表現されるString. eg "15:42"
+    async fn add_call_schedule(
+        &self,
+        context: &Context<'_>,
+        input: AddCallScheduleInput,
+    ) -> Result<GQLMyRelationship, Error> {
+        let data = &context.data::<ContextData>()?;
+        let me = data.me_or_err()?;
+
+        let weekdays = input
+            .weekdays
+            .split(",")
+            .map(Weekday::from_str)
+            .collect::<Result<Vec<Weekday>, _>>()
+            .map_err(|_| Error::from("Invalid format of weekdays field"))?;
+
+        let time = NaiveTime::parse_from_str(input.time.as_str(), "%H:%M")
+            .map_err(|_| Error::from("Invalid format of time field"))?;
+
+        let relationship = mina_usecase::add_call_schedule(
+            input.relationship_id,
+            weekdays,
+            time,
+            me,
+            data.repos(),
+        )
+        .await?;
+
+        Ok(GQLMyRelationship::from((me.clone(), relationship)))
+    }
 }
 
 #[derive(SimpleObject)]
 struct UserAndSecret {
     user: GQLUser,
     secret: String,
+}
+
+#[derive(InputObject)]
+struct AddCallScheduleInput {
+    relationship_id: Uuid,
+    weekdays: String,
+    time: String,
 }
