@@ -12,7 +12,7 @@ pub struct Query;
 impl Query {
     async fn me(&self, context: &Context<'_>) -> Result<GQLMe, Error> {
         let data = context.data::<ContextData>()?;
-        let me = data.me_or_err().await?;
+        let me = data.me_or_err()?;
 
         Ok(GQLMe::from(me.deref().clone()))
     }

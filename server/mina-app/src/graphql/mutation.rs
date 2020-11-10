@@ -26,7 +26,7 @@ impl Mutation {
         to_user_id: String,
     ) -> Result<&'static str, Error> {
         let data = &context.data::<ContextData>()?;
-        let me = data.me_or_err().await?;
+        let me = data.me_or_err()?;
 
         let _ = mina_usecase::send_partner_request(to_user_id, &me, data.repos())
             .await
@@ -42,9 +42,9 @@ impl Mutation {
         request_id: Uuid,
     ) -> Result<&'static str, Error> {
         let data = &context.data::<ContextData>()?;
-        let mut me = data.me_or_err().await?;
+        let me = data.me_or_err()?;
 
-        mina_usecase::accept_partner_request(request_id, &mut me, data.repos()).await?;
+        mina_usecase::accept_partner_request(request_id, me, data.repos()).await?;
 
         Ok("success")
     }

@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 pub async fn accept_partner_request<R>(
     partner_request_id: Uuid,
-    me: &mut AuthenticatedUser,
+    me: &AuthenticatedUser,
     repos: &R,
 ) -> Result<(), Error>
 where
