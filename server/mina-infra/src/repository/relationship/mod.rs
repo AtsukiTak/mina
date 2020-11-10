@@ -91,17 +91,18 @@ impl RelationshipRepository for RelationshipRepositoryImpl {
 mod tests {
     use super::*;
     use crate::repository::test_utils::connect_isolated_db;
+    use chrono::{NaiveTime, Weekday};
     use mina_domain::user::User;
 
     #[tokio::test]
-    async fn create_and_find() {
+    async fn create_and_find_and_update() {
         pretty_env_logger::init();
 
         let client = PgClient::new(connect_isolated_db().await);
         let repo = RelationshipRepositoryImpl::new(client);
         let user_a = User::new_anonymous().unwrap().0;
         let user_b = User::new_anonymous().unwrap().0;
-        let relationship = Relationship::new(user_a.id().clone(), user_b.id().clone()).unwrap();
+        let mut relationship = Relationship::new(user_a.id().clone(), user_b.id().clone()).unwrap();
 
         // create
         repo.create(&relationship).await.unwrap();
@@ -111,5 +112,13 @@ mod tests {
         assert_eq!(found_a, vec![relationship.clone()]);
         let found_b = repo.find_of_user(user_b.id()).await.unwrap();
         assert_eq!(found_b, vec![relationship.clone()]);
+
+        // update
+        relationship.add_call_schedule(vec![Weekday::Sun], NaiveTime::from_hms(10, 0, 0));
+        repo.update(&relationship).await.unwrap();
+
+        // find
+        let found = repo.find_of_user(user_a.id()).await.unwrap();
+        assert_eq!(found, vec![relationship.clone()]);
     }
 }

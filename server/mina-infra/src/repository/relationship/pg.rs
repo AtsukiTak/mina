@@ -171,13 +171,19 @@ async fn insert_schedules<'a>(
         .schedules()
         .iter()
         .enumerate()
-        .map(|(i, _)| {
+        .map(|(i, schedule)| {
             format!(
-                "(${}, ${}, ${}, ${})",
-                i * 4 + 1,
-                i * 4 + 2,
-                i * 4 + 3,
-                i * 4 + 4
+                "(${}, ${}, ${}, {})",
+                i * 3 + 1,
+                i * 3 + 2,
+                i * 3 + 3,
+                // weekdaysは直接stmtに埋め込む.
+                // u8を&(dyn ToSql)に変換できないため.
+                // (u8を入れる箱を事前に作り、そこへの参照を
+                // 渡せばいいが、それはかなり面倒.
+                // sql injectionの恐れもないため
+                // 単純に埋め込むことにする.
+                schedule.weekdays().into_raw_value()
             )
         })
         .collect::<Vec<String>>()
@@ -189,6 +195,8 @@ async fn insert_schedules<'a>(
             .iter()
             .fold(Vec::new(), |mut vec, schedule| {
                 vec.push(schedule.id().as_ref());
+                vec.push(relationship.id().as_ref());
+                vec.push(schedule.time());
                 vec
             });
 
@@ -244,7 +252,8 @@ async fn update_relationship<'a>(
             user_b = $2,
             snapshot_hash = $3
         WHERE
-            id = $4,
+            id = $4
+            AND
             snapshot_hash = $5
     "#;
 

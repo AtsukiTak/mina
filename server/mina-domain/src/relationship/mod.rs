@@ -57,14 +57,14 @@ impl Relationship {
     }
 
     /// 新しいスケジュールを追加する
-    pub fn add_call_schedlue<W>(&mut self, weekdays: W, time: NaiveTime)
+    pub fn add_call_schedule<W>(&mut self, weekdays: W, time: NaiveTime)
     where
-        W: Iterator<Item = Weekday>,
+        W: IntoIterator<Item = Weekday>,
     {
         let schedule = CallSchedule {
             id: CallScheduleId(Uuid::new_v4()),
             time,
-            weekdays: weekdays.collect(),
+            weekdays: weekdays.into_iter().collect(),
         };
 
         self.schedules.push(schedule);
