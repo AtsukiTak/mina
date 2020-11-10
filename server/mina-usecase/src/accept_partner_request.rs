@@ -1,7 +1,7 @@
 use crate::auth::AuthenticatedUser;
 use mina_domain::{
     partner_request::PartnerRequestRepository as _,
-    user::{User, UserRepository as _},
+    relationship::{Relationship, RelationshipRepository as _},
     RepositorySet,
 };
 use rego::Error;
@@ -15,6 +15,7 @@ pub async fn accept_partner_request<R>(
 where
     R: RepositorySet,
 {
+    // idからpartner_requestを検索
     let partner_req = repos
         .partner_request_repo()
         .find_by_id(&partner_request_id)
@@ -27,16 +28,10 @@ where
         return Err(Error::bad_input("Specified partner request is not for you"));
     }
 
-    let mut other = repos
-        .user_repo()
-        .find_by_id(partner_req.from_user().as_str())
-        .await?;
-
-    // Userの更新
-    User::become_partner_each_other(me.as_mut(), &mut other)?;
-
-    repos.user_repo().update(me.as_ref()).await?;
-    repos.user_repo().update(&other).await?;
+    // Relationshipの生成
+    let relationship =
+        Relationship::new(me.as_ref().id().clone(), partner_req.from_user().clone())?;
+    repos.relationship_repo().create(&relationship).await?;
 
     Ok(())
 }

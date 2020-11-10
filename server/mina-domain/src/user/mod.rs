@@ -19,9 +19,6 @@ pub struct User {
     /// Push通知に使うためのToken
     /// 初期状態はNoneだが、一度Someになった後は常にSome
     apple_push_token: Option<String>,
-
-    /// 自分のPartnerのID一覧
-    partners: Vec<UserId>,
 }
 
 /*
@@ -44,10 +41,6 @@ impl User {
 
     pub fn apple_push_token(&self) -> Option<&str> {
         self.apple_push_token.as_deref()
-    }
-
-    pub fn partners(&self) -> &[UserId] {
-        self.partners.as_slice()
     }
 }
 
@@ -74,7 +67,6 @@ impl User {
             name: None,
             secret_cred: Cred::derive(secret.as_str())?,
             apple_push_token: None,
-            partners: Vec::new(),
         };
 
         Ok((user, secret))
@@ -86,20 +78,6 @@ impl User {
         self.apple_push_token = Some(token);
     }
 
-    /// お互いがPartnerとなる
-    /// # 不変条件
-    /// - 自分が相手のPartnerのとき、相手も自分のPartnerである
-    pub fn become_partner_each_other(user1: &mut User, user2: &mut User) -> Result<(), Error> {
-        if user1.id() == user2.id() {
-            return Err(Error::bad_input("Cannot become a partner of myself"));
-        }
-
-        user1.partners.push(user2.id().clone());
-        user2.partners.push(user1.id().clone());
-
-        Ok(())
-    }
-
     /// DBなどに保存されている生の値から
     /// `User` を再構築するときのメソッド
     pub fn from_raw_parts(
@@ -107,14 +85,12 @@ impl User {
         name: Option<String>,
         secret_cred: String,
         apple_push_token: Option<String>,
-        partners: Vec<String>,
     ) -> User {
         User {
             id: UserId::from(id),
             name,
             secret_cred: Cred::from(secret_cred),
             apple_push_token,
-            partners: partners.into_iter().map(UserId::from).collect(),
         }
     }
 }

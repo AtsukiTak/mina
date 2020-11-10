@@ -3,7 +3,6 @@ CREATE TABLE users (
   name TEXT,
   secret_cred TEXT NOT NULL,
   apple_push_token TEXT,
-  partners TEXT[] NOT NULL DEFAULT '{}',
   snapshot_hash UUID NOT NULL
 );
 

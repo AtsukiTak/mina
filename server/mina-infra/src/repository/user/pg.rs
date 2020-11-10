@@ -27,7 +27,6 @@ SELECT
     name,
     secret_cred,
     apple_push_token,
-    partners,
     snapshot_hash
 FROM users
 WHERE id = ANY( $1 )
@@ -49,10 +48,9 @@ fn to_user_with_hash(row: Row) -> UserWithHash {
     let name: Option<String> = row.get("name");
     let secret_cred: String = row.get("secret_cred");
     let apple_push_token: Option<String> = row.get("apple_push_token");
-    let partners: Vec<String> = row.get("partners");
     let hash: Uuid = row.get("snapshot_hash");
 
-    let user = User::from_raw_parts(id, name, secret_cred, apple_push_token, partners);
+    let user = User::from_raw_parts(id, name, secret_cred, apple_push_token);
     UserWithHash::new(user, hash)
 }
 
@@ -68,10 +66,9 @@ INSERT INTO users
     name,
     secret_cred,
     apple_push_token,
-    partners,
     snapshot_hash
 )
-VALUES ($1, $2, $3, $4, $5, $6)
+VALUES ($1, $2, $3, $4, $5)
 "#;
 
 /// 新規UserをDBに登録する
@@ -88,11 +85,6 @@ pub async fn insert(client: &mut Client, user: &User) -> Result<Uuid, Error> {
                 &user.name(),
                 &user.secret_cred().as_str(),
                 &user.apple_push_token(),
-                &user
-                    .partners()
-                    .iter()
-                    .map(|id| id.as_str())
-                    .collect::<Vec<_>>(),
                 &new_hash,
             ],
         )
@@ -113,12 +105,11 @@ SET
   name = $1,
   secret_cred = $2,
   apple_push_token = $3,
-  partners = $4,
-  snapshot_hash = $5
+  snapshot_hash = $4
 WHERE
-  id = $6
+  id = $5
   AND
-  snapshot_hash = $7
+  snapshot_hash = $6
 "#;
 
 /// 楽観ロック
@@ -134,11 +125,6 @@ pub async fn update(client: &mut Client, user: &User, old_hash: Uuid) -> Result<
                 &user.name(),
                 &user.secret_cred().as_str(),
                 &user.apple_push_token(),
-                &user
-                    .partners()
-                    .iter()
-                    .map(|id| id.as_str())
-                    .collect::<Vec<_>>(),
                 &new_hash,
                 &user.id().as_str(),
                 &old_hash,
