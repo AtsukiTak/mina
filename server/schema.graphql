@@ -8,12 +8,29 @@ type Query {
 type Me {
 	id: String!
 	name: String
-	partners: [User!]!
+	relationships: [MyRelationship!]!
 	receivedPartnerRequests: [PartnerRequest!]!
 }
+type MyRelationship {
+	id: UUID!
+	partner: User!
+	callSchedules: [CallSchedule!]!
+}
+scalar UUID
 type User {
 	id: String!
 	name: String
+}
+type CallSchedule {
+	id: UUID!
+	"""
+	"21:45" のようなフォーマットの文字列
+	"""
+	time: String!
+	"""
+	"Mon,The,Thu,Fri" のようなコンマ区切りの文字列
+	"""
+	weekdays: String!
 }
 type PartnerRequest {
 	id: UUID!
@@ -21,7 +38,6 @@ type PartnerRequest {
 	to: User!
 	isValid: Boolean!
 }
-scalar UUID
 type Mutation {
 	"""
 	anonymousとして登録する

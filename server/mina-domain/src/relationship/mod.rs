@@ -26,8 +26,8 @@ impl Relationship {
         &self.id
     }
 
-    pub fn users(&self) -> (&UserId, &UserId) {
-        (&self.user_a, &self.user_b)
+    pub fn users(&self) -> [&UserId; 2] {
+        [&self.user_a, &self.user_b]
     }
 
     pub fn schedules(&self) -> &[CallSchedule] {

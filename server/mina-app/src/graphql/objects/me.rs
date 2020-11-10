@@ -1,6 +1,9 @@
-use super::{super::ContextData, GQLPartnerRequest};
+use super::{super::ContextData, GQLMyRelationship, GQLPartnerRequest};
 use async_graphql::{Context, Error, Object};
-use mina_domain::{partner_request::PartnerRequestRepository as _, RepositorySet as _};
+use mina_domain::{
+    partner_request::PartnerRequestRepository as _, relationship::RelationshipRepository as _,
+    RepositorySet as _,
+};
 use mina_usecase::auth::AuthenticatedUser;
 
 pub struct GQLMe {
@@ -15,6 +18,20 @@ impl GQLMe {
 
     async fn name(&self) -> Option<&str> {
         self.me.as_ref().name()
+    }
+
+    async fn relationships(&self, context: &Context<'_>) -> Result<Vec<GQLMyRelationship>, Error> {
+        let data = context.data::<ContextData>()?;
+
+        Ok(data
+            .repos()
+            .relationship_repo()
+            .find_of_user(self.me.as_ref().id())
+            .await
+            .map_err(Error::from)?
+            .into_iter()
+            .map(|relationship| GQLMyRelationship::from((self.me.clone(), relationship)))
+            .collect())
     }
 
     async fn received_partner_requests(

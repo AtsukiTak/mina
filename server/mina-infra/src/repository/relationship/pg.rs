@@ -132,7 +132,7 @@ async fn insert_relationship<'a>(
         VALUES ($1, $2, $3, $4)
     "#;
 
-    let (user_a, user_b) = relationship.users();
+    let [user_a, user_b] = relationship.users();
     tx.execute(
         STMT,
         &[
@@ -257,7 +257,7 @@ async fn update_relationship<'a>(
             snapshot_hash = $5
     "#;
 
-    let (user_a, user_b) = relationship.users();
+    let [user_a, user_b] = relationship.users();
     let count = tx
         .execute(
             STMT,
