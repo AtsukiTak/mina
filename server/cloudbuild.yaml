@@ -1,11 +1,11 @@
 steps:
-  - name: 'asia.gcr.io/cloud-builders/docker'
+  - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
       - '-t'
       - 'asia.gcr.io/${PROJECT_ID}/mina-backend:${SHORT_SHA}'
       - '.'
-  - name: 'asis.gcr.io/cloud-builders/docker'
+  - name: 'gcr.io/cloud-builders/docker'
     args:
       - "push"
       - "gcr.io/${PROJECT_ID}/mina-backend:${SHORT_SHA}"
