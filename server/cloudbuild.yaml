@@ -10,7 +10,7 @@ steps:
     dir: 'server'
     args:
       - "push"
-      - "gcr.io/${PROJECT_ID}/mina-backend:${SHORT_SHA}"
+      - "asia.gcr.io/${PROJECT_ID}/mina-backend:${SHORT_SHA}"
   - name: 'gcr.io/cloud-builders/gcloud'
     dir: 'server'
     args:
@@ -18,7 +18,7 @@ steps:
       - 'deploy'
       - 'mina-backend'
       - '--image'
-      - 'gcr.io/${PROJECT_ID}/mina-backend:${SHORT_SHA}'
+      - 'asia.gcr.io/${PROJECT_ID}/mina-backend:${SHORT_SHA}'
       - '--platform'
       - 'managed'
       - '--region'
