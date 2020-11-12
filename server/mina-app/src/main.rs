@@ -7,7 +7,7 @@ async fn main() {
 
     let db_url = get_env_var_or_panic("DATABASE_URL");
 
-    let bind_ip_str = std::env::var("BIND").unwrap_or("127.0.0.1".to_string());
+    let bind_ip_str = std::env::var("BIND").unwrap_or("0.0.0.0".to_string());
     let bind_ip: Ipv4Addr = bind_ip_str.parse().unwrap();
 
     let port = get_env_var_u16("PORT").unwrap_or(8080);

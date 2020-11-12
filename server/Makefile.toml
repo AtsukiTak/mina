@@ -48,6 +48,7 @@ cargo run --bin mina-app
 
 [tasks.dev.env]
 DATABASE_URL = "postgres://postgres:postgres@localhost:12781"
+BIND = "127.0.0.1"
 RUST_LOG = "debug,hyper=info"
 
 
