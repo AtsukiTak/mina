@@ -1,15 +1,18 @@
 steps:
   - name: 'gcr.io/cloud-builders/docker'
+    dir: 'server'
     args:
       - 'build'
       - '-t'
       - 'asia.gcr.io/${PROJECT_ID}/mina-backend:${SHORT_SHA}'
       - '.'
   - name: 'gcr.io/cloud-builders/docker'
+    dir: 'server'
     args:
       - "push"
       - "gcr.io/${PROJECT_ID}/mina-backend:${SHORT_SHA}"
   - name: 'gcr.io/cloud-builders/gcloud'
+    dir: 'server'
     args:
       - 'run'
       - 'deploy'
