@@ -24,3 +24,4 @@ steps:
       - '--region'
       - 'asia-northeast1'
       - '--allow-unauthenticated'
+timeout: 1200s
