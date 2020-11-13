@@ -1,5 +1,4 @@
-// pub mod call;
-// pub mod id;
+pub mod call;
 mod cred;
 pub mod partner_request;
 pub mod relationship;
