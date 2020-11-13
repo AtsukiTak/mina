@@ -2,7 +2,7 @@ mod repository;
 pub use repository::RelationshipRepository;
 
 use crate::user::UserId;
-use chrono::{NaiveTime, Weekday};
+use chrono::{DateTime, Datelike as _, NaiveDate, NaiveDateTime, NaiveTime, Utc, Weekday};
 use rego::Error;
 use std::{fmt, iter::FromIterator};
 use uuid::Uuid;
@@ -14,6 +14,7 @@ pub struct Relationship {
     user_b: UserId,
 
     schedules: Vec<CallSchedule>,
+    next_call_time: Option<DateTime<Utc>>,
 }
 
 /*
@@ -32,6 +33,10 @@ impl Relationship {
 
     pub fn schedules(&self) -> &[CallSchedule] {
         self.schedules.as_slice()
+    }
+
+    pub fn next_call_time(&self) -> Option<&DateTime<Utc>> {
+        self.next_call_time.as_ref()
     }
 }
 
@@ -53,25 +58,42 @@ impl Relationship {
             user_a,
             user_b,
             schedules: Vec::new(),
+            next_call_time: None,
         })
     }
 
     /// 新しいスケジュールを追加する
-    pub fn add_call_schedule<W>(&mut self, weekdays: W, time: NaiveTime)
+    ///
+    /// # Note
+    /// 現在の時間を `now` パラメータとして渡す
+    /// これは `next_call_time` フィールドの更新のために必要
+    pub fn add_call_schedule_at<W>(&mut self, weekdays: W, time: NaiveTime, now: DateTime<Utc>)
     where
         W: IntoIterator<Item = Weekday>,
     {
+        // schedules の更新
         let schedule = CallSchedule {
             id: CallScheduleId(Uuid::new_v4()),
             time,
             weekdays: weekdays.into_iter().collect(),
         };
-
         self.schedules.push(schedule);
+
+        // next_call_time の更新
+        self.next_call_time = self.schedules.iter().map(|s| s.next_call_time(now)).min();
     }
 
     /// 指定したスケジュールを削除する
-    pub fn remove_call_schedule(&mut self, schedule_id: &CallScheduleId) -> Result<(), Error> {
+    ///
+    /// # Note
+    /// 現在の時間を `now` パラメータとして渡す
+    /// これは `next_call_time` フィールドの更新のために必要
+    pub fn remove_call_schedule_at(
+        &mut self,
+        schedule_id: &CallScheduleId,
+        now: DateTime<Utc>,
+    ) -> Result<(), Error> {
+        // schedules の更新
         if let Some((i, _)) = self
             .schedules
             .iter()
@@ -79,9 +101,24 @@ impl Relationship {
             .find(|(_, schedule)| schedule.id() == schedule_id)
         {
             self.schedules.swap_remove(i);
-            Ok(())
         } else {
-            Err(Error::bad_input("specified schedule not found"))
+            return Err(Error::bad_input("specified schedule not found"));
+        }
+
+        // next_call_time の更新
+        self.next_call_time = self.schedules.iter().map(|s| s.next_call_time(now)).min();
+
+        Ok(())
+    }
+
+    /// `next_call_time` フィールドを次の時間に更新する
+    pub fn update_next_call_time(&mut self) {
+        if let Some(last_call_time) = self.next_call_time {
+            self.next_call_time = self
+                .schedules
+                .iter()
+                .map(|s| s.next_call_time(last_call_time))
+                .min();
         }
     }
 
@@ -90,6 +127,7 @@ impl Relationship {
         user_a: String,
         user_b: String,
         schedules: Vec<(Uuid, NaiveTime, u8)>,
+        next_call_time: Option<DateTime<Utc>>,
     ) -> Self {
         Relationship {
             id: RelationshipId(id),
@@ -103,6 +141,7 @@ impl Relationship {
                     weekdays: Weekdays(weekdays),
                 })
                 .collect(),
+            next_call_time,
         }
     }
 }
@@ -122,6 +161,7 @@ impl AsRef<Uuid> for RelationshipId {
  * ========
  */
 /// 曜日（複数選択可能）と時間によって指定されたSchedule
+/// 曜日と時間はともにUTCタイムゾーンで扱われる
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CallSchedule {
     id: CallScheduleId,
@@ -144,6 +184,31 @@ impl CallSchedule {
 
     pub fn weekdays(&self) -> &Weekdays {
         &self.weekdays
+    }
+
+    /// `at` 以降の最初のschedule
+    /// ただし`at` は含まない
+    fn next_call_time(&self, at: DateTime<Utc>) -> DateTime<Utc> {
+        let naive = at.naive_utc();
+
+        // 次に有効になるDateを計算
+        let next_date = if naive.time() < self.time {
+            self.next_active_date(naive.date())
+        } else {
+            self.next_active_date(naive.date().succ())
+        };
+
+        let next_naive = NaiveDateTime::new(next_date, self.time);
+        DateTime::from_utc(next_naive, Utc)
+    }
+
+    fn next_active_date(&self, date: NaiveDate) -> NaiveDate {
+        let date_weekday = date.weekday();
+        if self.weekdays.iter().find(|w| *w == date_weekday).is_some() {
+            date
+        } else {
+            self.next_active_date(date.succ())
+        }
     }
 }
 
