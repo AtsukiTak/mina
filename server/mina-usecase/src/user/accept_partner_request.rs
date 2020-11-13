@@ -1,4 +1,4 @@
-use crate::auth::AuthenticatedUser;
+use super::auth::AuthenticatedUser;
 use mina_domain::{
     partner_request::PartnerRequestRepository as _,
     relationship::{Relationship, RelationshipRepository as _},

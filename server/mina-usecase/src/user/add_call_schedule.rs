@@ -1,4 +1,4 @@
-use crate::auth::AuthenticatedUser;
+use super::auth::AuthenticatedUser;
 use chrono::{NaiveTime, Weekday};
 use mina_domain::{
     relationship::{Relationship, RelationshipRepository as _},
