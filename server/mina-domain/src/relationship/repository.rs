@@ -11,4 +11,6 @@ pub trait RelationshipRepository {
     async fn create(&self, relationship: &Relationship) -> Result<(), Error>;
 
     async fn update(&self, relationship: &Relationship) -> Result<(), Error>;
+
+    async fn update_many(&self, relationships: &[Relationship]) -> Result<(), Error>;
 }

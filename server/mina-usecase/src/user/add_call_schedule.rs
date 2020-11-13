@@ -1,5 +1,5 @@
 use super::auth::AuthenticatedUser;
-use chrono::{NaiveTime, Weekday};
+use chrono::{NaiveTime, Utc, Weekday};
 use mina_domain::{
     relationship::{Relationship, RelationshipRepository as _},
     RepositorySet,
@@ -27,7 +27,7 @@ where
         .find(|rel| *rel.id().as_ref() == relationship_id)
         .ok_or_else(|| Error::bad_input("specified relationship not found"))?;
 
-    relationship.add_call_schedule(weekdays, time);
+    relationship.add_call_schedule_at(weekdays, time, Utc::now());
 
     repos.relationship_repo().update(&relationship).await?;
 
