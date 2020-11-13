@@ -4,7 +4,7 @@ pub use repository::RelationshipRepository;
 use crate::user::UserId;
 use chrono::{DateTime, Datelike as _, NaiveDate, NaiveDateTime, NaiveTime, Utc, Weekday};
 use rego::Error;
-use std::{fmt, iter::FromIterator};
+use std::{fmt, iter::FromIterator, sync::Arc};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -15,6 +15,7 @@ pub struct Relationship {
 
     schedules: Vec<CallSchedule>,
     next_call_time: Option<DateTime<Utc>>,
+    processing_call: Option<Call>,
 }
 
 /*
@@ -59,6 +60,7 @@ impl Relationship {
             user_b,
             schedules: Vec::new(),
             next_call_time: None,
+            processing_call: None,
         })
     }
 
@@ -111,14 +113,51 @@ impl Relationship {
         Ok(())
     }
 
-    /// `next_call_time` フィールドを次の時間に更新する
-    pub fn update_next_call_time(&mut self) {
-        if let Some(last_call_time) = self.next_call_time {
-            self.next_call_time = self
-                .schedules
-                .iter()
-                .map(|s| s.next_call_time(last_call_time))
-                .min();
+    pub fn is_call_process_startable_at(&self, at: DateTime<Utc>) -> bool {
+        self.processing_call.is_none() && matches!(self.next_call_time(), Some(t) if *t < at)
+    }
+
+    /// 通話プロセスを開始する
+    /// このメソッドを呼び出す前に必ず `is_call_process_startable_at` メソッドを用いて
+    /// 通話プロセスを開始できるかチェックする。
+    /// 通話プロセスを開始するには、未解決の過去のスケジュール
+    /// がある必要がある。つまり、next_call_time が at 引数の
+    /// 時間よりも過去である必要がある
+    /// このメソッドの呼び出し後には、next_call_timeが次の
+    /// 値に設定される
+    pub fn start_call_process_at(&mut self, at: DateTime<Utc>) -> Result<&Call, Error> {
+        if self.is_call_process_startable_at(at) {
+            return Err(Error::Internal(Arc::new(anyhow::anyhow!(
+                "call process is not startable"
+            ))));
+        }
+
+        let call = Call {
+            id: CallId(Uuid::new_v4()),
+            users: [
+                CallUser::new(self.users()[0].clone()),
+                CallUser::new(self.users()[1].clone()),
+            ],
+            created_at: at,
+        };
+
+        self.processing_call = Some(call);
+        self.next_call_time = self.schedules.iter().map(|s| s.next_call_time(at)).min();
+
+        Ok(self.processing_call.as_ref().unwrap())
+    }
+
+    /// 通話プロセスの一環として、ユーザーのSkyWayIDを登録する
+    /// すでに相手がSkyWayIDを登録済みであればそれを返す
+    pub fn set_user_skw_id(
+        &mut self,
+        user_id: &UserId,
+        skw_id: String,
+    ) -> Result<Option<&str>, Error> {
+        if let Some(call) = self.processing_call.as_mut() {
+            call.set_user_skw_id(user_id, skw_id)
+        } else {
+            Err(Error::bad_input("call process is not started"))
         }
     }
 
@@ -128,6 +167,7 @@ impl Relationship {
         user_b: String,
         schedules: Vec<(Uuid, NaiveTime, u8)>,
         next_call_time: Option<DateTime<Utc>>,
+        processing_call: Option<(Uuid, [(String, Option<String>); 2], DateTime<Utc>)>,
     ) -> Self {
         Relationship {
             id: RelationshipId(id),
@@ -142,6 +182,23 @@ impl Relationship {
                 })
                 .collect(),
             next_call_time,
+            processing_call: processing_call.map(|(id, users, created_at)| {
+                let [(u1_id, u1_skw_id), (u2_id, u2_skw_id)] = users;
+                Call {
+                    id: CallId(id),
+                    users: [
+                        CallUser {
+                            user_id: UserId::from(u1_id),
+                            skw_id: u1_skw_id,
+                        },
+                        CallUser {
+                            user_id: UserId::from(u2_id),
+                            skw_id: u2_skw_id,
+                        },
+                    ],
+                    created_at,
+                }
+            }),
         }
     }
 }
@@ -293,5 +350,90 @@ impl FromIterator<Weekday> for Weekdays {
 impl fmt::Debug for Weekdays {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_list().entries(self.iter()).finish()
+    }
+}
+
+/*
+ * =============
+ * Call
+ * =============
+ */
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Call {
+    id: CallId,
+    users: [CallUser; 2],
+    created_at: DateTime<Utc>,
+}
+
+impl Call {
+    pub fn id(&self) -> &CallId {
+        &self.id
+    }
+
+    pub fn users(&self) -> &[CallUser; 2] {
+        &self.users
+    }
+
+    pub fn created_at(&self) -> &DateTime<Utc> {
+        &self.created_at
+    }
+
+    pub fn set_user_skw_id(
+        &mut self,
+        user_id: &UserId,
+        skw_id: String,
+    ) -> Result<Option<&str>, Error> {
+        let [user, counterpart] = {
+            let [u1, u2] = &mut self.users;
+            if u1.user_id() == user_id {
+                [u1, u2]
+            } else if u2.user_id() == user_id {
+                [u2, u1]
+            } else {
+                return Err(Error::bad_input(
+                    "given user is not a member of this relationship",
+                ));
+            }
+        };
+
+        if user.skw_id.is_some() {
+            return Err(Error::bad_input("skw_id is already set"));
+        }
+
+        user.skw_id = Some(skw_id);
+
+        Ok(counterpart.skw_id.as_deref())
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CallId(Uuid);
+
+impl AsRef<Uuid> for CallId {
+    fn as_ref(&self) -> &Uuid {
+        &self.0
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CallUser {
+    user_id: UserId,
+    skw_id: Option<String>,
+}
+
+impl CallUser {
+    fn new(user_id: UserId) -> Self {
+        CallUser {
+            user_id,
+            skw_id: None,
+        }
+    }
+
+    pub fn user_id(&self) -> &UserId {
+        &self.user_id
+    }
+
+    pub fn skw_id(&self) -> Option<&str> {
+        self.skw_id.as_deref()
     }
 }
