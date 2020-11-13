@@ -1,3 +1,6 @@
+mod repository;
+pub use self::repository::CallRepository;
+
 use super::user::UserId;
 use chrono::{DateTime, Utc};
 use rego::Error;
