@@ -149,13 +149,13 @@ impl Relationship {
 
     /// 通話プロセスの一環として、ユーザーのSkyWayIDを登録する
     /// すでに相手がSkyWayIDを登録済みであればそれを返す
-    pub fn set_user_skw_id(
+    pub fn set_call_skw_id(
         &mut self,
         user_id: &UserId,
         skw_id: String,
     ) -> Result<Option<&str>, Error> {
         if let Some(call) = self.processing_call.as_mut() {
-            call.set_user_skw_id(user_id, skw_id)
+            call.set_call_skw_id(user_id, skw_id)
         } else {
             Err(Error::bad_input("call process is not started"))
         }
@@ -378,7 +378,7 @@ impl Call {
         &self.created_at
     }
 
-    pub fn set_user_skw_id(
+    pub fn set_call_skw_id(
         &mut self,
         user_id: &UserId,
         skw_id: String,
