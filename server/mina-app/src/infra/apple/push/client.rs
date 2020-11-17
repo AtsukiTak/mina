@@ -32,7 +32,7 @@ impl Client {
         req_id: Option<Uuid>,
         device_token: &str,
         iat: DateTime<Utc>,
-        payload: &D,
+        payload: D,
     ) {
         let url = self.gen_url(device_token);
         let mut req = self.client.post(url);
@@ -55,7 +55,7 @@ impl Client {
         req = req.header("apns-topic", self.apns_topic.as_str());
 
         // Payload の設定
-        req = req.json(payload);
+        req = req.json(&payload);
 
         match req.send().await {
             Ok(res) => log::debug!("{:?}", res),

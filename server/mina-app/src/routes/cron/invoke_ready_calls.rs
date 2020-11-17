@@ -1,5 +1,6 @@
 use crate::server::Config;
 use chrono::Utc;
+use futures::stream::{FuturesUnordered, StreamExt as _};
 use mina_usecase::admin::invoke_ready_calls;
 use rego::Error;
 use serde::Serialize;
@@ -32,10 +33,12 @@ struct PushPayload {
 
 async fn handler(config: Config) -> Result<Json, Error> {
     let repos = config.repos().await?;
+    let push_client = config.push_client();
     let res = invoke_ready_calls(&repos).await?;
 
+    let futures = FuturesUnordered::new();
+
     // push通知を送る
-    let push_client = config.push_client();
     for call in res.calls {
         let payload = PushPayload {
             call_id: *call.id().as_ref(),
@@ -45,12 +48,13 @@ async fn handler(config: Config) -> Result<Json, Error> {
             let user = res.users.get(call_user.user_id()).unwrap();
 
             if let Some(device_token) = user.apple_push_token() {
-                push_client
-                    .req(Some(Uuid::new_v4()), device_token, Utc::now(), &payload)
-                    .await;
+                let fut = push_client.req(Some(Uuid::new_v4()), device_token, Utc::now(), payload);
+                futures.push(fut);
             }
         }
     }
+
+    futures.for_each(futures::future::ready).await;
 
     Ok(json(&"ok"))
 }
