@@ -130,7 +130,7 @@ impl Relationship {
     /// このメソッドの呼び出し後には、next_call_timeが次の
     /// 値に設定される
     pub fn start_call_process_at(&mut self, at: DateTime<Utc>) -> Result<&Call, Error> {
-        if self.is_call_process_startable_at(at) {
+        if !self.is_call_process_startable_at(at) {
             return Err(Error::Internal(Arc::new(anyhow::anyhow!(
                 "call process is not startable"
             ))));
@@ -439,5 +439,53 @@ impl CallUser {
 
     pub fn skw_id(&self) -> Option<&str> {
         self.skw_id.as_deref()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::user::User;
+    use chrono::Duration;
+
+    fn new_relationship() -> Relationship {
+        Relationship::new(
+            User::new_anonymous().unwrap().0.id().clone(),
+            User::new_anonymous().unwrap().0.id().clone(),
+        )
+        .unwrap()
+    }
+
+    fn utc_from_ymd_hms(y: i32, m: u32, d: u32, h: u32, min: u32, s: u32) -> DateTime<Utc> {
+        DateTime::from_utc(NaiveDate::from_ymd(y, m, d).and_hms(h, min, s), Utc)
+    }
+
+    #[test]
+    fn check_next_call_time() {
+        let mut relationship = new_relationship();
+
+        // 日曜日
+        let now = utc_from_ymd_hms(2020, 11, 15, 12, 42, 7);
+
+        relationship.add_call_schedule_at(vec![Weekday::Sun], NaiveTime::from_hms(13, 0, 0), now);
+
+        assert_eq!(
+            relationship.next_call_time(),
+            Some(&utc_from_ymd_hms(2020, 11, 15, 13, 0, 0))
+        );
+
+        assert!(relationship.is_call_process_startable_at(utc_from_ymd_hms(2020, 11, 16, 0, 0, 0)));
+    }
+
+    #[test]
+    fn always_startable_2_weeks_ago_schedule() {
+        let mut relationship = new_relationship();
+
+        relationship.add_call_schedule_at(
+            vec![Weekday::Tue],
+            NaiveTime::from_hms(10, 0, 0),
+            Utc::now() - Duration::weeks(2),
+        );
+        assert!(relationship.start_call_process_at(Utc::now()).is_ok());
     }
 }

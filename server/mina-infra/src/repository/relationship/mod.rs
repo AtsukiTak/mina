@@ -103,7 +103,7 @@ impl RelationshipRepository for RelationshipRepositoryImpl {
 mod tests {
     use super::*;
     use crate::repository::test_utils::connect_isolated_db;
-    use chrono::{NaiveTime, Utc, Weekday};
+    use chrono::{Duration, NaiveTime, Utc, Weekday};
     use mina_domain::user::User;
 
     #[tokio::test]
@@ -118,22 +118,26 @@ mod tests {
 
         // create
         repo.create(&relationship).await.unwrap();
-
-        // find
         let found_a = repo.find_of_user(user_a.id()).await.unwrap();
         assert_eq!(found_a, vec![relationship.clone()]);
         let found_b = repo.find_of_user(user_b.id()).await.unwrap();
         assert_eq!(found_b, vec![relationship.clone()]);
 
-        // update
+        // add_call_schedule_at
+        // start_call_process_at を呼び出せるようにするため
+        // 2週間前の時刻でscheduleを追加する
         relationship.add_call_schedule_at(
             vec![Weekday::Sun],
             NaiveTime::from_hms(10, 0, 0),
-            Utc::now(),
+            Utc::now() - Duration::weeks(2),
         );
         repo.update(&relationship).await.unwrap();
+        let found = repo.find_of_user(user_a.id()).await.unwrap();
+        assert_eq!(found, vec![relationship.clone()]);
 
-        // find
+        // start_call_process_at
+        relationship.start_call_process_at(Utc::now()).unwrap();
+        repo.update(&relationship).await.unwrap();
         let found = repo.find_of_user(user_a.id()).await.unwrap();
         assert_eq!(found, vec![relationship.clone()]);
     }

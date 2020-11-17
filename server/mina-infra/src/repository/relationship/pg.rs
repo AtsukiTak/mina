@@ -297,7 +297,7 @@ async fn upsert_processing_call<'a>(
             id,
             relationship_id,
             user_a_skw_id,
-            user_a_skw_id,
+            user_b_skw_id,
             created_at
         )
         VALUES ($1, $2, $3, $4, $5)
