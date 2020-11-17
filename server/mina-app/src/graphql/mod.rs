@@ -6,7 +6,7 @@ use self::{mutation::Mutation, query::Query};
 use async_graphql::{EmptySubscription, Error, Request, Response, Schema, ServerError};
 use headers::{authorization::Basic, Authorization};
 use mina_infra::repository::{RepositoryFactory, RepositorySetImpl};
-use mina_usecase::auth::{authenticate, AuthenticatedUser};
+use mina_usecase::user::auth::{authenticate, AuthenticatedUser};
 
 pub type MySchema = Schema<Query, Mutation, EmptySubscription>;
 

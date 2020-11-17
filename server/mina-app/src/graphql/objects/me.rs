@@ -4,7 +4,7 @@ use mina_domain::{
     partner_request::PartnerRequestRepository as _, relationship::RelationshipRepository as _,
     RepositorySet as _,
 };
-use mina_usecase::auth::AuthenticatedUser;
+use mina_usecase::user::auth::AuthenticatedUser;
 
 pub struct GQLMe {
     me: AuthenticatedUser,

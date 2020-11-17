@@ -5,7 +5,7 @@ use mina_domain::{
     user::UserRepository as _,
     RepositorySet as _,
 };
-use mina_usecase::auth::AuthenticatedUser;
+use mina_usecase::user::auth::AuthenticatedUser;
 use uuid::Uuid;
 
 pub struct GQLMyRelationship {

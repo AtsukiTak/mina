@@ -15,7 +15,7 @@ impl Mutation {
     async fn signup_as_anonymous(&self, context: &Context<'_>) -> Result<UserAndSecret, Error> {
         let repos = context.data::<ContextData>()?.repos();
 
-        mina_usecase::signup_as_anonymous(repos)
+        mina_usecase::user::signup_as_anonymous(repos)
             .await
             .map_err(Error::from)
             .map(|res| UserAndSecret {
@@ -33,7 +33,7 @@ impl Mutation {
         let data = &context.data::<ContextData>()?;
         let me = data.me_or_err()?;
 
-        let _ = mina_usecase::send_partner_request(to_user_id, &me, data.repos())
+        let _ = mina_usecase::user::send_partner_request(to_user_id, &me, data.repos())
             .await
             .map_err(Error::from)?;
 
@@ -49,7 +49,7 @@ impl Mutation {
         let data = &context.data::<ContextData>()?;
         let me = data.me_or_err()?;
 
-        mina_usecase::accept_partner_request(request_id, me, data.repos()).await?;
+        mina_usecase::user::accept_partner_request(request_id, me, data.repos()).await?;
 
         Ok("success")
     }
@@ -78,7 +78,7 @@ impl Mutation {
         let time = NaiveTime::parse_from_str(input.time.as_str(), "%H:%M")
             .map_err(|_| Error::from("Invalid format of time field"))?;
 
-        let relationship = mina_usecase::add_call_schedule(
+        let relationship = mina_usecase::user::add_call_schedule(
             input.relationship_id,
             weekdays,
             time,
