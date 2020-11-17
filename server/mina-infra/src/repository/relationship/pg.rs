@@ -1,5 +1,6 @@
-use chrono::NaiveTime;
-use mina_domain::relationship::Relationship;
+use chrono::{DateTime, NaiveTime, Utc};
+use futures::{stream::FuturesUnordered, TryStreamExt as _};
+use mina_domain::relationship::{Relationship, RelationshipId};
 use rego::Error;
 use tokio_postgres::{
     types::{Json, ToSql},
@@ -26,16 +27,21 @@ pub struct SnapshotHash(Uuid);
 ///     配列が集約結果として出てくる。
 ///     それを削除するためにarray_remove関数を使う
 /// - `json` 型は比較演算子が利用不可能なので `jsonb` 型を使う
-pub async fn load_related_to_user(
+pub async fn load_many(
     client: &mut Client,
-    user_id: &str,
+    relationship_ids: &[Uuid],
 ) -> Result<Vec<(Relationship, SnapshotHash)>, Error> {
     const STMT: &str = r#"
         SELECT
             relationships.id,
             relationships.user_a,
             relationships.user_b,
+            relationships.next_call_time,
             relationships.snapshot_hash,
+            relationships.processing_call_id,
+            calls.user_a_skw_id,
+            calls.user_b_skw_id,
+            calls.created_at,
             array_remove(
                 array_agg(
                     jsonb_build_array(
@@ -50,23 +56,28 @@ pub async fn load_related_to_user(
             relationships
         LEFT OUTER JOIN
             call_schedules AS schedules
-        ON
-            relationships.id = schedules.relationship_id
-            AND
-            (
-                relationships.user_a = $1
-                OR
-                relationships.user_b = $1
-            )
+            ON
+                relationships.id = schedules.relationship_id
+        LEFT OUTER JOIN
+            calls
+            ON
+                relationships.processing_call_id = calls.id
+        WHERE
+            relationships.id = ANY ($1)
         GROUP BY
             relationships.id,
             relationships.user_a,
             relationships.user_b,
+            relationships.next_call_time,
+            relationships.processing_call_id,
+            calls.user_a_skw_id,
+            calls.user_b_skw_id,
+            calls.created_at,
             relationships.snapshot_hash
     "#;
 
     Ok(client
-        .query(STMT, &[&user_id])
+        .query(STMT, &[&relationship_ids])
         .await
         .map_err(Error::internal)?
         .into_iter()
@@ -78,6 +89,8 @@ fn to_relationship(row: Row) -> (Relationship, SnapshotHash) {
     let id: Uuid = row.get("id");
     let user_a: String = row.get("user_a");
     let user_b: String = row.get("user_b");
+
+    // schedules
     let schedules: Vec<(Uuid, NaiveTime, u8)> = row
         // `weekdays` はi16として保存されている
         .get::<_, Vec<Json<(Uuid, NaiveTime, i16)>>>("schedules")
@@ -87,11 +100,68 @@ fn to_relationship(row: Row) -> (Relationship, SnapshotHash) {
             (id, time, weekdays as u8)
         })
         .collect();
-    let relationship = Relationship::from_raw_parts(id, user_a, user_b, schedules);
+
+    let next_call_time: Option<DateTime<Utc>> = row.get("next_call_time");
+    let processing_call = to_raw_processing_call(&row);
+
+    let relationship = Relationship::from_raw_parts(
+        id,
+        user_a,
+        user_b,
+        schedules,
+        next_call_time,
+        processing_call,
+    );
 
     let snapshot_hash: Uuid = row.get("snapshot_hash");
 
     (relationship, SnapshotHash(snapshot_hash))
+}
+
+fn to_raw_processing_call(row: &Row) -> Option<(Uuid, [Option<String>; 2], DateTime<Utc>)> {
+    let processing_call_id: Option<Uuid> = row.get("processing_call_id");
+    processing_call_id.map(|call_id| {
+        let user_a_skw_id: Option<String> = row.get("user_a_skw_id");
+        let user_b_skw_id: Option<String> = row.get("user_b_skw_id");
+        let created_at: DateTime<Utc> = row.get("created_at");
+        (call_id, [user_a_skw_id, user_b_skw_id], created_at)
+    })
+}
+
+/// Userに関連するRelationshipのID一覧を返す
+/// この関数などでID一覧を取得した後、`load_many` 関数で
+/// Relationshipモデルを取得する
+pub async fn load_ids_related_to_user(
+    client: &mut Client,
+    user_id: &str,
+) -> Result<Vec<Uuid>, Error> {
+    const STMT: &str = r#"
+        SELECT id FROM relationships
+        WHERE user_a = $1 OR user_b = $1
+    "#;
+
+    Ok(client
+        .query(STMT, &[&user_id])
+        .await
+        .map_err(Error::internal)?
+        .into_iter()
+        .map(|row| row.get::<_, Uuid>("id"))
+        .collect())
+}
+
+/// DBに存在する全てのRelationshipのID一覧を返す
+/// この関数などでID一覧を取得した後、`load_many` 関数で
+/// Relationshipモデルを取得する
+pub async fn load_ids_of_all(client: &Client) -> Result<Vec<Uuid>, Error> {
+    const STMT: &str = r#"SELECT id FROM relationships"#;
+
+    Ok(client
+        .query(STMT, &[])
+        .await
+        .map_err(Error::internal)?
+        .into_iter()
+        .map(|row| row.get::<_, Uuid>("id"))
+        .collect())
 }
 
 /*
@@ -108,7 +178,8 @@ pub async fn insert(
 
     (futures::try_join! {
         insert_relationship(&tx, relationship, &snapshot_hash),
-        insert_schedules(&tx, relationship)
+        insert_schedules(&tx, relationship),
+        upsert_processing_call(&tx, relationship),
     })?;
 
     tx.commit().await.map_err(Error::internal)?;
@@ -210,21 +281,83 @@ async fn insert_schedules<'a>(
     Ok(())
 }
 
+async fn upsert_processing_call<'a>(
+    tx: &Transaction<'a>,
+    relationship: &Relationship,
+) -> Result<(), Error> {
+    const STMT: &str = r#"
+        INSERT INTO calls
+        (
+            id,
+            relationship_id,
+            user_a_skw_id,
+            user_a_skw_id,
+            created_at
+        )
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (id)
+        DO UPDATE SET
+            relationship_id = $2,
+            user_a_skw_id = $3,
+            user_b_skw_id = $4,
+            created_at = $5
+    "#;
+
+    if relationship.processing_call().is_none() {
+        return Ok(());
+    }
+    let call = relationship.processing_call().unwrap();
+
+    let [user_a, user_b] = call.users();
+    tx.execute(
+        STMT,
+        &[
+            call.id().as_ref(),
+            relationship.id().as_ref(),
+            &user_a.skw_id(),
+            &user_b.skw_id(),
+            call.created_at(),
+        ],
+    )
+    .await
+    .map_err(Error::internal)?;
+
+    Ok(())
+}
+
 /*
  * =============
  * UPDATE
  * =============
  */
-pub async fn update(
+pub async fn update_many(
     client: &mut Client,
+    relationships: &[(&Relationship, SnapshotHash)],
+) -> Result<Vec<(RelationshipId, SnapshotHash)>, Error> {
+    let tx = client.transaction().await.map_err(Error::internal)?;
+
+    let res = relationships
+        .iter()
+        .map(|items| update_one(&tx, &items.0, &items.1))
+        .collect::<FuturesUnordered<_>>()
+        .try_collect::<Vec<_>>()
+        .await?;
+
+    tx.commit().await.map_err(Error::internal)?;
+
+    Ok(res)
+}
+
+async fn update_one<'a>(
+    tx: &Transaction<'a>,
     relationship: &Relationship,
     old_hash: &SnapshotHash,
-) -> Result<SnapshotHash, Error> {
-    let tx = client.transaction().await.map_err(Error::internal)?;
+) -> Result<(RelationshipId, SnapshotHash), Error> {
     let new_hash = Uuid::new_v4();
 
     (futures::try_join! {
         update_relationship(&tx, relationship, &old_hash.0, &new_hash),
+        upsert_processing_call(&tx, relationship),
         delete_schedules(&tx, relationship),
     })?;
 
@@ -232,9 +365,7 @@ pub async fn update(
     // 順序が逆になってしまう恐れがあるのでpipeliningしない
     insert_schedules(&tx, relationship).await?;
 
-    tx.commit().await.map_err(Error::internal)?;
-
-    Ok(SnapshotHash(new_hash))
+    Ok((relationship.id().clone(), SnapshotHash(new_hash)))
 }
 
 /// 楽観ロック

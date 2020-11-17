@@ -17,6 +17,8 @@ CREATE TABLE relationships (
   id UUID NOT NULL,
   user_a TEXT NOT NULL,
   user_b TEXT NOT NULL,
+  next_call_time TIMESTAMPTZ,
+  processing_call_id UUID,
   snapshot_hash UUID NOT NULL
 );
 
@@ -25,4 +27,12 @@ CREATE TABLE call_schedules (
   relationship_id UUID NOT NULL,
   time TIME NOT NULL,
   weekdays SMALLINT NOT NULL
+);
+
+CREATE TABLE calls (
+  id UUID NOT NULL,
+  relationship_id UUID NOT NULL,
+  user_a_skw_id TEXT,
+  user_b_skw_id TEXT,
+  created_at TIMESTAMPTZ NOT NULL
 );

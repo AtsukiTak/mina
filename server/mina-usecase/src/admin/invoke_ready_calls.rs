@@ -27,7 +27,7 @@ where
 
     repos
         .relationship_repo()
-        .update_many(&relationships)
+        .update_many(relationships.as_slice())
         .await?;
 
     Ok(calls)

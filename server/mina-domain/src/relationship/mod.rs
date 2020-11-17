@@ -39,6 +39,10 @@ impl Relationship {
     pub fn next_call_time(&self) -> Option<&DateTime<Utc>> {
         self.next_call_time.as_ref()
     }
+
+    pub fn processing_call(&self) -> Option<&Call> {
+        self.processing_call.as_ref()
+    }
 }
 
 /*
@@ -167,12 +171,12 @@ impl Relationship {
         user_b: String,
         schedules: Vec<(Uuid, NaiveTime, u8)>,
         next_call_time: Option<DateTime<Utc>>,
-        processing_call: Option<(Uuid, [(String, Option<String>); 2], DateTime<Utc>)>,
+        processing_call: Option<(Uuid, [Option<String>; 2], DateTime<Utc>)>,
     ) -> Self {
         Relationship {
             id: RelationshipId(id),
-            user_a: UserId::from(user_a),
-            user_b: UserId::from(user_b),
+            user_a: UserId::from(user_a.clone()),
+            user_b: UserId::from(user_b.clone()),
             schedules: schedules
                 .into_iter()
                 .map(|(id, time, weekdays)| CallSchedule {
@@ -183,16 +187,16 @@ impl Relationship {
                 .collect(),
             next_call_time,
             processing_call: processing_call.map(|(id, users, created_at)| {
-                let [(u1_id, u1_skw_id), (u2_id, u2_skw_id)] = users;
+                let [u1_skw_id, u2_skw_id] = users;
                 Call {
                     id: CallId(id),
                     users: [
                         CallUser {
-                            user_id: UserId::from(u1_id),
+                            user_id: UserId::from(user_a.clone()),
                             skw_id: u1_skw_id,
                         },
                         CallUser {
-                            user_id: UserId::from(u2_id),
+                            user_id: UserId::from(user_b.clone()),
                             skw_id: u2_skw_id,
                         },
                     ],

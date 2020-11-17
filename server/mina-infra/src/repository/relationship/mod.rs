@@ -9,6 +9,7 @@ use mina_domain::{
 use rego::Error;
 use std::{collections::HashMap, ops::DerefMut};
 use tokio::sync::Mutex;
+use uuid::Uuid;
 
 pub struct RelationshipRepositoryImpl {
     client: PgClient,
@@ -24,28 +25,38 @@ impl RelationshipRepositoryImpl {
             hash_store: Mutex::new(HashMap::new()),
         }
     }
-}
 
-#[async_trait::async_trait]
-impl RelationshipRepository for RelationshipRepositoryImpl {
-    async fn find_of_user(&self, user_id: &UserId) -> Result<Vec<Relationship>, Error> {
-        let records =
-            pg::load_related_to_user(self.client.lock().await.deref_mut(), user_id.as_str())
-                .await
-                .map_err(Error::internal)?;
+    async fn find_by_ids(&self, ids: &[Uuid]) -> Result<Vec<Relationship>, Error> {
+        let records = pg::load_many(self.client.lock().await.deref_mut(), ids)
+            .await
+            .map_err(Error::internal)?;
 
         // hash_storeの更新
+        let mut hash_store = self.hash_store.lock().await;
         for (relationship, snapshot_hash) in records.iter() {
-            self.hash_store
-                .lock()
-                .await
-                .insert(*relationship.id(), *snapshot_hash);
+            hash_store.insert(*relationship.id(), *snapshot_hash);
         }
+        drop(hash_store);
 
         Ok(records
             .into_iter()
             .map(|(relationship, _)| relationship)
             .collect())
+    }
+}
+
+#[async_trait::async_trait]
+impl RelationshipRepository for RelationshipRepositoryImpl {
+    async fn find_of_user(&self, user_id: &UserId) -> Result<Vec<Relationship>, Error> {
+        let ids =
+            pg::load_ids_related_to_user(self.client.lock().await.deref_mut(), user_id.as_str())
+                .await?;
+        self.find_by_ids(ids.as_slice()).await
+    }
+
+    async fn find_all(&self) -> Result<Vec<Relationship>, Error> {
+        let ids = pg::load_ids_of_all(self.client.lock().await.deref_mut()).await?;
+        self.find_by_ids(ids.as_slice()).await
     }
 
     async fn create(&self, relationship: &Relationship) -> Result<(), Error> {
@@ -61,27 +72,28 @@ impl RelationshipRepository for RelationshipRepositoryImpl {
         Ok(())
     }
 
-    async fn update(&self, relationship: &Relationship) -> Result<(), Error> {
-        let snapshot_hash = self
-            .hash_store
-            .lock()
-            .await
-            .get(relationship.id())
-            .copied()
-            .unwrap(); // 必ずhash_storeにあるはず
+    async fn update_many(&self, relationships: &[Relationship]) -> Result<(), Error> {
+        // snapshot_hashの取得
+        let hash_store = self.hash_store.lock().await;
+        let relationships = relationships
+            .iter()
+            .map(|rel| (rel, hash_store.get(rel.id()).copied().expect("このRepositoryからloadしていないRelationshipの更新処理を行うことはできません")))
+            .collect::<Vec<_>>();
+        drop(hash_store);
 
-        let new_snapshot_hash = pg::update(
+        // DBのupdate
+        let updated_list = pg::update_many(
             self.client.lock().await.deref_mut(),
-            relationship,
-            &snapshot_hash,
+            relationships.as_slice(),
         )
         .await
         .map_err(Error::internal)?;
 
-        self.hash_store
-            .lock()
-            .await
-            .insert(*relationship.id(), new_snapshot_hash);
+        // hash_storeの更新
+        let mut hash_store = self.hash_store.lock().await;
+        for (rel_id, new_snap_hash) in updated_list {
+            hash_store.insert(rel_id, new_snap_hash);
+        }
 
         Ok(())
     }
@@ -91,7 +103,7 @@ impl RelationshipRepository for RelationshipRepositoryImpl {
 mod tests {
     use super::*;
     use crate::repository::test_utils::connect_isolated_db;
-    use chrono::{NaiveTime, Weekday};
+    use chrono::{NaiveTime, Utc, Weekday};
     use mina_domain::user::User;
 
     #[tokio::test]
@@ -114,7 +126,11 @@ mod tests {
         assert_eq!(found_b, vec![relationship.clone()]);
 
         // update
-        relationship.add_call_schedule(vec![Weekday::Sun], NaiveTime::from_hms(10, 0, 0));
+        relationship.add_call_schedule_at(
+            vec![Weekday::Sun],
+            NaiveTime::from_hms(10, 0, 0),
+            Utc::now(),
+        );
         repo.update(&relationship).await.unwrap();
 
         // find
