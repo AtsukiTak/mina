@@ -198,9 +198,11 @@ async fn insert_relationship<'a>(
             id,
             user_a,
             user_b,
+            next_call_time,
+            processing_call_id,
             snapshot_hash
         )
-        VALUES ($1, $2, $3, $4)
+        VALUES ($1, $2, $3, $4, $5, $6)
     "#;
 
     let [user_a, user_b] = relationship.users();
@@ -210,6 +212,10 @@ async fn insert_relationship<'a>(
             relationship.id().as_ref(),
             &user_a.as_str(),
             &user_b.as_str(),
+            &relationship.next_call_time(),
+            &relationship
+                .processing_call()
+                .map(|call| call.id().as_ref()),
             snapshot_hash,
         ],
     )
@@ -381,11 +387,13 @@ async fn update_relationship<'a>(
         SET
             user_a = $1,
             user_b = $2,
-            snapshot_hash = $3
-        WHERE
-            id = $4
-            AND
+            next_call_time = $3,
+            processing_call_id = $4,
             snapshot_hash = $5
+        WHERE
+            id = $6
+            AND
+            snapshot_hash = $7
     "#;
 
     let [user_a, user_b] = relationship.users();
@@ -395,6 +403,10 @@ async fn update_relationship<'a>(
             &[
                 &user_a.as_str(),
                 &user_b.as_str(),
+                &relationship.next_call_time(),
+                &relationship
+                    .processing_call()
+                    .map(|call| call.id().as_ref()),
                 new_hash,
                 relationship.id().as_ref(),
                 old_hash,
