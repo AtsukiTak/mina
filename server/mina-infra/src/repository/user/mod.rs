@@ -134,12 +134,12 @@ mod tests {
         repo.create(&user).await.unwrap();
 
         // with cache
-        let found = repo.find_by_id(user.id().as_str()).await.unwrap();
+        let found = repo.find_by_id(user.id()).await.unwrap();
         assert_eq!(found, user);
 
         // without cache
         let repo = UserRepositoryImpl::new(client);
-        let found = repo.find_by_id(user.id().as_str()).await.unwrap();
+        let found = repo.find_by_id(user.id()).await.unwrap();
         assert_eq!(found, user);
     }
 
@@ -161,7 +161,7 @@ mod tests {
         // test without cache
         // updateした内容がちゃんと反映されているかテストする
         let repo = UserRepositoryImpl::new(client);
-        let found = repo.find_by_id(user.id().as_str()).await.unwrap();
+        let found = repo.find_by_id(user.id()).await.unwrap();
         assert_eq!(found, user);
     }
 }
