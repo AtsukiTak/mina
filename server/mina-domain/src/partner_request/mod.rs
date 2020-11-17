@@ -4,6 +4,7 @@ pub use repository::PartnerRequestRepository;
 use crate::user::{User, UserId};
 use chrono::{DateTime, Duration, Utc};
 use rego::Error;
+use std::convert::TryFrom;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -82,8 +83,8 @@ impl PartnerRequest {
     pub fn from_raw_parts(id: Uuid, from: String, to: String, created_at: DateTime<Utc>) -> Self {
         PartnerRequest {
             id,
-            from: UserId::from(from),
-            to: UserId::from(to),
+            from: UserId::try_from(from).unwrap(),
+            to: UserId::try_from(to).unwrap(),
             created_at,
         }
     }

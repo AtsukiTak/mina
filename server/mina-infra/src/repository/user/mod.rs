@@ -1,10 +1,10 @@
 mod pg;
-pub use self::pg::UserWithHash;
+pub use self::pg::SnapshotHash;
 
 use self::pg::{insert, load, update};
 use super::PgClient;
 use dataloader::{non_cached::Loader, BatchFn};
-use mina_domain::user::{User, UserRepository};
+use mina_domain::user::{User, UserId, UserRepository};
 use rego::Error;
 use std::{collections::HashMap, ops::DerefMut as _};
 use tokio::sync::Mutex;
@@ -16,8 +16,8 @@ use tokio::sync::Mutex;
 /// - 楽観ロック
 pub struct UserRepositoryImpl {
     client: PgClient,
-    cache: Mutex<HashMap<String, Result<UserWithHash, Error>>>,
-    loader: Loader<String, Result<UserWithHash, Error>, UserLoader>,
+    cache: Mutex<HashMap<UserId, Result<(User, SnapshotHash), Error>>>,
+    loader: Loader<UserId, Result<(User, SnapshotHash), Error>, UserLoader>,
 }
 
 impl UserRepositoryImpl {
@@ -32,26 +32,24 @@ impl UserRepositoryImpl {
 
 #[async_trait::async_trait]
 impl UserRepository for UserRepositoryImpl {
-    async fn find_by_id(&self, user_id: &str) -> Result<User, Error> {
+    async fn find_by_id(&self, user_id: &UserId) -> Result<User, Error> {
         let cache = self.cache.lock().await;
         if let Some(cached) = cache.get(user_id).cloned() {
-            return cached.map(|u| u.user);
+            return cached.map(|(user, _)| user);
         }
         drop(cache);
 
-        Ok(self.loader.load(user_id.to_string()).await?.user)
+        Ok(self.loader.load(user_id.clone()).await?.0)
     }
 
     async fn create(&self, user: &User) -> Result<(), Error> {
         // DBへの挿入
         let new_hash = insert(self.client.lock().await.deref_mut(), user).await?;
 
-        // Cacheの更新
-        let new_cache = UserWithHash::new(user.clone(), new_hash);
         self.cache
             .lock()
             .await
-            .insert(user.id().to_string(), Ok(new_cache));
+            .insert(user.id().clone(), Ok((user.clone(), new_hash)));
 
         Ok(())
     }
@@ -60,17 +58,15 @@ impl UserRepository for UserRepositoryImpl {
         // snapshot_idを取得するためCacheを取得する
         // Cacheがヒットしない場合はDBへクエリが行われるが、
         // これは意図した挙動（必要不可欠な挙動）である
-        let cached = self.loader.load(user.id().to_string()).await?;
+        let cached = self.loader.load(user.id().clone()).await?;
 
         // DBのupdate
-        let new_hash = update(self.client.lock().await.deref_mut(), user, cached.hash).await?;
+        let new_hash = update(self.client.lock().await.deref_mut(), user, cached.1).await?;
 
-        // Cacheの更新
-        let new_cache = UserWithHash::new(user.clone(), new_hash);
         self.cache
             .lock()
             .await
-            .insert(user.id().to_string(), Ok(new_cache));
+            .insert(user.id().clone(), Ok((user.clone(), new_hash)));
 
         Ok(())
     }
@@ -92,10 +88,10 @@ impl UserLoader {
 }
 
 #[async_trait::async_trait]
-impl BatchFn<String, Result<UserWithHash, Error>> for UserLoader {
-    async fn load(&self, keys: &[String]) -> HashMap<String, Result<UserWithHash, Error>> {
+impl BatchFn<UserId, Result<(User, SnapshotHash), Error>> for UserLoader {
+    async fn load(&self, keys: &[UserId]) -> HashMap<UserId, Result<(User, SnapshotHash), Error>> {
         match load(self.client.lock().await.deref_mut(), keys).await {
-            Ok(user_with_hash_vec) => {
+            Ok(records) => {
                 // NotFoundの場合は、対応するKeyにErrorを設定する
                 // そのため、まずすべてのkeyがNotFoundなHashMapを作る
                 let mut map = keys
@@ -103,10 +99,9 @@ impl BatchFn<String, Result<UserWithHash, Error>> for UserLoader {
                     .map(|id| (id.clone(), Err(Error::not_found("user"))))
                     .collect::<HashMap<_, _>>();
 
-                for user_with_hash in user_with_hash_vec {
-                    let key = user_with_hash.user.id().as_str();
-                    let val = map.get_mut(key).unwrap();
-                    *val = Ok(user_with_hash);
+                for (user, hash) in records {
+                    let key = user.id().clone();
+                    *map.get_mut(&key).unwrap() = Ok((user, hash));
                 }
 
                 map

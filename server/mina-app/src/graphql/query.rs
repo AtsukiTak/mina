@@ -3,8 +3,11 @@ use super::{
     ContextData,
 };
 use async_graphql::{Context, Error, Object};
-use mina_domain::{user::UserRepository as _, RepositorySet as _};
-use std::ops::Deref;
+use mina_domain::{
+    user::{UserId, UserRepository as _},
+    RepositorySet as _,
+};
+use std::{convert::TryFrom as _, ops::Deref};
 
 pub struct Query;
 
@@ -23,7 +26,7 @@ impl Query {
             .data::<ContextData>()?
             .repos()
             .user_repo()
-            .find_by_id(id.as_str())
+            .find_by_id(&UserId::try_from(id).map_err(Error::from)?)
             .await
             .map_err(Error::from)
             .map(GQLUser::from)

@@ -4,7 +4,7 @@ pub use repository::UserRepository;
 use crate::Cred;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use rego::Error;
-use std::ops::Deref;
+use std::{convert::TryFrom, ops::Deref};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct User {
@@ -87,7 +87,7 @@ impl User {
         apple_push_token: Option<String>,
     ) -> User {
         User {
-            id: UserId::from(id),
+            id: UserId::try_from(id).unwrap(),
             name,
             secret_cred: Cred::from(secret_cred),
             apple_push_token,
@@ -100,7 +100,7 @@ impl User {
  * UserId
  * ===============
  */
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone, Hash)]
 pub struct UserId(String);
 
 impl UserId {
@@ -142,15 +142,32 @@ impl Deref for UserId {
     }
 }
 
-impl From<String> for UserId {
-    fn from(s: String) -> UserId {
+impl TryFrom<String> for UserId {
+    type Error = Error;
+
+    fn try_from(s: String) -> Result<UserId, Error> {
         if !s.starts_with(Self::PREFIX) {
-            panic!("UserId (${}) starts with invalid prefix.", s);
+            Error::bad_input(format!("UserId (${}) starts with invalid prefix.", s));
         }
 
         // 将来的に文字数を増やす可能性があるため、
         // 文字数に対するチェックは行わない
 
-        UserId(s)
+        Ok(UserId(s))
+    }
+}
+
+impl TryFrom<&str> for UserId {
+    type Error = Error;
+
+    fn try_from(s: &str) -> Result<UserId, Error> {
+        if !s.starts_with(Self::PREFIX) {
+            Error::bad_input(format!("UserId (${}) starts with invalid prefix.", s));
+        }
+
+        // 将来的に文字数を増やす可能性があるため、
+        // 文字数に対するチェックは行わない
+
+        Ok(UserId(s.to_string()))
     }
 }

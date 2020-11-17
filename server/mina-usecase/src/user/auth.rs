@@ -1,8 +1,9 @@
 use mina_domain::{
-    user::{User, UserRepository as _},
+    user::{User, UserId, UserRepository as _},
     RepositorySet,
 };
 use rego::Error;
+use std::convert::TryFrom as _;
 
 #[derive(Clone)]
 pub struct AuthenticatedUser(User);
@@ -35,7 +36,7 @@ where
 {
     let user = repos
         .user_repo()
-        .find_by_id(user_id)
+        .find_by_id(&UserId::try_from(user_id)?)
         .await
         .map_err(|e| match e {
             Error::NotFound { .. } => Error::AuthFailed,

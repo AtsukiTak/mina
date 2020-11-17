@@ -19,7 +19,7 @@ impl GQLPartnerRequest {
         let from_user = data
             .repos()
             .user_repo()
-            .find_by_id(self.req.from_user().as_str())
+            .find_by_id(self.req.from_user())
             .await
             .map_err(Error::from)?;
 
@@ -32,7 +32,7 @@ impl GQLPartnerRequest {
         let from_user = data
             .repos()
             .user_repo()
-            .find_by_id(self.req.to_user().as_str())
+            .find_by_id(self.req.to_user())
             .await
             .map_err(Error::from)?;
 

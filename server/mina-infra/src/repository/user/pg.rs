@@ -1,19 +1,10 @@
-use mina_domain::user::User;
+use mina_domain::user::{User, UserId};
 use rego::Error;
 use tokio_postgres::{Client, Row};
 use uuid::Uuid;
 
-#[derive(Clone, Debug)]
-pub struct UserWithHash {
-    pub user: User,
-    pub hash: Uuid,
-}
-
-impl UserWithHash {
-    pub fn new(user: User, hash: Uuid) -> UserWithHash {
-        UserWithHash { user, hash }
-    }
-}
+#[derive(Clone, Copy, Debug)]
+pub struct SnapshotHash(Uuid);
 
 /*
  * =============
@@ -32,7 +23,11 @@ FROM users
 WHERE id = ANY( $1 )
 "#;
 
-pub async fn load(client: &mut Client, user_ids: &[String]) -> Result<Vec<UserWithHash>, Error> {
+pub async fn load(
+    client: &mut Client,
+    user_ids: &[UserId],
+) -> Result<Vec<(User, SnapshotHash)>, Error> {
+    let user_ids = user_ids.iter().map(|id| id.as_str()).collect::<Vec<_>>();
     // 1操作しかしないため、transactionを発行していない
     // 複数操作になったときはtransactionを発行する
     let rows = client
@@ -43,7 +38,7 @@ pub async fn load(client: &mut Client, user_ids: &[String]) -> Result<Vec<UserWi
     Ok(rows.into_iter().map(to_user_with_hash).collect())
 }
 
-fn to_user_with_hash(row: Row) -> UserWithHash {
+fn to_user_with_hash(row: Row) -> (User, SnapshotHash) {
     let id: String = row.get("id");
     let name: Option<String> = row.get("name");
     let secret_cred: String = row.get("secret_cred");
@@ -51,7 +46,7 @@ fn to_user_with_hash(row: Row) -> UserWithHash {
     let hash: Uuid = row.get("snapshot_hash");
 
     let user = User::from_raw_parts(id, name, secret_cred, apple_push_token);
-    UserWithHash::new(user, hash)
+    (user, SnapshotHash(hash))
 }
 
 /*
@@ -72,7 +67,7 @@ VALUES ($1, $2, $3, $4, $5)
 "#;
 
 /// 新規UserをDBに登録する
-pub async fn insert(client: &mut Client, user: &User) -> Result<Uuid, Error> {
+pub async fn insert(client: &mut Client, user: &User) -> Result<SnapshotHash, Error> {
     let new_hash = Uuid::new_v4();
 
     // 1操作しかしないため、transactionを発行していない
@@ -91,7 +86,7 @@ pub async fn insert(client: &mut Client, user: &User) -> Result<Uuid, Error> {
         .await
         .map_err(Error::internal)?;
 
-    Ok(new_hash)
+    Ok(SnapshotHash(new_hash))
 }
 
 /*
@@ -113,7 +108,11 @@ WHERE
 "#;
 
 /// 楽観ロック
-pub async fn update(client: &mut Client, user: &User, old_hash: Uuid) -> Result<Uuid, Error> {
+pub async fn update(
+    client: &mut Client,
+    user: &User,
+    old_hash: SnapshotHash,
+) -> Result<SnapshotHash, Error> {
     let new_hash = Uuid::new_v4();
 
     // 1操作しかしないため、transactionを発行していない
@@ -127,11 +126,11 @@ pub async fn update(client: &mut Client, user: &User, old_hash: Uuid) -> Result<
                 &user.apple_push_token(),
                 &new_hash,
                 &user.id().as_str(),
-                &old_hash,
+                &old_hash.0,
             ],
         )
         .await
         .map_err(Error::internal)?;
 
-    Ok(new_hash)
+    Ok(SnapshotHash(new_hash))
 }

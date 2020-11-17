@@ -4,7 +4,7 @@ pub use repository::RelationshipRepository;
 use crate::user::UserId;
 use chrono::{DateTime, Datelike as _, NaiveDate, NaiveDateTime, NaiveTime, Utc, Weekday};
 use rego::Error;
-use std::{fmt, iter::FromIterator, sync::Arc};
+use std::{convert::TryFrom as _, fmt, iter::FromIterator, sync::Arc};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -173,10 +173,12 @@ impl Relationship {
         next_call_time: Option<DateTime<Utc>>,
         processing_call: Option<(Uuid, [Option<String>; 2], DateTime<Utc>)>,
     ) -> Self {
+        let user_a = UserId::try_from(user_a).unwrap();
+        let user_b = UserId::try_from(user_b).unwrap();
         Relationship {
             id: RelationshipId(id),
-            user_a: UserId::from(user_a.clone()),
-            user_b: UserId::from(user_b.clone()),
+            user_a: user_a.clone(),
+            user_b: user_b.clone(),
             schedules: schedules
                 .into_iter()
                 .map(|(id, time, weekdays)| CallSchedule {
@@ -192,11 +194,11 @@ impl Relationship {
                     id: CallId(id),
                     users: [
                         CallUser {
-                            user_id: UserId::from(user_a.clone()),
+                            user_id: user_a,
                             skw_id: u1_skw_id,
                         },
                         CallUser {
-                            user_id: UserId::from(user_b.clone()),
+                            user_id: user_b,
                             skw_id: u2_skw_id,
                         },
                     ],

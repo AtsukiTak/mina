@@ -32,11 +32,7 @@ impl GQLMyRelationship {
             .find(|id| *id != &self.me.as_ref().id())
             .unwrap();
 
-        let partner = data
-            .repos()
-            .user_repo()
-            .find_by_id(partner_id.as_str())
-            .await?;
+        let partner = data.repos().user_repo().find_by_id(partner_id).await?;
 
         Ok(GQLUser::from(partner))
     }
