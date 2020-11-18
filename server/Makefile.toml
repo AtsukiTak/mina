@@ -68,3 +68,9 @@ env = { RUST_LOG = "debug" }
 script = ['''
 cargo run -p mina-app --example print_graphql_schema > schema.graphql
 ''']
+
+
+[tasks."schema.json"]
+script = ['''
+cargo run -p mina-app --example print_graphql_introspection > schema.json
+''']
