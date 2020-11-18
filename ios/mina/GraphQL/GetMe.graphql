@@ -1,4 +1,4 @@
-query Me {
+query GetMe {
   me {
     id
     name

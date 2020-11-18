@@ -24,13 +24,6 @@ struct Credential {
 }
 
 struct UserRepository {
-    static func saveUser(password: String) -> AnyPublisher<User, Error> {
-        ApiService()
-            .createUser(password: password)
-            .map { res in User(id: res.id, password: password) }
-            .eraseToAnyPublisher()
-    }
-    
     static func findUser() throws -> User? {
         try KeychainService()
             .readCred()

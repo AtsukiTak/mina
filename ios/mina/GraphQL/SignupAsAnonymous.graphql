@@ -1,0 +1,8 @@
+mutation SignupAsAnonymous {
+    signupAsAnonymous {
+        user {
+            id
+        }
+        secret
+    }
+}

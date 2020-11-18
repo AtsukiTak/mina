@@ -11,8 +11,11 @@
 		ED26B151251C9D4200957F06 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED26B150251C9D4200957F06 /* User.swift */; };
 		ED26B153251C9EF400957F06 /* ApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED26B152251C9EF400957F06 /* ApiService.swift */; };
 		ED3C37DE25651799006F550B /* PartnerSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3C37DD25651799006F550B /* PartnerSearchView.swift */; };
-		ED3C37F725651F50006F550B /* Me.graphql in Resources */ = {isa = PBXBuildFile; fileRef = ED3C37F525651F4F006F550B /* Me.graphql */; };
+		ED3C37F725651F50006F550B /* GetMe.graphql in Resources */ = {isa = PBXBuildFile; fileRef = ED3C37F525651F4F006F550B /* GetMe.graphql */; };
 		ED3C37F825651F50006F550B /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3C37F625651F4F006F550B /* API.swift */; };
+		ED3C37FC256523A0006F550B /* SignupAsAnonymous.graphql in Resources */ = {isa = PBXBuildFile; fileRef = ED3C37FB256523A0006F550B /* SignupAsAnonymous.graphql */; };
+		ED3C37FF2565249F006F550B /* SearchPartner.graphql in Resources */ = {isa = PBXBuildFile; fileRef = ED3C37FE2565249F006F550B /* SearchPartner.graphql */; };
+		ED3C3803256559AE006F550B /* SendPartnerRequest.graphql in Resources */ = {isa = PBXBuildFile; fileRef = ED3C3802256559AE006F550B /* SendPartnerRequest.graphql */; };
 		ED4FE189251E61A20009420C /* CallService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4FE188251E61A20009420C /* CallService.swift */; };
 		ED51EB09252B14A200E9959B /* SkyWay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED51EB08252B14A200E9959B /* SkyWay.framework */; };
 		ED51EB0A252B14A200E9959B /* SkyWay.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ED51EB08252B14A200E9959B /* SkyWay.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -66,8 +69,11 @@
 		ED26B150251C9D4200957F06 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		ED26B152251C9EF400957F06 /* ApiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiService.swift; sourceTree = "<group>"; };
 		ED3C37DD25651799006F550B /* PartnerSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartnerSearchView.swift; sourceTree = "<group>"; };
-		ED3C37F525651F4F006F550B /* Me.graphql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Me.graphql; sourceTree = "<group>"; };
+		ED3C37F525651F4F006F550B /* GetMe.graphql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = GetMe.graphql; sourceTree = "<group>"; };
 		ED3C37F625651F4F006F550B /* API.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
+		ED3C37FB256523A0006F550B /* SignupAsAnonymous.graphql */ = {isa = PBXFileReference; lastKnownFileType = text; path = SignupAsAnonymous.graphql; sourceTree = "<group>"; };
+		ED3C37FE2565249F006F550B /* SearchPartner.graphql */ = {isa = PBXFileReference; lastKnownFileType = text; path = SearchPartner.graphql; sourceTree = "<group>"; };
+		ED3C3802256559AE006F550B /* SendPartnerRequest.graphql */ = {isa = PBXFileReference; lastKnownFileType = text; path = SendPartnerRequest.graphql; sourceTree = "<group>"; };
 		ED4FE188251E61A20009420C /* CallService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallService.swift; sourceTree = "<group>"; };
 		ED51EB08252B14A200E9959B /* SkyWay.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SkyWay.framework; path = Frameworks/SkyWay.framework; sourceTree = "<group>"; };
 		ED51EB0D252B16B200E9959B /* CallSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallSessionManager.swift; sourceTree = "<group>"; };
@@ -127,7 +133,10 @@
 			isa = PBXGroup;
 			children = (
 				ED3C37F625651F4F006F550B /* API.swift */,
-				ED3C37F525651F4F006F550B /* Me.graphql */,
+				ED3C37F525651F4F006F550B /* GetMe.graphql */,
+				ED3C37FB256523A0006F550B /* SignupAsAnonymous.graphql */,
+				ED3C37FE2565249F006F550B /* SearchPartner.graphql */,
+				ED3C3802256559AE006F550B /* SendPartnerRequest.graphql */,
 			);
 			path = GraphQL;
 			sourceTree = "<group>";
@@ -162,7 +171,6 @@
 		ED878A4D2514A3B60030A575 /* mina */ = {
 			isa = PBXGroup;
 			children = (
-				ED3C37EF25651EE8006F550B /* GraphQL */,
 				ED878A732514F32E0030A575 /* mina.entitlements */,
 				ED878A4E2514A3B60030A575 /* AppDelegate.swift */,
 				ED878A502514A3B60030A575 /* SceneDelegate.swift */,
@@ -175,6 +183,7 @@
 				ED878A592514A3B90030A575 /* LaunchScreen.storyboard */,
 				ED878A5C2514A3B90030A575 /* Info.plist */,
 				ED878A76251B63DE0030A575 /* Components */,
+				ED3C37EF25651EE8006F550B /* GraphQL */,
 				ED26B14F251C9D2700957F06 /* Models */,
 				EDFDC8F3252C731D004E0C00 /* Manager */,
 				ED878A77251B63F60030A575 /* Services */,
@@ -329,10 +338,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				EDFDC90A25303189004E0C00 /* secrets.plist in Resources */,
-				ED3C37F725651F50006F550B /* Me.graphql in Resources */,
+				ED3C37F725651F50006F550B /* GetMe.graphql in Resources */,
+				ED3C3803256559AE006F550B /* SendPartnerRequest.graphql in Resources */,
 				ED878A5B2514A3B90030A575 /* LaunchScreen.storyboard in Resources */,
 				EDFDC90D253031F1004E0C00 /* secrets.template.plist in Resources */,
+				ED3C37FF2565249F006F550B /* SearchPartner.graphql in Resources */,
 				ED878A582514A3B90030A575 /* Preview Assets.xcassets in Resources */,
+				ED3C37FC256523A0006F550B /* SignupAsAnonymous.graphql in Resources */,
 				ED878A552514A3B90030A575 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -1,0 +1,3 @@
+mutation SendPartnerRequest($toUserId: String!) {
+    sendPartnerRequest(toUserId: $toUserId)
+}
