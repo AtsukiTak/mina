@@ -10,25 +10,25 @@ import SwiftUI
 
 struct VideoView: View {
     
-    @ObservedObject var callManager: CallManager = CallManager.shared
+    @ObservedObject var callSession: CallSessionManager = CallSessionManager.shared
     
     var body: some View {
         VStack {
             // remoteVideo
             VideoWindow(frame: CGRect(x: 0, y: 0, width: 200, height: 200),
-                        stream: callManager.remoteStream)
+                        stream: callSession.remoteStream)
             
             Spacer()
             
-            Text("My PeerId : \(callManager.peerId ?? "")")
+            Text("My PeerId : \(callSession.peerId ?? "")")
             
-            if let errMsg = callManager.errMsg {
+            if let errMsg = callSession.errMsg {
                 Text("Error \(errMsg)")
             }
             
             // localVideo
             VideoWindow(frame: CGRect(x: 0, y: 0, width: 200, height: 200),
-                        stream: callManager.localStream)
+                        stream: callSession.localStream)
                 .frame(width: 200, height: 200, alignment: .bottomLeading)
         }
     }

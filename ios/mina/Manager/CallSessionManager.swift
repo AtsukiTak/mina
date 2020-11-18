@@ -11,7 +11,7 @@ import Combine
 import SkyWay
 
 /// 通話に関する状態を管理するクラス
-final class CallManager: ObservableObject {
+final class CallSessionManager: ObservableObject {
     
     var skywayPeer: SKWPeer?
     var mediaConnection: SKWMediaConnection?
@@ -23,7 +23,7 @@ final class CallManager: ObservableObject {
     // for develop
     @Published var peerId: String?
     
-    static let shared: CallManager = CallManager()
+    static let shared: CallSessionManager = CallSessionManager()
     
     private init() {}
     
