@@ -51,10 +51,24 @@ type Mutation {
 	パートナーリクエストを受理する
 	"""
 	acceptPartnerRequest(requestId: UUID!): String!
+	"""
+	指定のRelationshipに新しいCallScheduleを追加する
+	
+	# Params
+	- relationship_id: Uuid
+	- weekdays: コンマ区切りのString. eg "Sun,Sat"
+	- time: "%H:%M"で表現されるString. eg "15:42"
+	"""
+	addCallSchedule(input: AddCallScheduleInput!): MyRelationship!
 }
 type UserAndSecret {
 	user: User!
 	secret: String!
+}
+input AddCallScheduleInput {
+relationshipId: UUID!
+weekdays: String!
+time: String!
 }
 schema {
 	query: Query
