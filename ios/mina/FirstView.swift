@@ -11,10 +11,20 @@ import SwiftUI
 struct FirstView: View {
     @State var userId: String
     @State var relationships: [Relationship]
+    @State private var searchMode: Bool = false
     
     var body: some View {
         VStack {
-            UserInfoSection(userId: self.userId)
+            HStack {
+                Text("Partners")
+                    .font(.title)
+                    .bold()
+                Spacer()
+            }
+            .padding(.leading, 15)
+            
+            Divider()
+                .padding(.leading, 15)
             
             // partner cards
             ForEach(self.relationships, content: { relationship in
@@ -24,19 +34,24 @@ struct FirstView: View {
             })
             
             // Add a new partner card
-            Card(bgColor: Color.main) {
-                HStack {
-                    Image(systemName: "person.crop.circle.badge.plus")
-                        .imageScale(.large)
-                        .foregroundColor(.white)
-                    Text("Add a new partner")
-                        .foregroundColor(.white)
-                        .bold()
-                    Spacer()
+            Button(action: { self.searchMode = true}) {
+                Card(bgColor: Color.main) {
+                    HStack {
+                        Image(systemName: "person.crop.circle.badge.plus")
+                            .imageScale(.large)
+                            .foregroundColor(.white)
+                        Text("Add a new partner")
+                            .foregroundColor(.white)
+                            .bold()
+                        Spacer()
+                    }
                 }
+                .padding(.horizontal, 15)
+                .padding(.top, 20)
             }
-            .padding(.horizontal, 15)
-            .padding(.top, 20)
+            .sheet(isPresented: self.$searchMode) {
+                PartnerSearchView()
+            }
             
             Spacer()
         }

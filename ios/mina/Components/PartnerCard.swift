@@ -25,20 +25,20 @@ struct PartnerCard: View {
                         .foregroundColor(.main)
                     Spacer()
                 }
-                .padding(.bottom, 10)
+                .padding(.bottom, 20)
                 
                 // Next call section
                 HStack {
                     VStack(alignment: .leading) {
                         Text("Next Call")
                             .font(.caption)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.main)
                             .bold()
                             .offset(x: 0, y: -3)
                         Text(self.nextCallStr)
                             .font(.headline)
                             .bold()
-                            .foregroundColor(.main)
+                            .foregroundColor(.black)
                     }
                     Spacer()
                 }
