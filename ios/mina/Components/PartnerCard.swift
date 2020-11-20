@@ -1,0 +1,62 @@
+//
+//  Card.swift
+//  mina
+//
+//  Created by 高橋篤樹 on 2020/11/20.
+//  Copyright © 2020 高橋篤樹. All rights reserved.
+//
+
+import SwiftUI
+
+struct PartnerCard: View {
+    let relationship: Relationship
+    
+    var body: some View {
+        Card(bgColor: Color.lightMain) {
+            VStack {
+                HStack(alignment: .bottom) {
+                    Image(systemName: "person.crop.circle")
+                        .imageScale(.large)
+                        .foregroundColor(.main)
+                        .padding(.trailing, 5)
+                    Text(self.relationship.partner.id)
+                        .font(.headline)
+                        .bold()
+                        .foregroundColor(.main)
+                    Spacer()
+                }
+                .padding(.bottom, 10)
+                
+                // Next call section
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text("Next Call")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .bold()
+                            .offset(x: 0, y: -3)
+                        Text(self.nextCallStr)
+                            .font(.headline)
+                            .bold()
+                            .foregroundColor(.main)
+                    }
+                    Spacer()
+                }
+            }
+        }
+    }
+    
+    var nextCallStr: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        return formatter.string(from: self.relationship.nextCallTime)
+    }
+}
+
+struct PartnerCard_Previews: PreviewProvider {
+    static var previews: some View {
+        PartnerCard(relationship: Relationship.demo)
+            .padding()
+    }
+}

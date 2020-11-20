@@ -12,7 +12,7 @@ struct RootView: View {
     @EnvironmentObject var env: GlobalEnvironment
     
     var body: some View {
-        VStack {
+        Group {
             if (self.env.callMode) {
                 VideoView().transition(.opacity)
             } else {
