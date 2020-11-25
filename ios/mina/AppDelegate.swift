@@ -12,7 +12,7 @@ import PushKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
-    var user: User? = nil
+    var user: Me? = nil
     var callService: CallService?
     var pushService: PushService?
     let apiService: ApiService = ApiService()
@@ -42,7 +42,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.pushService = pushService
         
         do {
-            self.user = try UserRepository.findUser()
+            self.user = try UserRepository.findMe()
             return true
         } catch {
             return false

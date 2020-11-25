@@ -47,16 +47,26 @@ struct PartnerCard: View {
     }
     
     var nextCallStr: String {
+        guard let nextCallTime = self.relationship.nextCallTime else {
+            return "-";
+        }
         let formatter = DateFormatter()
         formatter.dateStyle = .short
         formatter.timeStyle = .short
-        return formatter.string(from: self.relationship.nextCallTime)
+        return formatter.string(from: nextCallTime)
     }
 }
 
 struct PartnerCard_Previews: PreviewProvider {
     static var previews: some View {
-        PartnerCard(relationship: Relationship.demo)
-            .padding()
+        VStack {
+            PartnerCard(relationship: Relationship.demo)
+                .padding()
+            
+            PartnerCard(relationship: Relationship(id: UUID(),
+                                                   partner: User.demo,
+                                                   nextCallTime: nil))
+                .padding()
+        }
     }
 }

@@ -12,32 +12,61 @@ import SwiftUI
 struct PartnerSearchView: View {
     @State private var input: String = ""
     @State var foundUserId: String? = nil
-    @State var sendingRequest: Bool = false
+    @State var requestStatus: RequestStatus = .unsend
+    
+    enum RequestStatus {
+        case unsend
+        case sending
+        case sent
+    }
     
     var body: some View {
         VStack {
-            Text("Search partner")
-                .font(.headline)
-                .foregroundColor(.primary)
-                .padding()
             TextField("Input partner's user id", text: $input,
                       onEditingChanged: { _ in },
                       onCommit: { self.searchPartner() }
                 )
+                .padding(.bottom, 20)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
+                .transition(.slide)
+            
             if let userId = foundUserId {
                 Divider()
-                    .padding()
-                HStack(alignment: .center) {
-                    Text(userId)
-                        .font(.headline)
-                    Spacer()
-                    SendRequestButton(targetUserId: userId)
-                }
-                .padding()
+                Spacer()
+                self.foundUserSection(userId: userId)
+                    .transition(.opacity)
+                Spacer()
             }
-            Spacer()
+        }
+        .padding()
+        .animation(.easeInOut)
+    }
+    
+    func foundUserSection(userId: String) -> some View {
+        VStack {
+            // User id
+            HStack(alignment: .center) {
+                Image(systemName: "person.crop.circle")
+                    .imageScale(.large)
+                    .foregroundColor(.main)
+                    .padding(.horizontal, 10)
+                Text(userId)
+                    .font(.title)
+                    .bold()
+                    .foregroundColor(.main)
+                Spacer()
+            }
+            .padding(.bottom, 20)
+            
+            // "Send a Partner Request" Button
+            SendRequestButton(targetUserId: userId)
+            
+            // Caption text
+            Text("The process to become a partner each other requires two steps. First you need to send a partner request. When a counterpart will receive and accept it, you two are become a partner each other.")
+            .font(.caption)
+            .lineSpacing(7)
+            .foregroundColor(.black)
+            .padding(.horizontal, 10)
         }
     }
     
@@ -46,7 +75,7 @@ struct PartnerSearchView: View {
             switch result {
             case .success(let res):
                 self.foundUserId = res.data!.user.id
-            case .failure(_): break
+            case .failure(_): break // TODO
             }
         }
     }
@@ -54,53 +83,55 @@ struct PartnerSearchView: View {
 
 struct SendRequestButton: View {
     var targetUserId: String
-    @State var status: ButtonStatus = .initial
+    @State var status: RequestStatus = .unsend
+    @Environment(\.presentationMode) var presentationMode
     
-    enum ButtonStatus {
-        case initial
+    enum RequestStatus {
+        case unsend
         case sending
-        case completed
+        case sent
     }
     
     var body: some View {
-            switch self.status {
-            case .initial:
-                Button(action: self.sendRequest) {
-                    Text("Send Request")
-                        .font(.footnote)
-                        .foregroundColor(.purple)
-                        .bold()
-                        .padding(12)
-                        .overlay(RoundedRectangle(cornerRadius: 25)
-                                    .stroke(lineWidth: 2.0)
-                                    .foregroundColor(.purple))
-                }
-            case .sending:
-                Text("Sending...")
-                    .font(.footnote)
-                    .foregroundColor(.purple)
-                    .bold()
-                    .padding(12)
-                    .overlay(RoundedRectangle(cornerRadius: 25)
-                                .stroke(lineWidth: 2.0)
-                                .foregroundColor(.purple))
-            case .completed:
-                Text("Complete!")
-                    .font(.footnote)
-                    .bold()
-                    .padding(15)
+        Button(action: { self.sendRequest() }) {
+            HStack {
+                Spacer()
+                Text(self.text)
+                    .font(.headline)
                     .foregroundColor(.white)
-                    .background(Color.purple)
-                    .cornerRadius(25)
+                Spacer()
             }
+            .padding()
+            .background(Color.main)
+            .cornerRadius(10.0, antialiased: true)
+            .shadow(color: Color(white: 0.8), radius: 5, x: 0, y: 2)
+            .padding(.bottom, 20)
+        }
+    }
+    
+    var text: String {
+        switch self.status {
+        case .unsend:
+            return "Send a Partner Request"
+        case .sending:
+            return "Sending..."
+        case .sent:
+            return "Request is sent"
+        }
     }
     
     func sendRequest() {
         self.status = .sending
-        return;
 
-        ApiService.shared.apollo.perform(mutation: SendPartnerRequestMutation(toUserId: self.targetUserId)) { result in
-            // TODO
+        let mutation = SendPartnerRequestMutation(toUserId: self.targetUserId)
+        ApiService.shared.apollo.perform(mutation: mutation) { result in
+            switch result {
+            case .success(_):
+                self.status = .sent
+            case .failure(_):
+                self.status = .unsend
+                // TODO : show error msg
+            }
         }
     }
 }
@@ -111,6 +142,7 @@ struct PartnerSearchView_Previews: PreviewProvider {
             PartnerSearchView()
                 .previewDevice(PreviewDevice(rawValue: "init"))
                 .previewDisplayName("init")
+            
             PartnerSearchView(foundUserId: "usr_lkd2845n")
                 .previewDevice(PreviewDevice(rawValue: "searched"))
                 .previewDisplayName("searched")

@@ -18,7 +18,6 @@
 		ED3C3803256559AE006F550B /* SendPartnerRequest.graphql in Resources */ = {isa = PBXBuildFile; fileRef = ED3C3802256559AE006F550B /* SendPartnerRequest.graphql */; };
 		ED3C38062566A26C006F550B /* FirstView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3C38052566A26C006F550B /* FirstView.swift */; };
 		ED3C38092567A9CD006F550B /* PartnerCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3C38082567A9CD006F550B /* PartnerCard.swift */; };
-		ED3C380D2567B0D3006F550B /* Partner.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3C380C2567B0D3006F550B /* Partner.swift */; };
 		ED3C38112567B2A0006F550B /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3C38102567B2A0006F550B /* Color.swift */; };
 		ED4FE189251E61A20009420C /* CallService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4FE188251E61A20009420C /* CallService.swift */; };
 		ED51EB09252B14A200E9959B /* SkyWay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED51EB08252B14A200E9959B /* SkyWay.framework */; };
@@ -36,6 +35,8 @@
 		ED878A79251B65460030A575 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A78251B65460030A575 /* KeychainService.swift */; };
 		EDC497782567C5CB0053B1F1 /* Relationship.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDC497772567C5CB0053B1F1 /* Relationship.swift */; };
 		EDC4977C2567CAD00053B1F1 /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDC4977B2567CAD00053B1F1 /* Card.swift */; };
+		EDC49784256D037F0053B1F1 /* PartnerRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDC49783256D037F0053B1F1 /* PartnerRequest.swift */; };
+		EDC4978B256E773C0053B1F1 /* AcceptPartnerRequest.graphql in Resources */ = {isa = PBXBuildFile; fileRef = EDC4978A256E773C0053B1F1 /* AcceptPartnerRequest.graphql */; };
 		EDFDC8F6252CBCB5004E0C00 /* VideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC8F5252CBCB5004E0C00 /* VideoView.swift */; };
 		EDFDC8FA252CBD0F004E0C00 /* VideoWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC8F9252CBD0F004E0C00 /* VideoWindow.swift */; };
 		EDFDC8FD252D7CA0004E0C00 /* SkyWayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC8FC252D7CA0004E0C00 /* SkyWayService.swift */; };
@@ -82,7 +83,6 @@
 		ED3C3802256559AE006F550B /* SendPartnerRequest.graphql */ = {isa = PBXFileReference; lastKnownFileType = text; path = SendPartnerRequest.graphql; sourceTree = "<group>"; };
 		ED3C38052566A26C006F550B /* FirstView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstView.swift; sourceTree = "<group>"; };
 		ED3C38082567A9CD006F550B /* PartnerCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartnerCard.swift; sourceTree = "<group>"; };
-		ED3C380C2567B0D3006F550B /* Partner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Partner.swift; sourceTree = "<group>"; };
 		ED3C38102567B2A0006F550B /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		ED4FE188251E61A20009420C /* CallService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallService.swift; sourceTree = "<group>"; };
 		ED51EB08252B14A200E9959B /* SkyWay.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SkyWay.framework; path = Frameworks/SkyWay.framework; sourceTree = "<group>"; };
@@ -103,6 +103,8 @@
 		ED878A78251B65460030A575 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		EDC497772567C5CB0053B1F1 /* Relationship.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Relationship.swift; sourceTree = "<group>"; };
 		EDC4977B2567CAD00053B1F1 /* Card.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Card.swift; sourceTree = "<group>"; };
+		EDC49783256D037F0053B1F1 /* PartnerRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartnerRequest.swift; sourceTree = "<group>"; };
+		EDC4978A256E773C0053B1F1 /* AcceptPartnerRequest.graphql */ = {isa = PBXFileReference; lastKnownFileType = text; path = AcceptPartnerRequest.graphql; sourceTree = "<group>"; };
 		EDFDC8F5252CBCB5004E0C00 /* VideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoView.swift; sourceTree = "<group>"; };
 		EDFDC8F9252CBD0F004E0C00 /* VideoWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoWindow.swift; sourceTree = "<group>"; };
 		EDFDC8FC252D7CA0004E0C00 /* SkyWayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkyWayService.swift; sourceTree = "<group>"; };
@@ -137,8 +139,8 @@
 			isa = PBXGroup;
 			children = (
 				ED26B150251C9D4200957F06 /* User.swift */,
-				ED3C380C2567B0D3006F550B /* Partner.swift */,
 				EDC497772567C5CB0053B1F1 /* Relationship.swift */,
+				EDC49783256D037F0053B1F1 /* PartnerRequest.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -151,6 +153,7 @@
 				ED3C37FB256523A0006F550B /* SignupAsAnonymous.graphql */,
 				ED3C37FE2565249F006F550B /* SearchPartner.graphql */,
 				ED3C3802256559AE006F550B /* SendPartnerRequest.graphql */,
+				EDC4978A256E773C0053B1F1 /* AcceptPartnerRequest.graphql */,
 			);
 			path = GraphQL;
 			sourceTree = "<group>";
@@ -363,6 +366,7 @@
 				ED3C37FF2565249F006F550B /* SearchPartner.graphql in Resources */,
 				ED878A582514A3B90030A575 /* Preview Assets.xcassets in Resources */,
 				ED3C37FC256523A0006F550B /* SignupAsAnonymous.graphql in Resources */,
+				EDC4978B256E773C0053B1F1 /* AcceptPartnerRequest.graphql in Resources */,
 				ED878A552514A3B90030A575 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -393,7 +397,6 @@
 				ED3C38062566A26C006F550B /* FirstView.swift in Sources */,
 				ED3C37DE25651799006F550B /* PartnerSearchView.swift in Sources */,
 				ED26B153251C9EF400957F06 /* ApiService.swift in Sources */,
-				ED3C380D2567B0D3006F550B /* Partner.swift in Sources */,
 				EDFDC904252E1AEC004E0C00 /* GlobalEnvironment.swift in Sources */,
 				ED3C38112567B2A0006F550B /* Color.swift in Sources */,
 				ED26B14E251C969A00957F06 /* PushService.swift in Sources */,
@@ -402,6 +405,7 @@
 				ED26B151251C9D4200957F06 /* User.swift in Sources */,
 				EDFDC8F6252CBCB5004E0C00 /* VideoView.swift in Sources */,
 				ED4FE189251E61A20009420C /* CallService.swift in Sources */,
+				EDC49784256D037F0053B1F1 /* PartnerRequest.swift in Sources */,
 				ED3C37F825651F50006F550B /* API.swift in Sources */,
 				EDFDC8FD252D7CA0004E0C00 /* SkyWayService.swift in Sources */,
 				EDC497782567C5CB0053B1F1 /* Relationship.swift in Sources */,

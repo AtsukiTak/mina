@@ -4,6 +4,58 @@
 import Apollo
 import Foundation
 
+public final class AcceptPartnerRequestMutation: GraphQLMutation {
+  /// The raw GraphQL definition of this operation.
+  public let operationDefinition: String =
+    """
+    mutation AcceptPartnerRequest($requestId: UUID!) {
+      acceptPartnerRequest(requestId: $requestId)
+    }
+    """
+
+  public let operationName: String = "AcceptPartnerRequest"
+
+  public var requestId: String
+
+  public init(requestId: String) {
+    self.requestId = requestId
+  }
+
+  public var variables: GraphQLMap? {
+    return ["requestId": requestId]
+  }
+
+  public struct Data: GraphQLSelectionSet {
+    public static let possibleTypes: [String] = ["Mutation"]
+
+    public static var selections: [GraphQLSelection] {
+      return [
+        GraphQLField("acceptPartnerRequest", arguments: ["requestId": GraphQLVariable("requestId")], type: .nonNull(.scalar(String.self))),
+      ]
+    }
+
+    public private(set) var resultMap: ResultMap
+
+    public init(unsafeResultMap: ResultMap) {
+      self.resultMap = unsafeResultMap
+    }
+
+    public init(acceptPartnerRequest: String) {
+      self.init(unsafeResultMap: ["__typename": "Mutation", "acceptPartnerRequest": acceptPartnerRequest])
+    }
+
+    /// パートナーリクエストを受理する
+    public var acceptPartnerRequest: String {
+      get {
+        return resultMap["acceptPartnerRequest"]! as! String
+      }
+      set {
+        resultMap.updateValue(newValue, forKey: "acceptPartnerRequest")
+      }
+    }
+  }
+}
+
 public final class GetMeQuery: GraphQLQuery {
   /// The raw GraphQL definition of this operation.
   public let operationDefinition: String =

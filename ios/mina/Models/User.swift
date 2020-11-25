@@ -11,6 +11,12 @@ import Combine
 
 struct User {
     let id: String
+    
+    static let demo = User(id: "usr_4Jlsij83")
+}
+
+struct Me {
+    let id: String
     let password: String
     
     var credential: Credential {
@@ -24,9 +30,9 @@ struct Credential {
 }
 
 struct UserRepository {
-    static func findUser() throws -> User? {
+    static func findMe() throws -> Me? {
         try KeychainService()
             .readCred()
-            .map { User(id: $0.userId, password: $0.password) }
+            .map { Me(id: $0.userId, password: $0.password) }
     }
 }

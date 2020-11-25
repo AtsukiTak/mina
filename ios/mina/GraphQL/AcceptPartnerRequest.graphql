@@ -1,0 +1,3 @@
+mutation AcceptPartnerRequest($requestId: UUID!) {
+    acceptPartnerRequest(requestId: $requestId)
+}

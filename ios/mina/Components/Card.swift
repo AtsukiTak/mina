@@ -25,13 +25,19 @@ struct Card<V: View>: View {
         .padding(.vertical, 20)
         .background(self.bgColor)
         .cornerRadius(10)
+        .shadow(color: Color(white: 0.8), radius: 5, x: 0, y: 2)
     }
 }
 
 struct Card_Previews: PreviewProvider {
     static var previews: some View {
         Card(bgColor: Color.lightMain) {
-            Text("Hoge")
+            VStack(alignment: .leading) {
+                Text("Hoge")
+                    .font(.title)
+                    .padding(.bottom, 10)
+                Text("fuga fuga")
+            }
         }
     }
 }

@@ -10,8 +10,8 @@ import Foundation
 
 struct Relationship: Identifiable {
     let id: UUID
-    let partner: Partner
-    let nextCallTime: Date
+    let partner: User
+    let nextCallTime: Date?
     
-    static let demo = Relationship(id: UUID(), partner: Partner.demo, nextCallTime: Date())
+    static let demo = Relationship(id: UUID(), partner: User.demo, nextCallTime: Date())
 }
