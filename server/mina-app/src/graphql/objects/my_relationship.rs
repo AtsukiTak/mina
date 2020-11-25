@@ -1,5 +1,6 @@
 use super::{super::ContextData, GQLUser};
 use async_graphql::{Context, Error, Object};
+use chrono::{DateTime, Utc};
 use mina_domain::{
     relationship::{CallSchedule, Relationship},
     user::UserRepository as _,
@@ -43,6 +44,10 @@ impl GQLMyRelationship {
             .iter()
             .map(|schedule| GQLCallSchedule { schedule })
             .collect()
+    }
+
+    async fn next_call_time<'a>(&'a self) -> Option<&DateTime<Utc>> {
+        self.relationship.next_call_time()
     }
 }
 

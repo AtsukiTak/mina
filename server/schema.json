@@ -191,6 +191,16 @@
         "possibleTypes": null
       },
       {
+        "description": "Implement the DateTime<Utc> scalar\n\nThe input/output is a string in RFC3339 format.",
+        "enumValues": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "kind": "SCALAR",
+        "name": "DateTime",
+        "possibleTypes": null
+      },
+      {
         "description": "The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).",
         "enumValues": null,
         "fields": null,
@@ -485,6 +495,18 @@
                   }
                 }
               }
+            }
+          },
+          {
+            "args": [],
+            "deprecationReason": null,
+            "description": null,
+            "isDeprecated": false,
+            "name": "nextCallTime",
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTime",
+              "ofType": null
             }
           }
         ],

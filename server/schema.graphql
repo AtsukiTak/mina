@@ -15,6 +15,7 @@ type MyRelationship {
 	id: UUID!
 	partner: User!
 	callSchedules: [CallSchedule!]!
+	nextCallTime: DateTime
 }
 scalar UUID
 type User {
@@ -32,6 +33,12 @@ type CallSchedule {
 	"""
 	weekdays: String!
 }
+"""
+Implement the DateTime<Utc> scalar
+
+The input/output is a string in RFC3339 format.
+"""
+scalar DateTime
 type PartnerRequest {
 	id: UUID!
 	from: User!
