@@ -145,7 +145,7 @@ struct FirstView: View {
             self.status = .processing
             
             let mutation = AcceptPartnerRequestMutation(requestId: self.request.id.uuidString)
-            ApiService.shared.apollo.perform(mutation: mutation) { result in
+            ApiService.apollo().perform(mutation: mutation) { result in
                 switch result {
                 case .success(_):
                     self.status = .completed

@@ -71,7 +71,7 @@ struct PartnerSearchView: View {
     }
     
     func searchPartner() {
-        ApiService.shared.apollo.fetch(query: SearchPartnerQuery(userId: self.input)) { result in
+        ApiService.apollo().fetch(query: SearchPartnerQuery(userId: self.input)) { result in
             switch result {
             case .success(let res):
                 self.foundUserId = res.data!.user.id
@@ -124,7 +124,7 @@ struct SendRequestButton: View {
         self.status = .sending
 
         let mutation = SendPartnerRequestMutation(toUserId: self.targetUserId)
-        ApiService.shared.apollo.perform(mutation: mutation) { result in
+        ApiService.apollo().perform(mutation: mutation) { result in
             switch result {
             case .success(_):
                 self.status = .sent

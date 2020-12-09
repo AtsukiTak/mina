@@ -21,7 +21,7 @@ struct ApiService {
     static var shared: ApiService = ApiService()
     
     // ApolloClientを生成する
-    private static func apollo() -> ApolloClient {
+    static func apollo() -> ApolloClient {
         return ApolloClient(url: URL(string: url)!)
     }
     
