@@ -15,24 +15,7 @@ struct User {
     static let demo = User(id: "usr_4Jlsij83")
 }
 
-struct Me {
+struct Me: Equatable {
     let id: String
     let password: String
-    
-    var credential: Credential {
-        Credential(userId: id, password: password)
-    }
-}
-
-struct Credential: Equatable {
-    let userId: String
-    let password: String
-}
-
-struct UserRepository {
-    static func findMe() throws -> Me? {
-        try KeychainService()
-            .readCred()
-            .map { Me(id: $0.userId, password: $0.password) }
-    }
 }

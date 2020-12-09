@@ -27,14 +27,14 @@ struct ApiService {
     
     // Weekday構造体の配列を文字列からパースする
     // e.g. "sun,mon" -> [.sun, .mon]
-    private static func parseWeekdayArray(_ s: String) throws -> [Weekday] {
+    static func parseWeekdayArray(_ s: String) throws -> [Weekday] {
         try s.split(separator: ",")
             .map({ s in try parseWeekday(String(s))})
     }
     
     // Weekday構造体を文字列からパースする
     // e.g. "sun" -> Weekday.sun
-    private static func parseWeekday(_ s: String) throws -> Weekday {
+    static func parseWeekday(_ s: String) throws -> Weekday {
         switch s.lowercased() {
         case "sun":
             return Weekday.sun
@@ -57,7 +57,7 @@ struct ApiService {
     
     // Time構造体を文字列からパースする
     // e.g. "08:23" -> Time { hour: 8, min: 23 }
-    private static func parseTime(_ s: String) throws -> Time {
+    static func parseTime(_ s: String) throws -> Time {
         let pattern = "(^[0-9]{2}:[0-9]{2}$)"
         let regex = try! NSRegularExpression(pattern: pattern, options: [])
         
@@ -82,7 +82,7 @@ struct ApiService {
     }
     
     // Date構造体を文字列からパースする
-    private static func parseDate(_ s: String) throws -> Date {
+    static func parseDate(_ s: String) throws -> Date {
         let formatter = ISO8601DateFormatter()
         guard let date = formatter.date(from: s) else {
             throw ApiError.badResponse
@@ -91,7 +91,7 @@ struct ApiService {
     }
     
     // UUID構造体をStringからパースする
-    private static func parseUUID(_ s: String) throws -> UUID {
+    static func parseUUID(_ s: String) throws -> UUID {
         guard let id = UUID(uuidString: s) else { throw ApiError.badResponse }
         return id
     }
@@ -138,6 +138,23 @@ struct ApiService {
                 callback(.success(output))
             } catch {
                 callback(.failure(error))
+            }
+        }
+    }
+    
+    /*
+     =======================
+     Accept Partner Request
+     =======================
+     */
+    static func acceptPartnerRequest(requestId: UUID, complete: @escaping (Result<UUID, Error>) -> Void) {
+        let mutation = AcceptPartnerRequestMutation(requestId: requestId.uuidString)
+        apollo().perform(mutation: mutation) { result in
+            switch result {
+            case .success(_):
+                complete(.success(requestId))
+            case .failure(let err):
+                complete(.failure(err))
             }
         }
     }

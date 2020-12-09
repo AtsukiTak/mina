@@ -12,10 +12,8 @@ import PushKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
-    var user: Me? = nil
     var callService: CallService?
     var pushService: PushService?
-    let apiService: ApiService = ApiService()
     
     class var shared: AppDelegate {
         return UIApplication.shared.delegate! as! AppDelegate
@@ -23,8 +21,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // アプリケーションの起動後に呼ばれる
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        NSLog("launched!!")
-        print("hoge")
         
         let callDelegate = CallDelegate()
         let callService = CallService(delegate: callDelegate)
@@ -41,12 +37,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.callService = callService
         self.pushService = pushService
         
-        do {
-            self.user = try UserRepository.findMe()
-            return true
-        } catch {
-            return false
-        }
+        return true
     }
 
     // MARK: UISceneSession Lifecycle

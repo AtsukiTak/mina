@@ -21,9 +21,9 @@ class RelationshipTest: XCTestCase {
 
     // `Time` をパースするテスト
     func testParseTime() throws {
-        XCTAssertEqual(try! Time.fromStr("02:42"), Time(hour: 2, min: 42))
-        XCTAssertThrowsError(try Time.fromStr("24:21"))
-        XCTAssertThrowsError(try Time.fromStr("24-21"))
+        XCTAssertEqual(try! ApiService.parseTime("02:42"), Time(hour: 2, min: 42))
+        XCTAssertThrowsError(try ApiService.parseTime("24:21"))
+        XCTAssertThrowsError(try ApiService.parseTime("24-21"))
     }
 
     func testPerformanceExample() throws {

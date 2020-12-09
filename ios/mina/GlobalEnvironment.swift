@@ -10,22 +10,29 @@ import Foundation
 
 class GlobalEnvironment: ObservableObject {
     @Published var callMode: Bool = false
+    @Published var me: Me? = nil
     @Published var relationships: [Relationship] = []
-    @Published var partnerRequests: [PartnerRequest] = []
+    @Published var receivedPartnerRequests: [PartnerRequest] = []
     @Published var errorText: String? = nil
     
     init() {}
     
-    func queryInitial() {
+    func queryInitial(complete: @escaping () -> Void) {
+        self.errorText = nil
         ApiService.getMe { res in
             switch res {
-            case .failure(let err):
-                self.errorText = err.localizedDescription
             case .success(let output):
                 self.errorText = nil
                 self.relationships = output.relationships
-                self.partnerRequests = output.receivedPartnerRequests
+                self.receivedPartnerRequests = output.receivedPartnerRequests
+            case .failure(let err):
+                self.errorText = err.localizedDescription
             }
+            complete()
         }
+    }
+    
+    func removeReceivedPartnerRequest(_ reqId: UUID) {
+        self.receivedPartnerRequests.removeAll { $0.id == reqId }
     }
 }

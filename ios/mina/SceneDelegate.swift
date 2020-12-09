@@ -21,7 +21,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // Create the SwiftUI view that provides the window contents.
         let env = GlobalEnvironment()
-        env.queryInitial()
+        env.queryInitial(complete: { () in })
+        env.me = try? KeychainService().readMe()
         let contentView = RootView()
             .environmentObject(env)
 

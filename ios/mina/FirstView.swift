@@ -9,15 +9,14 @@
 import SwiftUI
 
 struct FirstView: View {
+    @EnvironmentObject var env: GlobalEnvironment
     @State var userId: String
-    @State var relationships: [Relationship] = []
-    @State var requests: [PartnerRequest] = []
     @State private var searchMode: Bool = false
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack {
-                if !self.requests.isEmpty {
+                if !self.env.receivedPartnerRequests.isEmpty {
                     self.receivedPartnerRequestsSection
                         .padding(.bottom, 40)
                 }
@@ -32,7 +31,7 @@ struct FirstView: View {
         VStack {
             self.sectionTitle(title: "Received Requests")
             
-            ForEach(self.requests, content: { request in
+            ForEach(self.env.receivedPartnerRequests, content: { request in
                 HStack(alignment: .lastTextBaseline) {
                     Text(request.from.id)
                         .font(.title)
@@ -41,11 +40,8 @@ struct FirstView: View {
                     
                     Spacer()
                     
-                    // Completeしたらリストから消す
                     AcceptPartnerRequestButton(request: request) {
-                        self.requests.removeAll { req in
-                            req.id == request.id
-                        }
+                        self.env.removeReceivedPartnerRequest(request.id)
                     }
                 }
                 .padding()
@@ -58,7 +54,7 @@ struct FirstView: View {
             self.sectionTitle(title: "Partners")
             
             // partner cards
-            ForEach(self.relationships, content: { relationship in
+            ForEach(self.env.relationships, content: { relationship in
                 PartnerCard(relationship: relationship)
                     .padding(.horizontal, 15)
                     .padding(.top, 20)
@@ -142,11 +138,11 @@ struct FirstView: View {
         }
         
         func accept() {
+            if self.status == .processing { return; }
             self.status = .processing
             
-            let mutation = AcceptPartnerRequestMutation(requestId: self.request.id.uuidString)
-            ApiService.apollo().perform(mutation: mutation) { result in
-                switch result {
+            ApiService.acceptPartnerRequest(requestId: self.request.id) { res in
+                switch res {
                 case .success(_):
                     self.status = .completed
                     self.onComplete()
@@ -160,8 +156,11 @@ struct FirstView: View {
 
 struct FirstView_Previews: PreviewProvider {
     static var previews: some View {
-        FirstView(userId: "usr_74Jlei8d",
-                  relationships: [Relationship.demo, Relationship.demo],
-                  requests: [PartnerRequest.demo])
+        let env = GlobalEnvironment()
+        env.relationships = [Relationship.demo, Relationship.demo]
+        env.receivedPartnerRequests = [PartnerRequest.demo]
+        
+        return FirstView(userId: "usr_74Jlei8d")
+            .environmentObject(env)
     }
 }

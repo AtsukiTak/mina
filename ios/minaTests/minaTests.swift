@@ -18,19 +18,19 @@ class minaTests: XCTestCase {
 
     override func tearDownWithError() throws {
         // 保存したものを削除する
-        try keychain.deleteCred()
+        try keychain.deleteMe()
     }
 
     func testKeychain() throws {
         // 最初は何も保存されていない
-        XCTAssertEqual(try! keychain.readCred(), nil)
+        XCTAssertEqual(try! keychain.readMe(), nil)
         
         // 適切に保存できる
-        try keychain.saveCred(cred: Credential(userId: "usr_atsuki", password: "hoge"))
+        try keychain.saveMe(me: Me(id: "usr_atsuki", password: "hoge"))
         
         // 保存したものを取得できる
-        let saved = try keychain.readCred()!
-        XCTAssertEqual(saved.userId, "usr_atsuki")
+        let saved = try keychain.readMe()!
+        XCTAssertEqual(saved.id, "usr_atsuki")
         XCTAssertEqual(saved.password, "hoge")
     }
 

@@ -20,7 +20,7 @@ struct KeychainService {
         case unhandledError(status: OSStatus)
     }
     
-    func readCred() throws -> Credential? {
+    func readMe() throws -> Me? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: serviceName,
@@ -47,19 +47,19 @@ struct KeychainService {
             else {
                 throw KeychainError.unexpectedCredentialData
         }
-        return Credential(userId: userId, password: password)
+        return Me(id: userId, password: password)
     }
 
     // GenericPasswordとしてkeychainに値を保存する
-    func saveCred(cred: Credential) throws {
-        let encodedPass = cred.password.data(using: .utf8)
+    func saveMe(me: Me) throws {
+        let encodedPass = me.password.data(using: .utf8)
         
-        if try readCred() == nil {
+        if try readMe() == nil {
             // 新規作成
             let query: [String: Any] = [
                 kSecClass as String: kSecClassGenericPassword,
                 kSecAttrService as String: serviceName,
-                kSecAttrAccount as String: cred.userId,
+                kSecAttrAccount as String: me.id,
                 kSecValueData as String: encodedPass as Any,
             ]
             let status = SecItemAdd(query as CFDictionary, nil)
@@ -73,7 +73,7 @@ struct KeychainService {
                 kSecAttrService as String: serviceName,
             ]
             let updateQuery: [String: Any] = [
-                kSecAttrAccount as String: cred.userId,
+                kSecAttrAccount as String: me.id,
                 kSecValueData as String: encodedPass as Any,
             ]
             let status = SecItemUpdate(query as CFDictionary, updateQuery as CFDictionary)
@@ -83,7 +83,7 @@ struct KeychainService {
         }
     }
     
-    func deleteCred() throws {
+    func deleteMe() throws {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: serviceName,
