@@ -24,7 +24,7 @@ struct Me {
     }
 }
 
-struct Credential {
+struct Credential: Equatable {
     let userId: String
     let password: String
 }

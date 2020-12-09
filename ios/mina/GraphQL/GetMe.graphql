@@ -1,6 +1,30 @@
 query GetMe {
-  me {
-    id
-    name
-  }
+    me {
+        id
+        name
+        relationships {
+            id
+            partner {
+                id
+                name
+            }
+            callSchedules {
+                time
+                weekdays
+            }
+            nextCallTime
+        }
+        receivedPartnerRequests {
+            id
+            from {
+                id
+                name
+            }
+            to {
+                id
+                name
+            }
+            isValid
+        }
+    }
 }

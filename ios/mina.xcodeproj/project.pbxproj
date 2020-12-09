@@ -37,6 +37,7 @@
 		EDC4977C2567CAD00053B1F1 /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDC4977B2567CAD00053B1F1 /* Card.swift */; };
 		EDC49784256D037F0053B1F1 /* PartnerRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDC49783256D037F0053B1F1 /* PartnerRequest.swift */; };
 		EDC4978B256E773C0053B1F1 /* AcceptPartnerRequest.graphql in Resources */ = {isa = PBXBuildFile; fileRef = EDC4978A256E773C0053B1F1 /* AcceptPartnerRequest.graphql */; };
+		EDC4978F2570DD5E0053B1F1 /* RelationshipTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDC4978E2570DD5E0053B1F1 /* RelationshipTest.swift */; };
 		EDFDC8F6252CBCB5004E0C00 /* VideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC8F5252CBCB5004E0C00 /* VideoView.swift */; };
 		EDFDC8FA252CBD0F004E0C00 /* VideoWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC8F9252CBD0F004E0C00 /* VideoWindow.swift */; };
 		EDFDC8FD252D7CA0004E0C00 /* SkyWayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC8FC252D7CA0004E0C00 /* SkyWayService.swift */; };
@@ -105,6 +106,7 @@
 		EDC4977B2567CAD00053B1F1 /* Card.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Card.swift; sourceTree = "<group>"; };
 		EDC49783256D037F0053B1F1 /* PartnerRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartnerRequest.swift; sourceTree = "<group>"; };
 		EDC4978A256E773C0053B1F1 /* AcceptPartnerRequest.graphql */ = {isa = PBXFileReference; lastKnownFileType = text; path = AcceptPartnerRequest.graphql; sourceTree = "<group>"; };
+		EDC4978E2570DD5E0053B1F1 /* RelationshipTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelationshipTest.swift; sourceTree = "<group>"; };
 		EDFDC8F5252CBCB5004E0C00 /* VideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoView.swift; sourceTree = "<group>"; };
 		EDFDC8F9252CBD0F004E0C00 /* VideoWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoWindow.swift; sourceTree = "<group>"; };
 		EDFDC8FC252D7CA0004E0C00 /* SkyWayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkyWayService.swift; sourceTree = "<group>"; };
@@ -223,6 +225,7 @@
 			isa = PBXGroup;
 			children = (
 				ED878A652514A3B90030A575 /* minaTests.swift */,
+				EDC4978E2570DD5E0053B1F1 /* RelationshipTest.swift */,
 				ED878A672514A3B90030A575 /* Info.plist */,
 			);
 			path = minaTests;
@@ -417,6 +420,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ED878A662514A3B90030A575 /* minaTests.swift in Sources */,
+				EDC4978F2570DD5E0053B1F1 /* RelationshipTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

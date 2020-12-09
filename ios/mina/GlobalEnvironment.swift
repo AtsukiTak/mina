@@ -10,8 +10,22 @@ import Foundation
 
 class GlobalEnvironment: ObservableObject {
     @Published var callMode: Bool = false
+    @Published var relationships: [Relationship] = []
+    @Published var partnerRequests: [PartnerRequest] = []
+    @Published var errorText: String? = nil
     
-    static let shared = GlobalEnvironment()
+    init() {}
     
-    private init() {}
+    func queryInitial() {
+        ApiService.getMe { res in
+            switch res {
+            case .failure(let err):
+                self.errorText = err.localizedDescription
+            case .success(let output):
+                self.errorText = nil
+                self.relationships = output.relationships
+                self.partnerRequests = output.receivedPartnerRequests
+            }
+        }
+    }
 }

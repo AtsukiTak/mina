@@ -65,6 +65,7 @@ struct PartnerCard_Previews: PreviewProvider {
             
             PartnerCard(relationship: Relationship(id: UUID(),
                                                    partner: User.demo,
+                                                   callSchedules: [],
                                                    nextCallTime: nil))
                 .padding()
         }

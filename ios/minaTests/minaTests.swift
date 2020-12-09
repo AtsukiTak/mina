@@ -23,14 +23,14 @@ class minaTests: XCTestCase {
 
     func testKeychain() throws {
         // 最初は何も保存されていない
-        XCTAssertEqual(try keychain.readCred(), nil)
+        XCTAssertEqual(try! keychain.readCred(), nil)
         
         // 適切に保存できる
-        try keychain.saveCred(cred: Credential(username: "atsuki", password: "hoge"))
+        try keychain.saveCred(cred: Credential(userId: "usr_atsuki", password: "hoge"))
         
         // 保存したものを取得できる
         let saved = try keychain.readCred()!
-        XCTAssertEqual(saved.username, "atsuki")
+        XCTAssertEqual(saved.userId, "usr_atsuki")
         XCTAssertEqual(saved.password, "hoge")
     }
 
