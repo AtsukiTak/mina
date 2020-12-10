@@ -40,8 +40,8 @@ struct FirstView: View {
                     
                     Spacer()
                     
-                    AcceptPartnerRequestButton(request: request) {
-                        self.env.removeReceivedPartnerRequest(request.id)
+                    AcceptPartnerRequestButton(request: request) { onComplete in
+                        self.env.acceptPartnerRequest(requestId: request.id, onComplete: onComplete)
                     }
                 }
                 .padding()
@@ -101,12 +101,13 @@ struct FirstView: View {
     
     struct AcceptPartnerRequestButton: View {
         let request: PartnerRequest
-        let onComplete: () -> Void
+        let acceptHandler: (_ onComplete: @escaping () -> Void) -> Void
         @State var status: Status = .initial
         
-        init(request: PartnerRequest, onComplete: @escaping () -> Void) {
+        init(request: PartnerRequest,
+             acceptHandler: @escaping (_ onComplete: @escaping () -> Void) -> Void) {
             self.request = request
-            self.onComplete = onComplete
+            self.acceptHandler = acceptHandler
         }
         
         enum Status {
@@ -141,15 +142,7 @@ struct FirstView: View {
             if self.status == .processing { return; }
             self.status = .processing
             
-            ApiService.acceptPartnerRequest(requestId: self.request.id) { res in
-                switch res {
-                case .success(_):
-                    self.status = .completed
-                    self.onComplete()
-                case .failure(_):
-                    self.status = .initial
-                }
-            }
+            self.acceptHandler { self.status = .initial }
         }
     }
 }

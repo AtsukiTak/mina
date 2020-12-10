@@ -9,7 +9,6 @@
 import Foundation
 
 class GlobalEnvironment: ObservableObject {
-    @Published var callMode: Bool = false
     @Published var me: Me? = nil
     @Published var relationships: [Relationship] = []
     @Published var receivedPartnerRequests: [PartnerRequest] = []
@@ -19,6 +18,14 @@ class GlobalEnvironment: ObservableObject {
     
     func queryInitial(complete: @escaping () -> Void) {
         self.errorText = nil
+        
+        do {
+            self.me = try KeychainService().readMe()
+        } catch {
+            self.errorText = error.localizedDescription
+            return;
+        }
+        
         ApiService.getMe { res in
             switch res {
             case .success(let output):
@@ -32,7 +39,22 @@ class GlobalEnvironment: ObservableObject {
         }
     }
     
-    func removeReceivedPartnerRequest(_ reqId: UUID) {
-        self.receivedPartnerRequests.removeAll { $0.id == reqId }
+    func acceptPartnerRequest(requestId: UUID, onComplete: (() -> Void)?) {
+        if !self.receivedPartnerRequests.contains(where: { $0.id == requestId }) {
+            onComplete?()
+            return;
+        }
+        
+        self.errorText = nil
+        
+        ApiService.acceptPartnerRequest(requestId: requestId) { res in
+            switch res {
+            case .success(_):
+                self.receivedPartnerRequests.removeAll(where: { $0.id == requestId})
+            case .failure(let err):
+                self.errorText = err.localizedDescription
+            }
+            onComplete?()
+        }
     }
 }

@@ -143,16 +143,35 @@ struct ApiService {
     }
     
     /*
+     ===============
+     Signup
+     ===============
+     */
+    static func signupAsAnonymous(complete: @escaping (Result<Me, Error>) -> Void) {
+        let mutation = SignupAsAnonymousMutation()
+        apollo().perform(mutation: mutation) { result in
+            switch result {
+            case .success(let res):
+                let data = res.data!.signupAsAnonymous
+                let me = Me(id: data.user.id, password: data.secret)
+                complete(.success(me))
+            case .failure(let err):
+                complete(.failure(err))
+            }
+        }
+    }
+    
+    /*
      =======================
      Accept Partner Request
      =======================
      */
-    static func acceptPartnerRequest(requestId: UUID, complete: @escaping (Result<UUID, Error>) -> Void) {
+    static func acceptPartnerRequest(requestId: UUID, complete: @escaping (Result<(), Error>) -> Void) {
         let mutation = AcceptPartnerRequestMutation(requestId: requestId.uuidString)
         apollo().perform(mutation: mutation) { result in
             switch result {
             case .success(_):
-                complete(.success(requestId))
+                complete(.success(()))
             case .failure(let err):
                 complete(.failure(err))
             }
