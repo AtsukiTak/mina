@@ -22,7 +22,7 @@ struct RelationshipView: View {
                         .bold()
                     Divider()
                 }
-                .padding(.bottom, 30)
+                .padding(.bottom, 50)
             }
             
             HStack {
@@ -30,25 +30,34 @@ struct RelationshipView: View {
                     .font(.title)
                 Spacer()
             }
-            .padding(.bottom, 10)
+            .padding(.bottom, 20)
             
             // Schedules
             ForEach(relationship.callSchedules) { schedule in
                 Card(bgColor: .lightMain) {
-                    HStack {
-                        Text("at")
-                        Text("\(schedule.time.hour):\(schedule.time.min)")
-                            .font(.headline)
-                        Spacer()
-                        Text("every")
-                        Text(schedule
-                                .weekdays
-                                .map({ $0.rawValue.uppercased() })
-                                .joined(separator: ", "))
-                            .bold()
+                    VStack {
+                        HStack(alignment: .bottom) {
+                            Image(systemName: "calendar")
+                                .imageScale(.large)
+                                .foregroundColor(.main)
+                            Spacer()
+                            Text("\(schedule.time.hour):\(schedule.time.min)")
+                                .font(.largeTitle)
+                                .foregroundColor(.main)
+                        }
+                        HStack(alignment: .bottom) {
+                            Spacer()
+                            Text(schedule
+                                    .weekdays
+                                    .map({ $0.rawValue.uppercased() })
+                                    .joined(separator: ", "))
+                                .font(.caption)
+                                .bold()
+                                .foregroundColor(.main)
+                        }
                     }
                 }
-                .padding(.bottom, 10)
+                .padding(.bottom, 20)
             }
             
             // "Add a new call schedule" Button
@@ -80,14 +89,18 @@ struct RelationshipView: View {
 
 struct RelationshipView_Previews: PreviewProvider {
     static var previews: some View {
-        let callSchedule = CallSchedule(
+        let callSchedule1 = CallSchedule(
             id: UUID(),
             time: Time(hour: 11, min: 42),
             weekdays: [.sun, .fri])
+        let callSchedule2 = CallSchedule(
+            id: UUID(),
+            time: Time(hour: 11, min: 42),
+            weekdays: [.sun, .mon, .tue, .wed, .thu, .fri, .sat])
         let relationship = Relationship(
             id: UUID(),
             partner: User.demo,
-            callSchedules: [callSchedule],
+            callSchedules: [callSchedule1, callSchedule2],
             nextCallTime: Date())
         
         return NavigationView {

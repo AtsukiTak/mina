@@ -140,13 +140,17 @@ struct SendRequestButton: View {
 struct PartnerSearchView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            PartnerSearchView()
-                .previewDevice(PreviewDevice(rawValue: "init"))
-                .previewDisplayName("init")
+            NavigationView {
+                PartnerSearchView()
+                    .previewDevice(PreviewDevice(rawValue: "init"))
+                    .previewDisplayName("init")
+            }
             
-            PartnerSearchView(foundUserId: "usr_lkd2845n")
-                .previewDevice(PreviewDevice(rawValue: "searched"))
-                .previewDisplayName("searched")
+            NavigationView {
+                PartnerSearchView(foundUserId: "usr_lkd2845n")
+                    .previewDevice(PreviewDevice(rawValue: "searched"))
+                    .previewDisplayName("searched")
+            }
         }
     }
 }

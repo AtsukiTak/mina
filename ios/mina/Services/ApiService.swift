@@ -179,4 +179,21 @@ struct ApiService {
             }
         }
     }
+    
+    /*
+     ======================
+     Send Partner Request
+     ======================
+     */
+    static func sendPartnerRequest(toUserId: String, onComplete: @escaping (Result<(), Error>) -> Void) {
+        let mutation = SendPartnerRequestMutation(toUserId: toUserId)
+        apollo().perform(mutation: mutation) { res in
+            switch res {
+            case .success(_):
+                onComplete(.success(()))
+            case .failure(let err):
+                onComplete(.failure(err))
+            }
+        }
+    }
 }
