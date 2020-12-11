@@ -1,5 +1,5 @@
 //
-//  GlobalEnvironment.swift
+//  Store.swift
 //  mina
 //
 //  Created by 高橋篤樹 on 2020/10/08.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-class GlobalEnvironment: ObservableObject {
+class Store: ObservableObject {
     @Published var me: Me? = nil
     @Published var relationships: [Relationship] = []
     @Published var receivedPartnerRequests: [PartnerRequest] = []

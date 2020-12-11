@@ -42,7 +42,7 @@
 		EDFDC8FA252CBD0F004E0C00 /* VideoWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC8F9252CBD0F004E0C00 /* VideoWindow.swift */; };
 		EDFDC8FD252D7CA0004E0C00 /* SkyWayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC8FC252D7CA0004E0C00 /* SkyWayService.swift */; };
 		EDFDC900252E1A0C004E0C00 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC8FF252E1A0C004E0C00 /* RootView.swift */; };
-		EDFDC904252E1AEC004E0C00 /* GlobalEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC903252E1AEC004E0C00 /* GlobalEnvironment.swift */; };
+		EDFDC904252E1AEC004E0C00 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC903252E1AEC004E0C00 /* Store.swift */; };
 		EDFDC90A25303189004E0C00 /* secrets.plist in Resources */ = {isa = PBXBuildFile; fileRef = EDFDC90925303189004E0C00 /* secrets.plist */; };
 		EDFDC90D253031F1004E0C00 /* secrets.template.plist in Resources */ = {isa = PBXBuildFile; fileRef = EDFDC90C253031F1004E0C00 /* secrets.template.plist */; };
 		EDFDC910253033FF004E0C00 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC90F253033FF004E0C00 /* Secrets.swift */; };
@@ -111,7 +111,7 @@
 		EDFDC8F9252CBD0F004E0C00 /* VideoWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoWindow.swift; sourceTree = "<group>"; };
 		EDFDC8FC252D7CA0004E0C00 /* SkyWayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkyWayService.swift; sourceTree = "<group>"; };
 		EDFDC8FF252E1A0C004E0C00 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
-		EDFDC903252E1AEC004E0C00 /* GlobalEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalEnvironment.swift; sourceTree = "<group>"; };
+		EDFDC903252E1AEC004E0C00 /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
 		EDFDC90925303189004E0C00 /* secrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = secrets.plist; sourceTree = "<group>"; };
 		EDFDC90C253031F1004E0C00 /* secrets.template.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = secrets.template.plist; sourceTree = "<group>"; };
 		EDFDC90F253033FF004E0C00 /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
@@ -193,7 +193,7 @@
 				ED878A732514F32E0030A575 /* mina.entitlements */,
 				ED878A4E2514A3B60030A575 /* AppDelegate.swift */,
 				ED878A502514A3B60030A575 /* SceneDelegate.swift */,
-				EDFDC903252E1AEC004E0C00 /* GlobalEnvironment.swift */,
+				EDFDC903252E1AEC004E0C00 /* Store.swift */,
 				EDFDC8FF252E1A0C004E0C00 /* RootView.swift */,
 				ED3C38052566A26C006F550B /* FirstView.swift */,
 				ED878A522514A3B60030A575 /* LoginView.swift */,
@@ -400,7 +400,7 @@
 				ED3C38062566A26C006F550B /* FirstView.swift in Sources */,
 				ED3C37DE25651799006F550B /* PartnerSearchView.swift in Sources */,
 				ED26B153251C9EF400957F06 /* ApiService.swift in Sources */,
-				EDFDC904252E1AEC004E0C00 /* GlobalEnvironment.swift in Sources */,
+				EDFDC904252E1AEC004E0C00 /* Store.swift in Sources */,
 				ED3C38112567B2A0006F550B /* Color.swift in Sources */,
 				ED26B14E251C969A00957F06 /* PushService.swift in Sources */,
 				EDFDC900252E1A0C004E0C00 /* RootView.swift in Sources */,

@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct RootView: View {
-    @EnvironmentObject var env: GlobalEnvironment
+    @EnvironmentObject var env: Store
     
     var body: some View {
         Group {
@@ -25,6 +25,6 @@ struct RootView: View {
 struct RootView_Previews: PreviewProvider {
     static var previews: some View {
         RootView()
-            .environmentObject(GlobalEnvironment())
+            .environmentObject(Store())
     }
 }

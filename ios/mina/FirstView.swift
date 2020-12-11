@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct FirstView: View {
-    @EnvironmentObject var env: GlobalEnvironment
+    @EnvironmentObject var env: Store
     @State var userId: String
     @State private var searchMode: Bool = false
     
@@ -149,7 +149,7 @@ struct FirstView: View {
 
 struct FirstView_Previews: PreviewProvider {
     static var previews: some View {
-        let env = GlobalEnvironment()
+        let env = Store()
         env.relationships = [Relationship.demo, Relationship.demo]
         env.receivedPartnerRequests = [PartnerRequest.demo]
         
