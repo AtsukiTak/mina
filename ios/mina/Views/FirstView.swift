@@ -10,7 +10,6 @@ import SwiftUI
 
 struct FirstView: View {
     @EnvironmentObject var env: Store
-    @State var userId: String
     @State private var searchMode: Bool = false
     
     var body: some View {
@@ -153,7 +152,7 @@ struct FirstView_Previews: PreviewProvider {
         env.relationships = [Relationship.demo, Relationship.demo]
         env.receivedPartnerRequests = [PartnerRequest.demo]
         
-        return FirstView(userId: "usr_74Jlei8d")
+        return FirstView()
             .environmentObject(env)
     }
 }

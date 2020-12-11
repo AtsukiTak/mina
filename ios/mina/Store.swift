@@ -9,6 +9,7 @@
 import Foundation
 
 class Store: ObservableObject {
+    @Published var callMode: Bool = false
     @Published var me: Me? = nil
     @Published var relationships: [Relationship] = []
     @Published var receivedPartnerRequests: [PartnerRequest] = []

@@ -16,7 +16,9 @@ struct RootView: View {
             if (self.env.callMode) {
                 VideoView().transition(.opacity)
             } else {
-                LoginView().transition(.opacity)
+                FirstView()
+                    .environmentObject(self.env)
+                    .transition(.opacity)
             }
         }
     }
