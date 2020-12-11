@@ -20,19 +20,20 @@ struct Relationship: Identifiable {
                                    nextCallTime: Date())
 }
 
-struct CallSchedule {
+struct CallSchedule: Identifiable {
+    let id: UUID
     let time: Time
     let weekdays: [Weekday]
 }
 
-enum Weekday {
-    case sun
-    case mon
-    case tue
-    case wed
-    case thu
-    case fri
-    case sat
+enum Weekday: String {
+    case sun = "sun"
+    case mon = "mon"
+    case tue = "tue"
+    case wed = "wed"
+    case thu = "thu"
+    case fri = "fri"
+    case sat = "sat"
 }
 
 struct Time: Equatable {

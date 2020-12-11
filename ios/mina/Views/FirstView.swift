@@ -13,15 +13,18 @@ struct FirstView: View {
     @State private var searchMode: Bool = false
     
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack {
-                if !self.env.receivedPartnerRequests.isEmpty {
-                    self.receivedPartnerRequestsSection
+        NavigationView {
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack {
+                    if !self.env.receivedPartnerRequests.isEmpty {
+                        self.receivedPartnerRequestsSection
+                            .padding(.bottom, 40)
+                    }
+                    
+                    self.partnersSection
                         .padding(.bottom, 40)
                 }
-                
-                self.partnersSection
-                    .padding(.bottom, 40)
+                .navigationBarHidden(true)
             }
         }
     }
@@ -54,9 +57,11 @@ struct FirstView: View {
             
             // partner cards
             ForEach(self.env.relationships, content: { relationship in
-                PartnerCard(relationship: relationship)
-                    .padding(.horizontal, 15)
-                    .padding(.top, 20)
+                NavigationLink(destination: RelationshipView(relationship: relationship)) {
+                    PartnerCard(relationship: relationship)
+                        .padding(.horizontal, 15)
+                        .padding(.top, 20)
+                }
             })
             
             // Add a new partner card

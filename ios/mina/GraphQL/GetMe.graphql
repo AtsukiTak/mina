@@ -9,6 +9,7 @@ query GetMe {
                 name
             }
             callSchedules {
+                id
                 time
                 weekdays
             }

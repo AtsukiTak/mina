@@ -75,6 +75,7 @@ public final class GetMeQuery: GraphQLQuery {
           }
           callSchedules {
             __typename
+            id
             time
             weekdays
           }
@@ -323,6 +324,7 @@ public final class GetMeQuery: GraphQLQuery {
           public static var selections: [GraphQLSelection] {
             return [
               GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+              GraphQLField("id", type: .nonNull(.scalar(String.self))),
               GraphQLField("time", type: .nonNull(.scalar(String.self))),
               GraphQLField("weekdays", type: .nonNull(.scalar(String.self))),
             ]
@@ -334,8 +336,8 @@ public final class GetMeQuery: GraphQLQuery {
             self.resultMap = unsafeResultMap
           }
 
-          public init(time: String, weekdays: String) {
-            self.init(unsafeResultMap: ["__typename": "CallSchedule", "time": time, "weekdays": weekdays])
+          public init(id: String, time: String, weekdays: String) {
+            self.init(unsafeResultMap: ["__typename": "CallSchedule", "id": id, "time": time, "weekdays": weekdays])
           }
 
           public var __typename: String {
@@ -344,6 +346,15 @@ public final class GetMeQuery: GraphQLQuery {
             }
             set {
               resultMap.updateValue(newValue, forKey: "__typename")
+            }
+          }
+
+          public var id: String {
+            get {
+              return resultMap["id"]! as! String
+            }
+            set {
+              resultMap.updateValue(newValue, forKey: "id")
             }
           }
 

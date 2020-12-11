@@ -115,8 +115,10 @@ struct ApiService {
                     let id = try parseUUID(rel.id)
                     let partner = User(id: rel.partner.id)
                     let schedules = try rel.callSchedules.map { sche in
-                        CallSchedule(time: try parseTime(sche.time),
-                                     weekdays: try parseWeekdayArray(sche.weekdays))
+                        CallSchedule(
+                            id: try parseUUID(sche.id),
+                            time: try parseTime(sche.time),
+                            weekdays: try parseWeekdayArray(sche.weekdays))
                     }
                     let nextCallTime = try rel.nextCallTime.map(parseDate)
                     
