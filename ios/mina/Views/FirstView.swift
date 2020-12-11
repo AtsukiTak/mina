@@ -10,7 +10,6 @@ import SwiftUI
 
 struct FirstView: View {
     @EnvironmentObject var env: Store
-    @State private var searchMode: Bool = false
     
     var body: some View {
         NavigationView {
@@ -65,7 +64,7 @@ struct FirstView: View {
             })
             
             // Add a new partner card
-            Button(action: { self.searchMode = true}) {
+            NavigationLink(destination: PartnerSearchView()) {
                 Card(bgColor: Color.main) {
                     HStack {
                         Image(systemName: "person.crop.circle.badge.plus")
@@ -79,9 +78,6 @@ struct FirstView: View {
                 }
                 .padding(.horizontal, 15)
                 .padding(.top, 20)
-            }
-            .sheet(isPresented: self.$searchMode) {
-                PartnerSearchView()
             }
             
             Spacer()

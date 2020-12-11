@@ -40,6 +40,7 @@ struct PartnerSearchView: View {
         }
         .padding()
         .animation(.easeInOut)
+        .navigationBarTitle("Search partner")
     }
     
     func foundUserSection(userId: String) -> some View {
