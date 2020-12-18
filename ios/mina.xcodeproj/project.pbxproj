@@ -38,6 +38,8 @@
 		EDC49784256D037F0053B1F1 /* PartnerRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDC49783256D037F0053B1F1 /* PartnerRequest.swift */; };
 		EDC4978B256E773C0053B1F1 /* AcceptPartnerRequest.graphql in Resources */ = {isa = PBXBuildFile; fileRef = EDC4978A256E773C0053B1F1 /* AcceptPartnerRequest.graphql */; };
 		EDC4978F2570DD5E0053B1F1 /* RelationshipTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDC4978E2570DD5E0053B1F1 /* RelationshipTest.swift */; };
+		EDD036F0258391B2000C75CE /* AddCallScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDD036EF258391B2000C75CE /* AddCallScheduleView.swift */; };
+		EDD036F32583CAFD000C75CE /* AddCallSchedule.graphql in Resources */ = {isa = PBXBuildFile; fileRef = EDD036F22583CAFD000C75CE /* AddCallSchedule.graphql */; };
 		EDFDC8F6252CBCB5004E0C00 /* VideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC8F5252CBCB5004E0C00 /* VideoView.swift */; };
 		EDFDC8FA252CBD0F004E0C00 /* VideoWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC8F9252CBD0F004E0C00 /* VideoWindow.swift */; };
 		EDFDC8FD252D7CA0004E0C00 /* SkyWayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFDC8FC252D7CA0004E0C00 /* SkyWayService.swift */; };
@@ -107,6 +109,8 @@
 		EDC49783256D037F0053B1F1 /* PartnerRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartnerRequest.swift; sourceTree = "<group>"; };
 		EDC4978A256E773C0053B1F1 /* AcceptPartnerRequest.graphql */ = {isa = PBXFileReference; lastKnownFileType = text; path = AcceptPartnerRequest.graphql; sourceTree = "<group>"; };
 		EDC4978E2570DD5E0053B1F1 /* RelationshipTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelationshipTest.swift; sourceTree = "<group>"; };
+		EDD036EF258391B2000C75CE /* AddCallScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCallScheduleView.swift; sourceTree = "<group>"; };
+		EDD036F22583CAFD000C75CE /* AddCallSchedule.graphql */ = {isa = PBXFileReference; lastKnownFileType = text; path = AddCallSchedule.graphql; sourceTree = "<group>"; };
 		EDFDC8F5252CBCB5004E0C00 /* VideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoView.swift; sourceTree = "<group>"; };
 		EDFDC8F9252CBD0F004E0C00 /* VideoWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoWindow.swift; sourceTree = "<group>"; };
 		EDFDC8FC252D7CA0004E0C00 /* SkyWayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkyWayService.swift; sourceTree = "<group>"; };
@@ -156,6 +160,7 @@
 				ED3C37FE2565249F006F550B /* SearchPartner.graphql */,
 				ED3C3802256559AE006F550B /* SendPartnerRequest.graphql */,
 				EDC4978A256E773C0053B1F1 /* AcceptPartnerRequest.graphql */,
+				EDD036F22583CAFD000C75CE /* AddCallSchedule.graphql */,
 			);
 			path = GraphQL;
 			sourceTree = "<group>";
@@ -176,6 +181,7 @@
 				EDFDC8F5252CBCB5004E0C00 /* VideoView.swift */,
 				ED54ED4F25835B0D00E01A41 /* RelationshipView.swift */,
 				ED3C37DD25651799006F550B /* PartnerSearchView.swift */,
+				EDD036EF258391B2000C75CE /* AddCallScheduleView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -378,6 +384,7 @@
 				ED878A582514A3B90030A575 /* Preview Assets.xcassets in Resources */,
 				ED3C37FC256523A0006F550B /* SignupAsAnonymous.graphql in Resources */,
 				EDC4978B256E773C0053B1F1 /* AcceptPartnerRequest.graphql in Resources */,
+				EDD036F32583CAFD000C75CE /* AddCallSchedule.graphql in Resources */,
 				ED878A552514A3B90030A575 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -419,6 +426,7 @@
 				EDC49784256D037F0053B1F1 /* PartnerRequest.swift in Sources */,
 				ED3C37F825651F50006F550B /* API.swift in Sources */,
 				EDFDC8FD252D7CA0004E0C00 /* SkyWayService.swift in Sources */,
+				EDD036F0258391B2000C75CE /* AddCallScheduleView.swift in Sources */,
 				EDC497782567C5CB0053B1F1 /* Relationship.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

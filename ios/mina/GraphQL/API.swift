@@ -4,6 +4,45 @@
 import Apollo
 import Foundation
 
+public struct AddCallScheduleInput: GraphQLMapConvertible {
+  public var graphQLMap: GraphQLMap
+
+  /// - Parameters:
+  ///   - relationshipId
+  ///   - weekdays
+  ///   - time
+  public init(relationshipId: String, weekdays: String, time: String) {
+    graphQLMap = ["relationshipId": relationshipId, "weekdays": weekdays, "time": time]
+  }
+
+  public var relationshipId: String {
+    get {
+      return graphQLMap["relationshipId"] as! String
+    }
+    set {
+      graphQLMap.updateValue(newValue, forKey: "relationshipId")
+    }
+  }
+
+  public var weekdays: String {
+    get {
+      return graphQLMap["weekdays"] as! String
+    }
+    set {
+      graphQLMap.updateValue(newValue, forKey: "weekdays")
+    }
+  }
+
+  public var time: String {
+    get {
+      return graphQLMap["time"] as! String
+    }
+    set {
+      graphQLMap.updateValue(newValue, forKey: "time")
+    }
+  }
+}
+
 public final class AcceptPartnerRequestMutation: GraphQLMutation {
   /// The raw GraphQL definition of this operation.
   public let operationDefinition: String =
@@ -51,6 +90,193 @@ public final class AcceptPartnerRequestMutation: GraphQLMutation {
       }
       set {
         resultMap.updateValue(newValue, forKey: "acceptPartnerRequest")
+      }
+    }
+  }
+}
+
+public final class AddCallScheduleMutation: GraphQLMutation {
+  /// The raw GraphQL definition of this operation.
+  public let operationDefinition: String =
+    """
+    mutation AddCallSchedule($input: AddCallScheduleInput!) {
+      addCallSchedule(input: $input) {
+        __typename
+        id
+        callSchedules {
+          __typename
+          id
+          time
+          weekdays
+        }
+        nextCallTime
+      }
+    }
+    """
+
+  public let operationName: String = "AddCallSchedule"
+
+  public var input: AddCallScheduleInput
+
+  public init(input: AddCallScheduleInput) {
+    self.input = input
+  }
+
+  public var variables: GraphQLMap? {
+    return ["input": input]
+  }
+
+  public struct Data: GraphQLSelectionSet {
+    public static let possibleTypes: [String] = ["Mutation"]
+
+    public static var selections: [GraphQLSelection] {
+      return [
+        GraphQLField("addCallSchedule", arguments: ["input": GraphQLVariable("input")], type: .nonNull(.object(AddCallSchedule.selections))),
+      ]
+    }
+
+    public private(set) var resultMap: ResultMap
+
+    public init(unsafeResultMap: ResultMap) {
+      self.resultMap = unsafeResultMap
+    }
+
+    public init(addCallSchedule: AddCallSchedule) {
+      self.init(unsafeResultMap: ["__typename": "Mutation", "addCallSchedule": addCallSchedule.resultMap])
+    }
+
+    /// 指定のRelationshipに新しいCallScheduleを追加する
+    /// 
+    /// # Params
+    /// - relationship_id: Uuid
+    /// - weekdays: コンマ区切りのString. eg "Sun,Sat"
+    /// - time: "%H:%M"で表現されるString. eg "15:42"
+    public var addCallSchedule: AddCallSchedule {
+      get {
+        return AddCallSchedule(unsafeResultMap: resultMap["addCallSchedule"]! as! ResultMap)
+      }
+      set {
+        resultMap.updateValue(newValue.resultMap, forKey: "addCallSchedule")
+      }
+    }
+
+    public struct AddCallSchedule: GraphQLSelectionSet {
+      public static let possibleTypes: [String] = ["MyRelationship"]
+
+      public static var selections: [GraphQLSelection] {
+        return [
+          GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+          GraphQLField("id", type: .nonNull(.scalar(String.self))),
+          GraphQLField("callSchedules", type: .nonNull(.list(.nonNull(.object(CallSchedule.selections))))),
+          GraphQLField("nextCallTime", type: .scalar(String.self)),
+        ]
+      }
+
+      public private(set) var resultMap: ResultMap
+
+      public init(unsafeResultMap: ResultMap) {
+        self.resultMap = unsafeResultMap
+      }
+
+      public init(id: String, callSchedules: [CallSchedule], nextCallTime: String? = nil) {
+        self.init(unsafeResultMap: ["__typename": "MyRelationship", "id": id, "callSchedules": callSchedules.map { (value: CallSchedule) -> ResultMap in value.resultMap }, "nextCallTime": nextCallTime])
+      }
+
+      public var __typename: String {
+        get {
+          return resultMap["__typename"]! as! String
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "__typename")
+        }
+      }
+
+      public var id: String {
+        get {
+          return resultMap["id"]! as! String
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "id")
+        }
+      }
+
+      public var callSchedules: [CallSchedule] {
+        get {
+          return (resultMap["callSchedules"] as! [ResultMap]).map { (value: ResultMap) -> CallSchedule in CallSchedule(unsafeResultMap: value) }
+        }
+        set {
+          resultMap.updateValue(newValue.map { (value: CallSchedule) -> ResultMap in value.resultMap }, forKey: "callSchedules")
+        }
+      }
+
+      public var nextCallTime: String? {
+        get {
+          return resultMap["nextCallTime"] as? String
+        }
+        set {
+          resultMap.updateValue(newValue, forKey: "nextCallTime")
+        }
+      }
+
+      public struct CallSchedule: GraphQLSelectionSet {
+        public static let possibleTypes: [String] = ["CallSchedule"]
+
+        public static var selections: [GraphQLSelection] {
+          return [
+            GraphQLField("__typename", type: .nonNull(.scalar(String.self))),
+            GraphQLField("id", type: .nonNull(.scalar(String.self))),
+            GraphQLField("time", type: .nonNull(.scalar(String.self))),
+            GraphQLField("weekdays", type: .nonNull(.scalar(String.self))),
+          ]
+        }
+
+        public private(set) var resultMap: ResultMap
+
+        public init(unsafeResultMap: ResultMap) {
+          self.resultMap = unsafeResultMap
+        }
+
+        public init(id: String, time: String, weekdays: String) {
+          self.init(unsafeResultMap: ["__typename": "CallSchedule", "id": id, "time": time, "weekdays": weekdays])
+        }
+
+        public var __typename: String {
+          get {
+            return resultMap["__typename"]! as! String
+          }
+          set {
+            resultMap.updateValue(newValue, forKey: "__typename")
+          }
+        }
+
+        public var id: String {
+          get {
+            return resultMap["id"]! as! String
+          }
+          set {
+            resultMap.updateValue(newValue, forKey: "id")
+          }
+        }
+
+        /// "21:45" のようなフォーマットの文字列
+        public var time: String {
+          get {
+            return resultMap["time"]! as! String
+          }
+          set {
+            resultMap.updateValue(newValue, forKey: "time")
+          }
+        }
+
+        /// "Mon,The,Thu,Fri" のようなコンマ区切りの文字列
+        public var weekdays: String {
+          get {
+            return resultMap["weekdays"]! as! String
+          }
+          set {
+            resultMap.updateValue(newValue, forKey: "weekdays")
+          }
+        }
       }
     }
   }

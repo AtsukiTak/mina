@@ -16,7 +16,12 @@ struct Relationship: Identifiable {
     
     static let demo = Relationship(id: UUID(),
                                    partner: User.demo,
-                                   callSchedules: [],
+                                   callSchedules: [
+                                    CallSchedule(
+                                        id: UUID(),
+                                        time: Time(hour: 11, min: 42),
+                                        weekdays: [.sun, .mon, .tue, .wed, .thu, .fri, .sat])
+                                   ],
                                    nextCallTime: Date())
 }
 
@@ -26,7 +31,7 @@ struct CallSchedule: Identifiable {
     let weekdays: [Weekday]
 }
 
-enum Weekday: String {
+enum Weekday: String, CaseIterable {
     case sun = "sun"
     case mon = "mon"
     case tue = "tue"

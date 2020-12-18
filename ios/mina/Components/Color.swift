@@ -14,6 +14,12 @@ extension Color {
     static let main = Color(red: 205 / 256, green: 71 / 256, blue: 118 / 256)
 }
 
+extension UIColor {
+    static let lightMain = UIColor(red: 248 / 256, green: 225 / 256, blue: 232 / 256, alpha: 1.0)
+    
+    static let main = UIColor(red: 205 / 256, green: 71 / 256, blue: 118 / 256, alpha: 1.0)
+}
+
 struct Color_Previews: PreviewProvider {
     static var previews: some View {
         VStack {

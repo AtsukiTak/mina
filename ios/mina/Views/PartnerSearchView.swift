@@ -12,12 +12,20 @@ import SwiftUI
 struct PartnerSearchView: View {
     @State private var input: String = ""
     @State var foundUserId: String? = nil
-    @State var requestStatus: RequestStatus = .unsend
     
-    enum RequestStatus {
-        case unsend
-        case sending
-        case sent
+    init(foundUserId: String? = nil) {
+        self.foundUserId = foundUserId // for preview
+        // NavigationBarの設定
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .main
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        appearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.white]
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        UINavigationBar.appearance().barStyle = .black
+        UINavigationBar.appearance().tintColor = UIColor.white
     }
     
     var body: some View {
@@ -123,10 +131,9 @@ struct SendRequestButton: View {
     
     func sendRequest() {
         self.status = .sending
-
-        let mutation = SendPartnerRequestMutation(toUserId: self.targetUserId)
-        ApiService.apollo().perform(mutation: mutation) { result in
-            switch result {
+        
+        ApiService.sendPartnerRequest(toUserId: targetUserId) { res in
+            switch res {
             case .success(_):
                 self.status = .sent
             case .failure(_):

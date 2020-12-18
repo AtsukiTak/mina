@@ -1,0 +1,11 @@
+mutation AddCallSchedule($input: AddCallScheduleInput!) {
+    addCallSchedule(input: $input) {
+        id
+        callSchedules {
+            id
+            time
+            weekdays
+        }
+        nextCallTime
+    }
+}

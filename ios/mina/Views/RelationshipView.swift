@@ -11,6 +11,22 @@ import SwiftUI
 struct RelationshipView: View {
     let relationship: Relationship
     
+    init(relationship: Relationship) {
+        self.relationship = relationship
+        
+        // NavigationBarの設定
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .main
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        appearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.white]
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        UINavigationBar.appearance().barStyle = .black
+        UINavigationBar.appearance().tintColor = UIColor.white
+    }
+    
     var body: some View {
         ScrollView {
             if let nextCallTimeStr = self.nextCallTime {
@@ -61,15 +77,17 @@ struct RelationshipView: View {
             }
             
             // "Add a new call schedule" Button
-            Card(bgColor: .main) {
-                HStack {
-                    Image(systemName: "calendar.badge.plus")
-                        .imageScale(.large)
-                        .foregroundColor(.white)
-                    Text("Add a new call schedule")
-                        .foregroundColor(.white)
-                        .bold()
-                    Spacer()
+            NavigationLink(destination: AddCallScheduleView(relationship: relationship)) {
+                Card(bgColor: .main) {
+                    HStack {
+                        Image(systemName: "calendar.badge.plus")
+                            .imageScale(.large)
+                            .foregroundColor(.white)
+                        Text("Add a new call schedule")
+                            .foregroundColor(.white)
+                            .bold()
+                        Spacer()
+                    }
                 }
             }
         }
@@ -89,22 +107,8 @@ struct RelationshipView: View {
 
 struct RelationshipView_Previews: PreviewProvider {
     static var previews: some View {
-        let callSchedule1 = CallSchedule(
-            id: UUID(),
-            time: Time(hour: 11, min: 42),
-            weekdays: [.sun, .fri])
-        let callSchedule2 = CallSchedule(
-            id: UUID(),
-            time: Time(hour: 11, min: 42),
-            weekdays: [.sun, .mon, .tue, .wed, .thu, .fri, .sat])
-        let relationship = Relationship(
-            id: UUID(),
-            partner: User.demo,
-            callSchedules: [callSchedule1, callSchedule2],
-            nextCallTime: Date())
-        
         return NavigationView {
-            RelationshipView(relationship: relationship)
+            RelationshipView(relationship: Relationship.demo)
         }
     }
 }
