@@ -41,9 +41,30 @@ struct AddCallScheduleView: View {
             WeekdaySelector(selectedWeekdays: self.$selectedWeekdays)
             
             Spacer()
+            
+            // 保存ボタン
+            Button(action: {
+                
+            }) {
+                Text("Save")
+                    .font(.title)
+                    .bold()
+                    .padding(.horizontal, 50)
+                    .padding(.vertical, 20)
+                    .background(Color.main)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .shadow(color: Color(white: 0.8), radius: 5, x: 0, y: 2)
+            }
+            
+            Spacer()
         }
         .padding()
         .navigationBarTitle("Add a call schedule")
+    }
+    
+    func onSubmit() {
+        // TODO
     }
     
     struct TimeSelector: View {
@@ -54,7 +75,6 @@ struct AddCallScheduleView: View {
             HStack {
                 Text("Time:")
                     .font(.title)
-                    .bold()
                 
                 Spacer()
                 
@@ -87,7 +107,8 @@ struct AddCallScheduleView: View {
         @Binding var selectedWeekdays: Set<Weekday>
         
         var body: some View {
-            HStack {
+            HStack(alignment: .center) {
+                Spacer()
                 ForEach(Weekday.allCases, id: \.self) { weekday in
                     WeekdayToggle(
                         weekday: weekday,
@@ -95,6 +116,7 @@ struct AddCallScheduleView: View {
                         onToggle: {
                             self.selectedWeekdays = self.selectedWeekdays.symmetricDifference([weekday])
                         })
+                    Spacer()
                 }
             }
         }
@@ -111,8 +133,11 @@ struct AddCallScheduleView: View {
             }, label: {
                 if self.isActive {
                     Text("\(self.weekday.rawValue)")
+                        .font(.body)
+                        .bold()
                 } else {
                     Text("\(self.weekday.rawValue)")
+                        .font(.body)
                         .foregroundColor(.gray)
                 }
             })

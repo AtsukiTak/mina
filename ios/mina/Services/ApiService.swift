@@ -32,6 +32,11 @@ struct ApiService {
             .map({ s in try parseWeekday(String(s))})
     }
     
+    // Weekday構造体の配列を文字列にフォーマットする
+    static func formatWeekdayArray(_ weekdays: [Weekday]) -> String {
+        weekdays.map({ w in w.rawValue }).joined(separator: ",")
+    }
+    
     // Weekday構造体を文字列からパースする
     // e.g. "sun" -> Weekday.sun
     static func parseWeekday(_ s: String) throws -> Weekday {
@@ -81,6 +86,13 @@ struct ApiService {
         return Time(hour: hour, min: min)
     }
     
+    // Time構造体を文字列にフォーマットする
+    static func formatTime(_ time: Time) -> String {
+        let hour = String(format: "%02d", time.hour)
+        let min = String(format: "%02d", time.min)
+        return "\(hour):\(min)"
+    }
+    
     // Date構造体を文字列からパースする
     static func parseDate(_ s: String) throws -> Date {
         let formatter = ISO8601DateFormatter()
@@ -94,6 +106,11 @@ struct ApiService {
     static func parseUUID(_ s: String) throws -> UUID {
         guard let id = UUID(uuidString: s) else { throw ApiError.badResponse }
         return id
+    }
+    
+    // UUID構造体をStringにフォーマットする
+    static func formatUUID(_ id: UUID) -> String {
+        return id.uuidString
     }
     
     /*
@@ -193,6 +210,39 @@ struct ApiService {
                 onComplete(.success(()))
             case .failure(let err):
                 onComplete(.failure(err))
+            }
+        }
+    }
+    
+    /*
+     =======================
+     Add Call Schedule
+     =======================
+     */
+    static func addCallSchedule(relationship: Relationship, time: Time, weekdays: [Weekday], onComplete: @escaping (Result<Relationship, Error>) -> Void) {
+        let input = AddCallScheduleInput(relationshipId: formatUUID(relationship.id),
+                                         weekdays: formatWeekdayArray(weekdays),
+                                         time: formatTime(time))
+        let mutation = AddCallScheduleMutation(input: input)
+        apollo().perform(mutation: mutation) { result in
+            do {
+                let res = try result.get()
+                let data = res.data!.addCallSchedule
+                let schedules = try data.callSchedules.map { sche in
+                    CallSchedule(
+                        id: try parseUUID(sche.id),
+                        time: try parseTime(sche.time),
+                        weekdays: try parseWeekdayArray(sche.weekdays))
+                }
+                let nextCallTime = try data.nextCallTime.map(parseDate)
+                
+                let newRelationship = Relationship(id: relationship.id,
+                                    partner: relationship.partner,
+                                    callSchedules: schedules,
+                                    nextCallTime: nextCallTime)
+                onComplete(.success(newRelationship))
+            } catch {
+                onComplete(.failure(error))
             }
         }
     }
