@@ -40,10 +40,11 @@ class Store: ObservableObject {
         }
     }
     
-    func acceptPartnerRequest(requestId: UUID, onComplete: (() -> Void)?) {
+    func acceptPartnerRequest(requestId: UUID, onComplete: @escaping () -> Void) {
         // 前提条件のチェック
         if !self.receivedPartnerRequests.contains(where: { $0.id == requestId }) {
-            onComplete?()
+            // エラーにしない
+            onComplete()
             return;
         }
         
@@ -58,16 +59,16 @@ class Store: ObservableObject {
             case .failure(let err):
                 self.errorText = err.localizedDescription
             }
-            onComplete?()
+            onComplete()
         }
     }
     
-    func addCallSchedule(relationshipId: UUID, time: Time, weekdays: [Weekday], onComplete: (() -> Void)?) {
+    func addCallSchedule(relationshipId: UUID, time: Time, weekdays: [Weekday], onComplete: @escaping () -> Void) {
         // 前提条件のチェック
         guard let relationship = self.relationships.first(where: { $0.id == relationshipId })
         else {
             self.errorText = "Relationship not found"
-            onComplete?()
+            onComplete()
             return;
         }
         
@@ -85,7 +86,7 @@ class Store: ObservableObject {
             case .failure(let err):
                 self.errorText = err.localizedDescription
             }
-            onComplete?()
+            onComplete()
         }
     }
 }

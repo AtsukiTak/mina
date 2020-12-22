@@ -10,9 +10,14 @@ import SwiftUI
 
 struct AddCallScheduleView: View {
     let relationship: Relationship
+    
     @State var selectedHour = 12
     @State var selectedMinute = 30
     @State var selectedWeekdays: Set<Weekday> = [.wed]
+    @State var saving = true
+    
+    @Environment(\.presentationMode) var presentation
+    @EnvironmentObject var store: Store
     
     init(relationship: Relationship) {
         self.relationship = relationship
@@ -43,9 +48,7 @@ struct AddCallScheduleView: View {
             Spacer()
             
             // 保存ボタン
-            Button(action: {
-                
-            }) {
+            Button(action: onSubmit) {
                 Text("Save")
                     .font(.title)
                     .bold()
@@ -56,6 +59,7 @@ struct AddCallScheduleView: View {
                     .cornerRadius(10)
                     .shadow(color: Color(white: 0.8), radius: 5, x: 0, y: 2)
             }
+            .disabled(self.saving)
             
             Spacer()
         }
@@ -64,7 +68,15 @@ struct AddCallScheduleView: View {
     }
     
     func onSubmit() {
-        // TODO
+        self.saving = true
+        
+        let time = Time(hour: UInt(self.selectedHour), min: UInt(self.selectedMinute))
+        self.store.addCallSchedule(relationshipId: self.relationship.id,
+                                     time: time,
+                                     weekdays: Array(self.selectedWeekdays)) { () in
+            // 前の画面に戻る
+            self.presentation.wrappedValue.dismiss()
+        }
     }
     
     struct TimeSelector: View {

@@ -9,16 +9,14 @@
 import SwiftUI
 
 struct RootView: View {
-    @EnvironmentObject var env: Store
+    @EnvironmentObject var store: Store
     
     var body: some View {
         Group {
-            if (self.env.callMode) {
+            if (self.store.callMode) {
                 VideoView().transition(.opacity)
             } else {
-                FirstView()
-                    .environmentObject(self.env)
-                    .transition(.opacity)
+                FirstView().transition(.opacity)
             }
         }
     }

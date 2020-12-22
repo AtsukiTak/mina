@@ -9,13 +9,13 @@
 import SwiftUI
 
 struct FirstView: View {
-    @EnvironmentObject var env: Store
+    @EnvironmentObject var store: Store
     
     var body: some View {
         NavigationView {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack {
-                    if !self.env.receivedPartnerRequests.isEmpty {
+                    if !self.store.receivedPartnerRequests.isEmpty {
                         self.receivedPartnerRequestsSection
                             .padding(.bottom, 40)
                     }
@@ -32,7 +32,7 @@ struct FirstView: View {
         VStack {
             self.sectionTitle(title: "Received Requests")
             
-            ForEach(self.env.receivedPartnerRequests, content: { request in
+            ForEach(self.store.receivedPartnerRequests, content: { request in
                 HStack(alignment: .lastTextBaseline) {
                     Text(request.from.id)
                         .font(.title)
@@ -42,7 +42,7 @@ struct FirstView: View {
                     Spacer()
                     
                     AcceptPartnerRequestButton(request: request) { onComplete in
-                        self.env.acceptPartnerRequest(requestId: request.id, onComplete: onComplete)
+                        self.store.acceptPartnerRequest(requestId: request.id, onComplete: onComplete)
                     }
                 }
                 .padding()
@@ -55,7 +55,7 @@ struct FirstView: View {
             self.sectionTitle(title: "Partners")
             
             // partner cards
-            ForEach(self.env.relationships, content: { relationship in
+            ForEach(self.store.relationships, content: { relationship in
                 NavigationLink(destination: RelationshipView(relationship: relationship)) {
                     PartnerCard(relationship: relationship)
                         .padding(.horizontal, 15)

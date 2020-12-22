@@ -129,6 +129,8 @@ struct SendRequestButton: View {
         }
     }
     
+    // TODO
+    // Storeを経由する
     func sendRequest() {
         self.status = .sending
         

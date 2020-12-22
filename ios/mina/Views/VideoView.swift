@@ -9,7 +9,8 @@
 import SwiftUI
 
 struct VideoView: View {
-    
+    // TODO
+    // CallSessionをStoreにもたせ、StoreへのEnvironmentObjectを保持する
     @ObservedObject var callSession: CallSessionManager = CallSessionManager.shared
     
     var body: some View {
