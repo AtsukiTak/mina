@@ -9,84 +9,111 @@
 import Foundation
 
 class Store: ObservableObject {
-    @Published var callMode: Bool = false
-    @Published var me: Me? = nil
-    @Published var relationships: [Relationship] = []
-    @Published var receivedPartnerRequests: [PartnerRequest] = []
-    @Published var errorText: String? = nil
+  @Published var callMode: Bool = false
+  @Published var me: Me? = nil
+  @Published var relationships: [Relationship] = []
+  @Published var receivedPartnerRequests: [PartnerRequest] = []
+  @Published var errorText: String? = nil
+  
+  init() {}
+  
+  func queryInitial(complete: @escaping () -> Void) {
+    self.errorText = nil
     
-    init() {}
-    
-    func queryInitial(complete: @escaping () -> Void) {
-        self.errorText = nil
-        
-        do {
-            self.me = try KeychainService().readMe()
-        } catch {
-            self.errorText = error.localizedDescription
-            return;
-        }
-        
-        ApiService.getMe { res in
-            switch res {
-            case .success(let output):
-                self.errorText = nil
-                self.relationships = output.relationships
-                self.receivedPartnerRequests = output.receivedPartnerRequests
-            case .failure(let err):
-                self.errorText = err.localizedDescription
-            }
-            complete()
-        }
+    do {
+      self.me = try KeychainService().readMe()
+    } catch {
+      self.errorText = error.localizedDescription
+      return;
     }
     
-    func acceptPartnerRequest(requestId: UUID, onComplete: @escaping () -> Void) {
-        // 前提条件のチェック
-        if !self.receivedPartnerRequests.contains(where: { $0.id == requestId }) {
-            // エラーにしない
-            onComplete()
-            return;
-        }
-        
-        // errorの初期化
+    getPrivateApi()?.getMe { res in
+      switch res {
+      case .success(let output):
         self.errorText = nil
-        
-        // APIリクエスト
-        ApiService.acceptPartnerRequest(requestId: requestId) { res in
-            switch res {
-            case .success(_):
-                self.receivedPartnerRequests.removeAll(where: { $0.id == requestId})
-            case .failure(let err):
-                self.errorText = err.localizedDescription
-            }
-            onComplete()
-        }
+        self.relationships = output.relationships
+        self.receivedPartnerRequests = output.receivedPartnerRequests
+      case .failure(let err):
+        self.errorText = err.localizedDescription
+      }
+      complete()
+    }
+  }
+  
+  func sendPartnerRequest(toUserId: String, onComplete: @escaping (Result<(), Error>) -> Void) {
+    self.errorText = nil
+    
+    getPrivateApi()?.sendPartnerRequest(toUserId: toUserId) { res in
+      switch res {
+      case .success(()):
+        onComplete(.success(()))
+      case .failure(let err):
+        self.errorText = err.localizedDescription
+        onComplete(.failure(err))
+      }
+    }
+  }
+  
+  func acceptPartnerRequest(requestId: UUID, onComplete: @escaping () -> Void) {
+    // 前提条件のチェック
+    if !self.receivedPartnerRequests.contains(where: { $0.id == requestId }) {
+      // エラーにしない
+      onComplete()
+      return;
     }
     
-    func addCallSchedule(relationshipId: UUID, time: Time, weekdays: [Weekday], onComplete: @escaping () -> Void) {
-        // 前提条件のチェック
-        guard let relationship = self.relationships.first(where: { $0.id == relationshipId })
-        else {
-            self.errorText = "Relationship not found"
-            onComplete()
-            return;
-        }
-        
-        // errorの初期化
-        self.errorText = nil
-        
-        // APIリクエスト
-        ApiService.addCallSchedule(relationship: relationship,
-                                   time: time,
-                                   weekdays: weekdays) { res in
-            switch res {
-            case .success(let newRelationship):
-                let idx = self.relationships.firstIndex(where: { $0.id == relationship.id })!
-                self.relationships[idx] = newRelationship
-            case .failure(let err):
-                self.errorText = err.localizedDescription
-            }
-            onComplete()
-        }
+    // errorの初期化
+    self.errorText = nil
+    
+    // APIリクエスト
+    getPrivateApi()?.acceptPartnerRequest(requestId: requestId) { res in
+      switch res {
+      case .success(_):
+        self.receivedPartnerRequests.removeAll(where: { $0.id == requestId})
+      case .failure(let err):
+        self.errorText = err.localizedDescription
+      }
+      onComplete()
     }
+  }
+  
+  func addCallSchedule(relationshipId: UUID, time: Time, weekdays: [Weekday], onComplete: @escaping () -> Void) {
+    // 前提条件のチェック
+    guard let relationship = self.relationships.first(where: { $0.id == relationshipId })
+    else {
+      self.errorText = "Relationship not found"
+      onComplete()
+      return;
+    }
+    
+    // errorの初期化
+    self.errorText = nil
+    
+    // APIリクエスト
+    getPrivateApi()?.addCallSchedule(relationship: relationship,
+                               time: time,
+                               weekdays: weekdays) { res in
+      switch res {
+      case .success(let newRelationship):
+        let idx = self.relationships.firstIndex(where: { $0.id == relationship.id })!
+        self.relationships[idx] = newRelationship
+      case .failure(let err):
+        self.errorText = err.localizedDescription
+      }
+      onComplete()
+    }
+  }
+  
+  /*
+   ================
+   private methods
+   ================
+   */
+  private func getPrivateApi() -> ApiService.PrivateApi? {
+    guard let me = self.me else {
+      self.errorText = "Not Logged In"
+      return nil
+    }
+    return ApiService.PrivateApi(me: me)
+  }
 }

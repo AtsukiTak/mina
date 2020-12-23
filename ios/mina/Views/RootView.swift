@@ -9,22 +9,22 @@
 import SwiftUI
 
 struct RootView: View {
-    @EnvironmentObject var store: Store
-    
-    var body: some View {
-        Group {
-            if (self.store.callMode) {
-                VideoView().transition(.opacity)
-            } else {
-                FirstView().transition(.opacity)
-            }
-        }
+  @EnvironmentObject var store: Store
+  
+  var body: some View {
+    Group {
+      if (self.store.callMode) {
+        VideoView().transition(.opacity)
+      } else {
+        FirstView().transition(.opacity)
+      }
     }
+  }
 }
 
 struct RootView_Previews: PreviewProvider {
-    static var previews: some View {
-        RootView()
-            .environmentObject(Store())
-    }
+  static var previews: some View {
+    RootView()
+      .environmentObject(Store())
+  }
 }
