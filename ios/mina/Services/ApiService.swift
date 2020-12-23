@@ -109,7 +109,11 @@ struct ApiService {
   }
   
   struct PublicApi {
-    let graphqlEndpoint: String = "https://api.mina.atsuki.me/graphql"
+    let graphqlEndpoint: String
+    
+    init() {
+      self.graphqlEndpoint = Secrets.shared.graphqlEndpoint
+    }
     
     func apollo() -> ApolloClient {
       return ApolloClient(url: URL(string: graphqlEndpoint)!)
@@ -154,8 +158,13 @@ struct ApiService {
   }
   
   struct PrivateApi {
-    let graphqlEndpoint: String = "https://api.mina.atsuki.me/graphql"
+    let graphqlEndpoint: String
     let me: Me
+    
+    init(me: Me) {
+      self.graphqlEndpoint = Secrets.shared.graphqlEndpoint
+      self.me = me
+    }
     
     func apollo() -> ApolloClient {
       let credData = "\(me.id):\(me.password)".data(using: String.Encoding.utf8)!

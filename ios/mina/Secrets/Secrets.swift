@@ -9,16 +9,17 @@
 import Foundation
 
 struct Secrets: Codable {
-    let skywayApiKey: String
-    let skywayDomain: String
-    
-    static let shared: Secrets = load()
-    
-    private static func load() -> Secrets {
-        // secrets.plist ファイルの読み込み
-        let secretsURL: URL = URL(fileURLWithPath: Bundle.main.path(forResource: "secrets", ofType: "plist")!)
-        let data = try! Data(contentsOf: secretsURL)
-        let decoder = PropertyListDecoder()
-        return try! decoder.decode(Secrets.self, from: data)
-    }
+  let skywayApiKey: String
+  let skywayDomain: String
+  let graphqlEndpoint: String
+  
+  static let shared: Secrets = load()
+  
+  private static func load() -> Secrets {
+    // secrets.plist ファイルの読み込み
+    let secretsURL: URL = URL(fileURLWithPath: Bundle.main.path(forResource: "secrets", ofType: "plist")!)
+    let data = try! Data(contentsOf: secretsURL)
+    let decoder = PropertyListDecoder()
+    return try! decoder.decode(Secrets.self, from: data)
+  }
 }
