@@ -8,9 +8,7 @@
 
 ## Docker Build
 
-まずビルド用のDockerイメージをビルドし、そのイメージでビルドした成果物を取り込む.
-Cloud Buildでキャッシュを効かせながらビルドを行うためにこのような構成になっている.
-
-1. `docker build -t musl-builder -f musl-build/Dockerfile`
-1. `docker run -v $(pwd)/musl-build:/home/rust/src/musl-build musl-builder`
-1. `docker build -t mina-app-server .`
+Cyclic Docker Buildという手法。
+ビルドを2段階に分け、1段階目でビルド成果物とキャッシュアーカイブを保持するDockerイメージを生成し、
+2段回目でビルド成果物を取り込んだDockerイメージを生成する。
+そして1段階目のDockerイメージを次回のビルドのソースにすることで、キャッシュを有効にする。
