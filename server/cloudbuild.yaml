@@ -19,7 +19,7 @@ steps:
     args:
       - 'run'
       - '-v'
-      - '$(pwd)/musl-build:/home/rust/src/musl-build'
+      - '/workspace/server/musl-build:/home/rust/src/musl-build'
       - 'musl-builder'
   - name: 'gcr.io/cloud-builders/gsutil'
     dir: 'server'
