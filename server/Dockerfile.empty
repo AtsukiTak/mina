@@ -1,0 +1,3 @@
+FROM alpine:latest
+WORKDIR /home/builder
+COPY ./musl-build/cache.tar.gz .
