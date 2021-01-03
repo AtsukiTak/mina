@@ -1,2 +1,4 @@
 /target
 *.p8
+musl-build/mina-app
+musl-build/cache.tar.gz

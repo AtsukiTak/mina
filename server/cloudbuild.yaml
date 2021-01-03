@@ -1,4 +1,32 @@
 steps:
+  - name: 'gcr.io/cloud-builders/gsutil'
+    dir: 'server'
+    args:
+      - 'cp'
+      - 'gs://rust-cache-mina-server/cache.tar.gz'
+      - 'musl-build/cache.tar.gz'
+  - name: 'gcr.io/cloud-builders/docker'
+    dir: 'server'
+    args:
+      - 'build',
+      - '-t',
+      - 'musl-builder',
+      - '-f'
+      - 'musl-build/Dockerfile'
+      - '.'
+  - name: 'gcr.io/cloud-builders/docker'
+    dir: 'server'
+    args:
+      - 'run'
+      - '-v'
+      - '$(pwd)/musl-build:/home/rust/src/musl-build'
+      - 'musl-builder'
+  - name: 'gcr.io/cloud-builders/gsutil'
+    dir: 'server'
+    args:
+      - 'cp'
+      - 'musl-build/cache.tar.gz'
+      - 'gs://rust-cache-mina-server/cache.tar.gz'
   - name: 'gcr.io/cloud-builders/docker'
     dir: 'server'
     args:
