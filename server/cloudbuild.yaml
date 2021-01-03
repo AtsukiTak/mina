@@ -8,9 +8,9 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     dir: 'server'
     args:
-      - 'build',
-      - '-t',
-      - 'musl-builder',
+      - 'build'
+      - '-t'
+      - 'musl-builder'
       - '-f'
       - 'musl-build/Dockerfile'
       - '.'
