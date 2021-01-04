@@ -14,7 +14,6 @@ struct EnvVars {
     port: u16,
     apple_auth_iss: String,
     apple_auth_kid: String,
-    apple_auth_key: String,
     apple_bundle_id: String,
 }
 
@@ -24,14 +23,16 @@ async fn main() {
 
     let env = envy::from_env::<EnvVars>().unwrap();
 
-    // Config構造体の生成
-    let apple_auth = Authorizer::new(
-        env.apple_auth_iss,
-        env.apple_auth_kid,
-        env.apple_auth_key.as_bytes(),
-    )
-    .unwrap();
+    // Authorizerの生成
+    let iss = env.apple_auth_iss;
+    let kid = env.apple_auth_kid;
+    let key_bytes = include_bytes!("../../AuthKey.p8");
+    let apple_auth = Authorizer::new(iss, kid, key_bytes).unwrap();
+
+    // Clientの生成
     let apple_push_client = Client::new_for_dev(env.apple_bundle_id.as_str(), apple_auth);
+
+    // Configの生成
     let config = Config::new(env.database_url.as_str(), apple_push_client).await;
 
     // bind

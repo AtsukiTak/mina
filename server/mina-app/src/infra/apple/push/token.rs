@@ -71,7 +71,7 @@ impl Authorizer {
 
     /// 単純に新しいTokenを導出する
     /// `get_token` 関数と異なり、cacheから読み込むこともしない
-    /// 前回使用したTokenから20分以内に導出されたTokenを使用
+    /// 前回使用したTokenから20分以内に新しく導出されたTokenを使用
     /// するとAppleから警告が出るので注意
     pub fn derive_token(&self, iat: DateTime<Utc>) -> Result<String, JwtError> {
         let claim = TokenClaim::new(self.iss.as_str(), iat);

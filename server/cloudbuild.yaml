@@ -1,4 +1,10 @@
 steps:
+  - name: 'gcr.io/cloud-builders/gsutil'
+    dir: 'server'
+    args:
+      - 'cp'
+      - 'gs://mina_server_secrets/AuthKey.p8'
+      - 'AuthKey.p8'
   - name: 'gcr.io/cloud-builders/docker'
     dir: 'server'
     args:
