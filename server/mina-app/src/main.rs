@@ -6,7 +6,6 @@ use serde::Deserialize;
 use std::net::Ipv4Addr;
 
 #[derive(Deserialize, Debug)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 struct EnvVars {
     database_url: String,
     #[serde(default = "default_bind")]
