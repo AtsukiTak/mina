@@ -17,7 +17,7 @@ pub struct GraphQL {
 
 impl GraphQL {
     pub fn sdl() -> String {
-        MySchema::sdl()
+        Self::schema().sdl()
     }
 
     pub fn schema() -> MySchema {
