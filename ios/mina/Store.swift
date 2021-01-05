@@ -9,11 +9,11 @@
 import Foundation
 
 class Store: ObservableObject {
-  @Published var callMode: Bool = false
-  @Published var me: Me? = nil
-  @Published var relationships: [Relationship] = []
-  @Published var receivedPartnerRequests: [PartnerRequest] = []
-  @Published var error: ErrorRepr? = nil
+  @Published var callMode: Bool
+  @Published private(set) var me: Me?
+  @Published private(set) var relationships: [Relationship]
+  @Published private(set) var receivedPartnerRequests: [PartnerRequest]
+  @Published var error: ErrorRepr?
   
   // alertのトリガーにするためには、それがIdentifiableに準拠している必要がある。
   // 単純なStringはIdentifiableに準拠していないので新しくErrorRepr構造体を作る。
@@ -33,7 +33,19 @@ class Store: ObservableObject {
     }
   }
   
-  init() {}
+  // デフォルトイニシャライザ
+  convenience init() {
+    self.init(me: nil, relationships: [], receivedPartnerRequests: [])
+  }
+  
+  // フルイニシャライザ
+  init(me: Me?, relationships: [Relationship], receivedPartnerRequests: [PartnerRequest]) {
+    self.callMode = false
+    self.me = me
+    self.relationships = relationships
+    self.receivedPartnerRequests = receivedPartnerRequests
+    self.error = nil
+  }
   
   func queryInitial(complete: @escaping () -> Void) {
     self.error = nil

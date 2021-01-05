@@ -149,9 +149,9 @@ struct FirstView: View {
 
 struct FirstView_Previews: PreviewProvider {
   static var previews: some View {
-    let env = Store()
-    env.relationships = [Relationship.demo, Relationship.demo]
-    env.receivedPartnerRequests = [PartnerRequest.demo]
+    let env = Store(me: nil,
+                    relationships: [Relationship.demo, Relationship.demo],
+                    receivedPartnerRequests:  [PartnerRequest.demo])
     
     return FirstView()
       .environmentObject(env)
