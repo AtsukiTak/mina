@@ -13,42 +13,60 @@ class Store: ObservableObject {
   @Published var me: Me? = nil
   @Published var relationships: [Relationship] = []
   @Published var receivedPartnerRequests: [PartnerRequest] = []
-  @Published var errorText: String? = nil
+  @Published var error: ErrorRepr? = nil
+  
+  // alertのトリガーにするためには、それがIdentifiableに準拠している必要がある。
+  // 単純なStringはIdentifiableに準拠していないので新しくErrorRepr構造体を作る。
+  // ReprはRepresentationの略。
+  // また、エラーの文字列が同一でも別のエラーである可能性があるため、idはUUIDにしている
+  struct ErrorRepr: Identifiable {
+    var id: UUID
+    var desc: String
+    
+    init(_ err: Error) {
+      self.init(err.localizedDescription)
+    }
+    
+    init(_ desc: String) {
+      self.id = UUID()
+      self.desc = desc
+    }
+  }
   
   init() {}
   
   func queryInitial(complete: @escaping () -> Void) {
-    self.errorText = nil
+    self.error = nil
     
     do {
       self.me = try KeychainService().readMe()
     } catch {
-      self.errorText = error.localizedDescription
+      self.error = ErrorRepr(error)
       return;
     }
     
     getPrivateApi()?.getMe { res in
       switch res {
       case .success(let output):
-        self.errorText = nil
+        self.error = nil
         self.relationships = output.relationships
         self.receivedPartnerRequests = output.receivedPartnerRequests
       case .failure(let err):
-        self.errorText = err.localizedDescription
+        self.error = ErrorRepr(err)
       }
       complete()
     }
   }
   
   func sendPartnerRequest(toUserId: String, onComplete: @escaping (Result<(), Error>) -> Void) {
-    self.errorText = nil
+    self.error = nil
     
     getPrivateApi()?.sendPartnerRequest(toUserId: toUserId) { res in
       switch res {
       case .success(()):
         onComplete(.success(()))
       case .failure(let err):
-        self.errorText = err.localizedDescription
+        self.error = ErrorRepr(err)
         onComplete(.failure(err))
       }
     }
@@ -63,7 +81,7 @@ class Store: ObservableObject {
     }
     
     // errorの初期化
-    self.errorText = nil
+    self.error = nil
     
     // APIリクエスト
     getPrivateApi()?.acceptPartnerRequest(requestId: requestId) { res in
@@ -71,7 +89,7 @@ class Store: ObservableObject {
       case .success(_):
         self.receivedPartnerRequests.removeAll(where: { $0.id == requestId})
       case .failure(let err):
-        self.errorText = err.localizedDescription
+        self.error = ErrorRepr(err)
       }
       onComplete()
     }
@@ -81,13 +99,13 @@ class Store: ObservableObject {
     // 前提条件のチェック
     guard let relationship = self.relationships.first(where: { $0.id == relationshipId })
     else {
-      self.errorText = "Relationship not found"
+      self.error = ErrorRepr("Relationship not found")
       onComplete()
       return;
     }
     
     // errorの初期化
-    self.errorText = nil
+    self.error = nil
     
     // APIリクエスト
     getPrivateApi()?.addCallSchedule(relationship: relationship,
@@ -98,7 +116,7 @@ class Store: ObservableObject {
         let idx = self.relationships.firstIndex(where: { $0.id == relationship.id })!
         self.relationships[idx] = newRelationship
       case .failure(let err):
-        self.errorText = err.localizedDescription
+        self.error = ErrorRepr(err)
       }
       onComplete()
     }
@@ -111,7 +129,7 @@ class Store: ObservableObject {
    */
   private func getPrivateApi() -> ApiService.PrivateApi? {
     guard let me = self.me else {
-      self.errorText = "Not Logged In"
+      self.error = ErrorRepr("Not Logged In")
       return nil
     }
     return ApiService.PrivateApi(me: me)

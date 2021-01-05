@@ -13,11 +13,13 @@ struct RootView: View {
   
   var body: some View {
     Group {
-      if (self.store.callMode) {
+      if (store.callMode) {
         VideoView().transition(.opacity)
       } else {
         FirstView().transition(.opacity)
       }
+    }.alert(item: $store.error) { err in
+      Alert(title: Text("Unexpected Error"), message: Text(err.desc))
     }
   }
 }

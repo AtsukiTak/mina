@@ -87,7 +87,7 @@ struct PartnerSearchView: View {
       case .success(let user):
         self.foundUserId = user.id
       case .failure(let error):
-        self.store.errorText = error.localizedDescription
+        self.store.error = Store.ErrorRepr(error)
       }
     }
   }
