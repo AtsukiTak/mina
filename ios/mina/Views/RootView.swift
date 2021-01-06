@@ -13,7 +13,9 @@ struct RootView: View {
   
   var body: some View {
     Group {
-      if (store.callMode) {
+      if (store.me == nil) {
+        OnboardingView().transition(.opacity)
+      } else if (store.callMode) {
         VideoView().transition(.opacity)
       } else {
         FirstView().transition(.opacity)

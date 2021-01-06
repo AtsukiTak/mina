@@ -109,14 +109,16 @@ struct ApiService {
   }
   
   struct PublicApi {
-    let graphqlEndpoint: String
+    let apollo: ApolloClient
     
     init() {
-      self.graphqlEndpoint = Secrets.shared.graphqlEndpoint
+      let graphqlEndpoint = Secrets.shared.graphqlEndpoint
+      self.init(graphqlEndpoint: graphqlEndpoint)
     }
     
-    func apollo() -> ApolloClient {
-      return ApolloClient(url: URL(string: graphqlEndpoint)!)
+    init (graphqlEndpoint: String) {
+      
+      self.apollo = ApolloClient(url: URL(string: graphqlEndpoint)!)
     }
     
     /*
@@ -126,7 +128,7 @@ struct ApiService {
      */
     func signupAsAnonymous(callback: @escaping (Result<Me, Error>) -> Void) {
       let mutation = SignupAsAnonymousMutation()
-      apollo().perform(mutation: mutation) { result in
+      apollo.perform(mutation: mutation) { result in
         switch result {
         case .success(let res):
           let data = res.data!.signupAsAnonymous
@@ -144,7 +146,7 @@ struct ApiService {
      ================
      */
     func searchPartner(userId: String, callback: @escaping (Result<User, Error>) -> Void) {
-      apollo().fetch(query: SearchPartnerQuery(userId: userId)) { result in
+      apollo.fetch(query: SearchPartnerQuery(userId: userId)) { result in
         do {
           let res = try result.get()
           let data = res.data!
@@ -158,30 +160,35 @@ struct ApiService {
   }
   
   struct PrivateApi {
-    let graphqlEndpoint: String
+    let apollo: ApolloClient
     let me: Me
     
     init(me: Me) {
-      self.graphqlEndpoint = Secrets.shared.graphqlEndpoint
-      self.me = me
+      let graphqlEndpoint = Secrets.shared.graphqlEndpoint
+      self.init(me: me, graphqlEndpoint: graphqlEndpoint)
     }
     
-    func apollo() -> ApolloClient {
+    init(me: Me, graphqlEndpoint: String) {
+      self.me = me
+      
+      // Basic認証用の文字列の生成
       let credData = "\(me.id):\(me.password)".data(using: String.Encoding.utf8)!
       let credential = credData.base64EncodedString(options: [])
       let basicAuth = "Basic \(credential)"
       
+      // ApolloClientの生成
       let store = ApolloStore()
       let network = RequestChainNetworkTransport(
         interceptorProvider: LegacyInterceptorProvider(store: store),
-        endpointURL: URL(string: self.graphqlEndpoint)!,
+        endpointURL: URL(string: graphqlEndpoint)!,
         additionalHeaders: ["Authorization": basicAuth],
         autoPersistQueries: false,
         requestBodyCreator: ApolloRequestBodyCreator(),
         useGETForQueries: false,
         useGETForPersistedQueryRetry: false)
+      let apollo = ApolloClient(networkTransport: network, store: store)
       
-      return ApolloClient(networkTransport: network, store: store)
+      self.apollo = apollo
     }
     
     /*
@@ -195,7 +202,7 @@ struct ApiService {
     }
     
     func getMe(callback: @escaping (Result<GetMeOutput, Error>) -> Void) {
-      apollo().fetch(query: GetMeQuery()) { result in
+      apollo.fetch(query: GetMeQuery()) { result in
         do {
           let res = try result.get()
           
@@ -239,7 +246,7 @@ struct ApiService {
      */
     func acceptPartnerRequest(requestId: UUID, callback: @escaping (Result<(), Error>) -> Void) {
       let mutation = AcceptPartnerRequestMutation(requestId: requestId.uuidString)
-      apollo().perform(mutation: mutation) { result in
+      apollo.perform(mutation: mutation) { result in
         switch result {
         case .success(_):
           callback(.success(()))
@@ -256,7 +263,7 @@ struct ApiService {
      */
     func sendPartnerRequest(toUserId: String, callback: @escaping (Result<(), Error>) -> Void) {
       let mutation = SendPartnerRequestMutation(toUserId: toUserId)
-      apollo().perform(mutation: mutation) { res in
+      apollo.perform(mutation: mutation) { res in
         switch res {
         case .success(_):
           callback(.success(()))
@@ -280,7 +287,7 @@ struct ApiService {
       let mutation = AddCallScheduleMutation(input: input)
       
       // requestの実行
-      apollo().perform(mutation: mutation) { result in
+      apollo.perform(mutation: mutation) { result in
         do {
           let res = try result.get()
           let data = res.data!.addCallSchedule

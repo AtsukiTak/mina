@@ -33,12 +33,16 @@ class Store: ObservableObject {
     }
   }
   
-  // デフォルトイニシャライザ
+  // シンプルイニシャライザ
+  // イニシャライザはデバッグ時などに使用する
+  // 本番環境では `createWithInitialData` メソッドを使用する
   convenience init() {
     self.init(me: nil, relationships: [], receivedPartnerRequests: [])
   }
   
   // フルイニシャライザ
+  // イニシャライザはデバッグ時などに使用する
+  // 本番環境では `createWithInitialData` メソッドを使用する
   init(me: Me?, relationships: [Relationship], receivedPartnerRequests: [PartnerRequest]) {
     self.callMode = false
     self.me = me
@@ -47,27 +51,52 @@ class Store: ObservableObject {
     self.error = nil
   }
   
-  func queryInitial(complete: @escaping () -> Void) {
-    self.error = nil
+  // 初期データと共にStoreを生成する
+  static func createWithInitialData() -> Store {
+    let store = Store()
     
     do {
-      self.me = try KeychainService().readMe()
+      store.me = try KeychainService().readMe()
     } catch {
-      self.error = ErrorRepr(error)
+      store.error = ErrorRepr(error)
+      return store;
+    }
+    
+    if (store.me != nil) {
+      store.getPrivateApi()?.getMe { res in
+        switch res {
+        case .success(let output):
+          store.error = nil
+          store.relationships = output.relationships
+          store.receivedPartnerRequests = output.receivedPartnerRequests
+        case .failure(let err):
+          store.error = ErrorRepr(err)
+        }
+      }
+    }
+    
+    return store
+  }
+  
+  // ユーザー登録を行うユースケース
+  // - `signupAsAnonymous` APIを呼び出す
+  // - 結果をKeyChainに保存する
+  // - Store.meを更新する（他の値はそのまま）
+  func signup() {
+    if (self.me != nil) {
+      self.error = ErrorRepr("Already registered")
       return;
     }
     
-    getPrivateApi()?.getMe { res in
-      switch res {
-      case .success(let output):
-        self.error = nil
-        self.relationships = output.relationships
-        self.receivedPartnerRequests = output.receivedPartnerRequests
-      case .failure(let err):
-        self.error = ErrorRepr(err)
+    ApiService.PublicApi().signupAsAnonymous(callback: { res in
+      do {
+        let me = try res.get()
+        try KeychainService().saveMe(me: me)
+        self.me = me
+      } catch {
+        self.error = ErrorRepr(error)
       }
-      complete()
-    }
+    })
   }
   
   func sendPartnerRequest(toUserId: String, onComplete: @escaping (Result<(), Error>) -> Void) {
