@@ -62,8 +62,8 @@ class Store: ObservableObject {
       return store;
     }
     
-    if (store.me != nil) {
-      store.getPrivateApi()?.getMe { res in
+    if let me = store.me {
+      ApiService.GraphqlApi().getMyData(me: me) { res in
         switch res {
         case .success(let output):
           store.error = nil
@@ -88,7 +88,7 @@ class Store: ObservableObject {
       return;
     }
     
-    ApiService.PublicApi().signupAsAnonymous(callback: { res in
+    ApiService.GraphqlApi().signupAsAnonymous(callback: { res in
       do {
         let me = try res.get()
         try KeychainService().saveMe(me: me)
@@ -100,9 +100,14 @@ class Store: ObservableObject {
   }
   
   func sendPartnerRequest(toUserId: String, onComplete: @escaping (Result<(), Error>) -> Void) {
-    self.error = nil
+    guard let me = self.me else {
+      self.error = ErrorRepr("not logged in")
+      return;
+    }
     
-    getPrivateApi()?.sendPartnerRequest(toUserId: toUserId) { res in
+    self.error = nil
+      
+    ApiService.GraphqlApi().sendPartnerRequest(me:me, toUserId: toUserId) { res in
       switch res {
       case .success(()):
         onComplete(.success(()))
@@ -120,12 +125,16 @@ class Store: ObservableObject {
       onComplete()
       return;
     }
+    guard let me = self.me else {
+      self.error = ErrorRepr("not logged in")
+      return;
+    }
     
     // errorの初期化
     self.error = nil
     
     // APIリクエスト
-    getPrivateApi()?.acceptPartnerRequest(requestId: requestId) { res in
+    ApiService.GraphqlApi().acceptPartnerRequest(me: me, requestId: requestId) { res in
       switch res {
       case .success(_):
         self.receivedPartnerRequests.removeAll(where: { $0.id == requestId})
@@ -144,14 +153,20 @@ class Store: ObservableObject {
       onComplete()
       return;
     }
+    guard let me = self.me else {
+      self.error = ErrorRepr("not signed in")
+      return;
+    }
     
     // errorの初期化
     self.error = nil
     
     // APIリクエスト
-    getPrivateApi()?.addCallSchedule(relationship: relationship,
-                               time: time,
-                               weekdays: weekdays) { res in
+    ApiService.GraphqlApi()
+      .addCallSchedule(me: me,
+                      relationship: relationship,
+                      time: time,
+                      weekdays: weekdays) { res in
       switch res {
       case .success(let newRelationship):
         let idx = self.relationships.firstIndex(where: { $0.id == relationship.id })!
@@ -161,18 +176,5 @@ class Store: ObservableObject {
       }
       onComplete()
     }
-  }
-  
-  /*
-   ================
-   private methods
-   ================
-   */
-  private func getPrivateApi() -> ApiService.PrivateApi? {
-    guard let me = self.me else {
-      self.error = ErrorRepr("Not Logged In")
-      return nil
-    }
-    return ApiService.PrivateApi(me: me)
   }
 }

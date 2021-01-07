@@ -108,6 +108,185 @@ struct ApiService {
     }
   }
   
+  struct GraphqlApi {
+    let endpoint: URL
+    
+    init() {
+      self.endpoint = URL(string: Secrets.shared.graphqlEndpoint)!
+    }
+    
+    /*
+     ==============
+     Get Me
+     ==============
+     */
+    struct GetMyDataOutput {
+      var relationships: [Relationship]
+      var receivedPartnerRequests: [PartnerRequest]
+    }
+    
+    func getMyData(me: Me, callback: @escaping (Result<GetMyDataOutput, Error>) -> Void) {
+      let query = GraphQL.GetMe()
+      var req = GraphQL.Request(endpoint: self.endpoint, query: query)
+      req.req.addValue(GraphqlApi.basicAuthVal(me), forHTTPHeaderField: "Authorization")
+      
+      let task = URLSession.shared.graphqlTask(with: req) { result in
+        do {
+          let data = try result.get()
+          
+          let relationships = try data.me.relationships.map { rel -> Relationship in
+            let id = try ApiService.Parser.parseUUID(rel.id)
+            let partner = User(id: rel.partner.id)
+            let schedules = try rel.callSchedules.map { sche in
+              CallSchedule(
+                id: try ApiService.Parser.parseUUID(sche.id),
+                time: try ApiService.Parser.parseTime(sche.time),
+                weekdays: try ApiService.Parser.parseWeekdayArray(sche.weekdays))
+            }
+            let nextCallTime = try rel.nextCallTime.map(ApiService.Parser.parseDate)
+            
+            return Relationship(id: id,
+                                partner: partner,
+                                callSchedules: schedules,
+                                nextCallTime: nextCallTime)
+          }
+          
+          let receivedPartnerRequests = try data.me.receivedPartnerRequests.map { req in
+            PartnerRequest(id: try ApiService.Parser.parseUUID(req.id),
+                           from: User(id: req.from.id),
+                           to: User(id: req.to.id))
+          }
+          
+          let output = GetMyDataOutput(relationships: relationships,
+                                   receivedPartnerRequests: receivedPartnerRequests)
+          
+          callback(.success(output))
+        } catch {
+          callback(.failure(error))
+        }
+      }
+      task.resume()
+    }
+    
+    /*
+     ===============
+     Signup
+     ===============
+     */
+    func signupAsAnonymous(callback: @escaping (Result<Me, Error>) -> Void) {
+      let query = GraphQL.SignupAsAnonymous()
+      let req = GraphQL.Request(endpoint: self.endpoint, query: query)
+      
+      let task = URLSession.shared.graphqlTask(with: req) { result in
+        switch result {
+        case .success(let data):
+          let data = data.signupAsAnonymous
+          let me = Me(id: data.user.id, password: data.secret)
+          callback(.success(me))
+        case .failure(let err):
+          callback(.failure(err))
+        }
+      }
+      task.resume()
+    }
+    
+    /*
+     ======================
+     Send Partner Request
+     ======================
+     */
+    func sendPartnerRequest(me: Me, toUserId: String, callback: @escaping (Result<(), Error>) -> Void) {
+      let query = GraphQL.SendPartnerRequest(toUserId: toUserId)
+      var req = GraphQL.Request(endpoint: self.endpoint, query: query)
+      req.req.addValue(GraphqlApi.basicAuthVal(me), forHTTPHeaderField: "Authorization")
+      
+      let task = URLSession.shared.graphqlTask(with: req) { res in
+        switch res {
+        case .success(_):
+          callback(.success(()))
+        case .failure(let err):
+          callback(.failure(err))
+        }
+      }
+      task.resume()
+    }
+    
+    /*
+     =======================
+     Accept Partner Request
+     =======================
+     */
+    func acceptPartnerRequest(me: Me, requestId: UUID, callback: @escaping (Result<(), Error>) -> Void) {
+      let query = GraphQL.AcceptPartnerRequest(requestId: requestId)
+      var req = GraphQL.Request(endpoint: self.endpoint, query: query)
+      req.req.addValue(GraphqlApi.basicAuthVal(me), forHTTPHeaderField: "Authorization")
+      
+      let task = URLSession.shared.graphqlTask(with: req) { result in
+        switch result {
+        case .success(_):
+          callback(.success(()))
+        case .failure(let err):
+          callback(.failure(err))
+        }
+      }
+      task.resume()
+    }
+    
+    /*
+     =======================
+     Add Call Schedule
+     =======================
+     */
+    func addCallSchedule(me: Me,
+                         relationship: Relationship,
+                         time: Time,
+                         weekdays: [Weekday],
+                         callback: @escaping (Result<Relationship, Error>) -> Void) {
+      // requestの生成
+      let input = GraphQL.AddCallScheduleInput(
+        relationshipId: ApiService.Formatter.formatUUID(relationship.id),
+        weekdays: ApiService.Formatter.formatWeekdayArray(weekdays),
+        time: ApiService.Formatter.formatTime(time))
+      let query = GraphQL.AddCallSchedule(addCallScheduleInput: input)
+      var req = GraphQL.Request(endpoint: self.endpoint, query: query)
+      req.req.addValue(GraphqlApi.basicAuthVal(me), forHTTPHeaderField: "Authorization")
+      
+      // requestの実行
+      let task = URLSession.shared.graphqlTask(with: req) { result in
+        do {
+          let data = try result.get().addCallSchedule
+          let schedules = try data.callSchedules.map { sche in
+            CallSchedule(
+              id: try ApiService.Parser.parseUUID(sche.id),
+              time: try ApiService.Parser.parseTime(sche.time),
+              weekdays: try ApiService.Parser.parseWeekdayArray(sche.weekdays))
+          }
+          let nextCallTime = try data.nextCallTime.map(ApiService.Parser.parseDate)
+          
+          let newRelationship = Relationship(id: relationship.id,
+                                             partner: relationship.partner,
+                                             callSchedules: schedules,
+                                             nextCallTime: nextCallTime)
+          callback(.success(newRelationship))
+        } catch {
+          callback(.failure(error))
+        }
+      }
+      task.resume()
+    }
+    
+    /*
+     =================
+     Utility funcion
+     =================
+     */
+    static func basicAuthVal(_ me: Me) -> String {
+      let credData = "\(me.id):\(me.password)".data(using: String.Encoding.utf8)!
+      let credential = credData.base64EncodedString(options: [])
+      return "Basic \(credential)"
+    }
+  }
+  
   struct PublicApi {
     let apollo: ApolloClient
     
@@ -121,24 +300,7 @@ struct ApiService {
       self.apollo = ApolloClient(url: URL(string: graphqlEndpoint)!)
     }
     
-    /*
-     ===============
-     Signup
-     ===============
-     */
-    func signupAsAnonymous(callback: @escaping (Result<Me, Error>) -> Void) {
-      let mutation = SignupAsAnonymousMutation()
-      apollo.perform(mutation: mutation) { result in
-        switch result {
-        case .success(let res):
-          let data = res.data!.signupAsAnonymous
-          let me = Me(id: data.user.id, password: data.secret)
-          callback(.success(me))
-        case .failure(let err):
-          callback(.failure(err))
-        }
-      }
-    }
+    
     
     /*
      ================
@@ -191,123 +353,12 @@ struct ApiService {
       self.apollo = apollo
     }
     
-    /*
-     ==============
-     Get Me
-     ==============
-     */
-    struct GetMeOutput {
-      var relationships: [Relationship]
-      var receivedPartnerRequests: [PartnerRequest]
-    }
     
-    func getMe(callback: @escaping (Result<GetMeOutput, Error>) -> Void) {
-      apollo.fetch(query: GetMeQuery()) { result in
-        do {
-          let res = try result.get()
-          
-          let relationships = try res.data!.me.relationships.map { rel -> Relationship in
-            let id = try ApiService.Parser.parseUUID(rel.id)
-            let partner = User(id: rel.partner.id)
-            let schedules = try rel.callSchedules.map { sche in
-              CallSchedule(
-                id: try ApiService.Parser.parseUUID(sche.id),
-                time: try ApiService.Parser.parseTime(sche.time),
-                weekdays: try ApiService.Parser.parseWeekdayArray(sche.weekdays))
-            }
-            let nextCallTime = try rel.nextCallTime.map(ApiService.Parser.parseDate)
-            
-            return Relationship(id: id,
-                                partner: partner,
-                                callSchedules: schedules,
-                                nextCallTime: nextCallTime)
-          }
-          
-          let receivedPartnerRequests = try res.data!.me.receivedPartnerRequests.map { req in
-            PartnerRequest(id: try ApiService.Parser.parseUUID(req.id),
-                           from: User(id: req.from.id),
-                           to: User(id: req.to.id))
-          }
-          
-          let output = GetMeOutput(relationships: relationships,
-                                   receivedPartnerRequests: receivedPartnerRequests)
-          
-          callback(.success(output))
-        } catch {
-          callback(.failure(error))
-        }
-      }
-    }
     
-    /*
-     =======================
-     Accept Partner Request
-     =======================
-     */
-    func acceptPartnerRequest(requestId: UUID, callback: @escaping (Result<(), Error>) -> Void) {
-      let mutation = AcceptPartnerRequestMutation(requestId: requestId.uuidString)
-      apollo.perform(mutation: mutation) { result in
-        switch result {
-        case .success(_):
-          callback(.success(()))
-        case .failure(let err):
-          callback(.failure(err))
-        }
-      }
-    }
     
-    /*
-     ======================
-     Send Partner Request
-     ======================
-     */
-    func sendPartnerRequest(toUserId: String, callback: @escaping (Result<(), Error>) -> Void) {
-      let mutation = SendPartnerRequestMutation(toUserId: toUserId)
-      apollo.perform(mutation: mutation) { res in
-        switch res {
-        case .success(_):
-          callback(.success(()))
-        case .failure(let err):
-          callback(.failure(err))
-        }
-      }
-    }
     
-    /*
-     =======================
-     Add Call Schedule
-     =======================
-     */
-    func addCallSchedule(relationship: Relationship, time: Time, weekdays: [Weekday], callback: @escaping (Result<Relationship, Error>) -> Void) {
-      // requestの生成
-      let input = AddCallScheduleInput(
-        relationshipId: ApiService.Formatter.formatUUID(relationship.id),
-        weekdays: ApiService.Formatter.formatWeekdayArray(weekdays),
-        time: ApiService.Formatter.formatTime(time))
-      let mutation = AddCallScheduleMutation(input: input)
-      
-      // requestの実行
-      apollo.perform(mutation: mutation) { result in
-        do {
-          let res = try result.get()
-          let data = res.data!.addCallSchedule
-          let schedules = try data.callSchedules.map { sche in
-            CallSchedule(
-              id: try ApiService.Parser.parseUUID(sche.id),
-              time: try ApiService.Parser.parseTime(sche.time),
-              weekdays: try ApiService.Parser.parseWeekdayArray(sche.weekdays))
-          }
-          let nextCallTime = try data.nextCallTime.map(ApiService.Parser.parseDate)
-          
-          let newRelationship = Relationship(id: relationship.id,
-                                             partner: relationship.partner,
-                                             callSchedules: schedules,
-                                             nextCallTime: nextCallTime)
-          callback(.success(newRelationship))
-        } catch {
-          callback(.failure(error))
-        }
-      }
-    }
+    
+    
+    
   }
 }
