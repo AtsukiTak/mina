@@ -40,6 +40,24 @@ struct GraphQL {
     }
   }
   
+  struct Response<Q: Query>: Decodable {
+    var data: Q.Data?
+    var errors: [Response.Err]?
+    
+    struct Err: Decodable, Error {
+      var message: String
+      var locations: [Err.Location]
+      
+      // TODO: pathフィールドもデコードできるようにする
+      // var path: [Error.Path]
+      
+      struct Location: Decodable {
+        var line: UInt
+        var column: UInt
+      }
+    }
+  }
+  
   enum JSON: Encodable {
     case bool(Bool)
     case number(Int)
@@ -106,20 +124,20 @@ struct GraphQL {
 
 extension URLSession {
   func graphqlTask<Q: Query>(with req: GraphQL.Request<Q>,
-                             onComplete: @escaping (Result<Q.Data, Error>) -> Void
+                             onComplete: @escaping (Q.Data?, [Error]?) -> Void
   ) -> URLSessionDataTask {
     let task = self.dataTask(with: req.req) { data, res, err in
       if let err = err {
-        onComplete(.failure(err))
+        onComplete(nil, [err])
       }
       
       if let data = data {
         let decoder = JSONDecoder()
         do {
-          let decoded = try decoder.decode(Q.Data.self, from: data)
-          onComplete(.success(decoded))
+          let response = try decoder.decode(GraphQL.Response<Q>.self, from: data)
+          onComplete(response.data, response.errors)
         } catch {
-          onComplete(.failure(error))
+          onComplete(nil, [error])
         }
       }
     }

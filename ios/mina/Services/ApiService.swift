@@ -130,9 +130,13 @@ struct ApiService {
       var req = GraphQL.Request(endpoint: self.endpoint, query: query)
       req.req.addValue(GraphqlApi.basicAuthVal(me), forHTTPHeaderField: "Authorization")
       
-      let task = URLSession.shared.graphqlTask(with: req) { result in
+      let task = URLSession.shared.graphqlTask(with: req) { data, errors  in
+        if let errors = errors {
+          // エラーが一つでもあったらエラーにする
+          callback(.failure(errors[0]))
+        }
         do {
-          let data = try result.get()
+          let data = data!
           
           let relationships = try data.me.relationships.map { rel -> Relationship in
             let id = try ApiService.Parser.parseUUID(rel.id)
@@ -177,15 +181,14 @@ struct ApiService {
       let query = GraphQL.SignupAsAnonymous()
       let req = GraphQL.Request(endpoint: self.endpoint, query: query)
       
-      let task = URLSession.shared.graphqlTask(with: req) { result in
-        switch result {
-        case .success(let data):
-          let data = data.signupAsAnonymous
-          let me = Me(id: data.user.id, password: data.secret)
-          callback(.success(me))
-        case .failure(let err):
-          callback(.failure(err))
+      let task = URLSession.shared.graphqlTask(with: req) { data, errors in
+        if let errors = errors {
+          callback(.failure(errors[0]))
         }
+        
+        let data = data!.signupAsAnonymous
+        let me = Me(id: data.user.id, password: data.secret)
+        callback(.success(me))
       }
       task.resume()
     }
@@ -200,13 +203,12 @@ struct ApiService {
       var req = GraphQL.Request(endpoint: self.endpoint, query: query)
       req.req.addValue(GraphqlApi.basicAuthVal(me), forHTTPHeaderField: "Authorization")
       
-      let task = URLSession.shared.graphqlTask(with: req) { res in
-        switch res {
-        case .success(_):
-          callback(.success(()))
-        case .failure(let err):
-          callback(.failure(err))
+      let task = URLSession.shared.graphqlTask(with: req) { data, errors in
+        if let errors = errors {
+          callback(.failure(errors[0]))
         }
+        
+        callback(.success(()))
       }
       task.resume()
     }
@@ -221,13 +223,12 @@ struct ApiService {
       var req = GraphQL.Request(endpoint: self.endpoint, query: query)
       req.req.addValue(GraphqlApi.basicAuthVal(me), forHTTPHeaderField: "Authorization")
       
-      let task = URLSession.shared.graphqlTask(with: req) { result in
-        switch result {
-        case .success(_):
-          callback(.success(()))
-        case .failure(let err):
-          callback(.failure(err))
+      let task = URLSession.shared.graphqlTask(with: req) { data, errors in
+        if let errors = errors {
+          callback(.failure(errors[0]))
         }
+        
+        callback(.success(()))
       }
       task.resume()
     }
@@ -252,9 +253,13 @@ struct ApiService {
       req.req.addValue(GraphqlApi.basicAuthVal(me), forHTTPHeaderField: "Authorization")
       
       // requestの実行
-      let task = URLSession.shared.graphqlTask(with: req) { result in
+      let task = URLSession.shared.graphqlTask(with: req) { data, errors in
+        if let errors = errors {
+          callback(.failure(errors[0]))
+        }
+        
         do {
-          let data = try result.get().addCallSchedule
+          let data = data!.addCallSchedule
           let schedules = try data.callSchedules.map { sche in
             CallSchedule(
               id: try ApiService.Parser.parseUUID(sche.id),

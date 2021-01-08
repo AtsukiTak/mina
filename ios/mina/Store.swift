@@ -92,9 +92,13 @@ class Store: ObservableObject {
       do {
         let me = try res.get()
         try KeychainService().saveMe(me: me)
-        self.me = me
+        DispatchQueue.main.async { [weak self] in
+          self?.me = me
+        }
       } catch {
-        self.error = ErrorRepr(error)
+        DispatchQueue.main.async { [weak self] in
+          self?.error = ErrorRepr(error)
+        }
       }
     })
   }
