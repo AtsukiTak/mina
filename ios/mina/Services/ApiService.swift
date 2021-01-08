@@ -130,14 +130,9 @@ struct ApiService {
       var req = GraphQL.Request(endpoint: self.endpoint, query: query)
       req.req.addValue(GraphqlApi.basicAuthVal(me), forHTTPHeaderField: "Authorization")
       
-      let task = URLSession.shared.graphqlTask(with: req) { data, errors  in
-        if let errors = errors {
-          // エラーが一つでもあったらエラーにする
-          callback(.failure(errors[0]))
-        }
+      GraphqlApi.send(request: req) { res in
         do {
-          let data = data!
-          
+          let data = try res.get()
           let relationships = try data.me.relationships.map { rel -> Relationship in
             let id = try ApiService.Parser.parseUUID(rel.id)
             let partner = User(id: rel.partner.id)
@@ -169,7 +164,6 @@ struct ApiService {
           callback(.failure(error))
         }
       }
-      task.resume()
     }
     
     /*
@@ -181,16 +175,14 @@ struct ApiService {
       let query = GraphQL.SignupAsAnonymous()
       let req = GraphQL.Request(endpoint: self.endpoint, query: query)
       
-      let task = URLSession.shared.graphqlTask(with: req) { data, errors in
-        if let errors = errors {
-          callback(.failure(errors[0]))
-        }
-        
-        let data = data!.signupAsAnonymous
-        let me = Me(id: data.user.id, password: data.secret)
-        callback(.success(me))
+      
+      GraphqlApi.send(request: req) { res in
+        callback(res.map({ data in
+          let data = data.signupAsAnonymous
+          let me = Me(id: data.user.id, password: data.secret)
+          return me
+        }))
       }
-      task.resume()
     }
     
     /*
@@ -203,14 +195,9 @@ struct ApiService {
       var req = GraphQL.Request(endpoint: self.endpoint, query: query)
       req.req.addValue(GraphqlApi.basicAuthVal(me), forHTTPHeaderField: "Authorization")
       
-      let task = URLSession.shared.graphqlTask(with: req) { data, errors in
-        if let errors = errors {
-          callback(.failure(errors[0]))
-        }
-        
-        callback(.success(()))
+      GraphqlApi.send(request: req) { res in
+        callback(res.map({ _ in () }))
       }
-      task.resume()
     }
     
     /*
@@ -223,14 +210,9 @@ struct ApiService {
       var req = GraphQL.Request(endpoint: self.endpoint, query: query)
       req.req.addValue(GraphqlApi.basicAuthVal(me), forHTTPHeaderField: "Authorization")
       
-      let task = URLSession.shared.graphqlTask(with: req) { data, errors in
-        if let errors = errors {
-          callback(.failure(errors[0]))
-        }
-        
-        callback(.success(()))
+      GraphqlApi.send(request: req) { res in
+        callback(res.map({ _ in () }))
       }
-      task.resume()
     }
     
     /*
@@ -253,13 +235,9 @@ struct ApiService {
       req.req.addValue(GraphqlApi.basicAuthVal(me), forHTTPHeaderField: "Authorization")
       
       // requestの実行
-      let task = URLSession.shared.graphqlTask(with: req) { data, errors in
-        if let errors = errors {
-          callback(.failure(errors[0]))
-        }
-        
+      GraphqlApi.send(request: req) { res in
         do {
-          let data = data!.addCallSchedule
+          let data = try res.get().addCallSchedule
           let schedules = try data.callSchedules.map { sche in
             CallSchedule(
               id: try ApiService.Parser.parseUUID(sche.id),
@@ -277,7 +255,25 @@ struct ApiService {
           callback(.failure(error))
         }
       }
-      task.resume()
+    }
+    
+    /*
+     ================
+     SearchPartner
+     ================
+     */
+    func searchPartner(userId: String, callback: @escaping (Result<User, Error>) -> Void) {
+      let query = GraphQL.SearchPartner(userId: userId)
+      let req = GraphQL.Request(endpoint: self.endpoint, query: query)
+      
+      GraphqlApi.send(request: req) { res in
+        switch res {
+        case .success(let data):
+          callback(.success(User(id: data.user.id)))
+        case .failure(let err):
+          callback(.failure(err))
+        }
+      }
     }
     
     /*
@@ -289,6 +285,21 @@ struct ApiService {
       let credData = "\(me.id):\(me.password)".data(using: String.Encoding.utf8)!
       let credential = credData.base64EncodedString(options: [])
       return "Basic \(credential)"
+    }
+    
+    static func send<Q: Query>(request: GraphQL.Request<Q>, callback: @escaping (Result<Q.Data, Error>) -> Void) {
+      let task = URLSession.shared.graphqlTask(with: request) { data, errors in
+        if let errors = errors {
+          return callback(.failure(errors[0]))
+        }
+        
+        guard let data = data else {
+          return callback(.failure(ApiError.badResponse))
+        }
+        
+        callback(.success(data))
+      }
+      task.resume()
     }
   }
   
@@ -304,63 +315,6 @@ struct ApiService {
       
       self.apollo = ApolloClient(url: URL(string: graphqlEndpoint)!)
     }
-    
-    
-    
-    /*
-     ================
-     SearchPartner
-     ================
-     */
-    func searchPartner(userId: String, callback: @escaping (Result<User, Error>) -> Void) {
-      apollo.fetch(query: SearchPartnerQuery(userId: userId)) { result in
-        do {
-          let res = try result.get()
-          let data = res.data!
-          let user = User(id: data.user.id)
-          callback(.success(user))
-        } catch {
-          callback(.failure(error))
-        }
-      }
-    }
-  }
-  
-  struct PrivateApi {
-    let apollo: ApolloClient
-    let me: Me
-    
-    init(me: Me) {
-      let graphqlEndpoint = Secrets.shared.graphqlEndpoint
-      self.init(me: me, graphqlEndpoint: graphqlEndpoint)
-    }
-    
-    init(me: Me, graphqlEndpoint: String) {
-      self.me = me
-      
-      // Basic認証用の文字列の生成
-      let credData = "\(me.id):\(me.password)".data(using: String.Encoding.utf8)!
-      let credential = credData.base64EncodedString(options: [])
-      let basicAuth = "Basic \(credential)"
-      
-      // ApolloClientの生成
-      let store = ApolloStore()
-      let network = RequestChainNetworkTransport(
-        interceptorProvider: LegacyInterceptorProvider(store: store),
-        endpointURL: URL(string: graphqlEndpoint)!,
-        additionalHeaders: ["Authorization": basicAuth],
-        autoPersistQueries: false,
-        requestBodyCreator: ApolloRequestBodyCreator(),
-        useGETForQueries: false,
-        useGETForPersistedQueryRetry: false)
-      let apollo = ApolloClient(networkTransport: network, store: store)
-      
-      self.apollo = apollo
-    }
-    
-    
-    
-    
     
     
     

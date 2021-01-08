@@ -32,6 +32,7 @@
 		ED80F0F625A6F4BE00FE094D /* GraphQL+AcceptPartnerRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED80F0F525A6F4BE00FE094D /* GraphQL+AcceptPartnerRequest.swift */; };
 		ED80F0F925A6F6B600FE094D /* GraphQL+AddCallSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED80F0F825A6F6B600FE094D /* GraphQL+AddCallSchedule.swift */; };
 		ED80F0FC25A829E500FE094D /* GraphQLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED80F0FB25A829E400FE094D /* GraphQLTests.swift */; };
+		ED80F10025A8510F00FE094D /* GraphQL+SearchPartner.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED80F0FF25A8510E00FE094D /* GraphQL+SearchPartner.swift */; };
 		ED83F2022564CC8C00D97059 /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = ED83F2012564CC8C00D97059 /* Apollo */; };
 		ED878A4F2514A3B60030A575 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A4E2514A3B60030A575 /* AppDelegate.swift */; };
 		ED878A512514A3B60030A575 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A502514A3B60030A575 /* SceneDelegate.swift */; };
@@ -107,6 +108,7 @@
 		ED80F0F525A6F4BE00FE094D /* GraphQL+AcceptPartnerRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphQL+AcceptPartnerRequest.swift"; sourceTree = "<group>"; };
 		ED80F0F825A6F6B600FE094D /* GraphQL+AddCallSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphQL+AddCallSchedule.swift"; sourceTree = "<group>"; };
 		ED80F0FB25A829E400FE094D /* GraphQLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphQLTests.swift; sourceTree = "<group>"; };
+		ED80F0FF25A8510E00FE094D /* GraphQL+SearchPartner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphQL+SearchPartner.swift"; sourceTree = "<group>"; };
 		ED878A4B2514A3B60030A575 /* mina.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mina.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED878A4E2514A3B60030A575 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		ED878A502514A3B60030A575 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -183,6 +185,7 @@
 				ED80F0F225A6F2A400FE094D /* GraphQL+SendPartnerRequest.swift */,
 				ED80F0F525A6F4BE00FE094D /* GraphQL+AcceptPartnerRequest.swift */,
 				ED80F0F825A6F6B600FE094D /* GraphQL+AddCallSchedule.swift */,
+				ED80F0FF25A8510E00FE094D /* GraphQL+SearchPartner.swift */,
 			);
 			path = GraphQL;
 			sourceTree = "<group>";
@@ -439,6 +442,7 @@
 				EDC4977C2567CAD00053B1F1 /* Card.swift in Sources */,
 				ED3C38092567A9CD006F550B /* PartnerCard.swift in Sources */,
 				ED3C38062566A26C006F550B /* FirstView.swift in Sources */,
+				ED80F10025A8510F00FE094D /* GraphQL+SearchPartner.swift in Sources */,
 				ED3C37DE25651799006F550B /* PartnerSearchView.swift in Sources */,
 				ED26B153251C9EF400957F06 /* ApiService.swift in Sources */,
 				ED80F0E625A45D5800FE094D /* OnboardingView.swift in Sources */,

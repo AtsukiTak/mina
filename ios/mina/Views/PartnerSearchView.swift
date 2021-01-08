@@ -82,7 +82,7 @@ struct PartnerSearchView: View {
   }
   
   func searchPartner() {
-    ApiService.PublicApi().searchPartner(userId: self.input) { result in
+    ApiService.GraphqlApi().searchPartner(userId: self.input) { result in
       switch result {
       case .success(let user):
         self.foundUserId = user.id
