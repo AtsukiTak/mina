@@ -64,13 +64,15 @@ class Store: ObservableObject {
     
     if let me = store.me {
       ApiService.GraphqlApi().getMyData(me: me) { res in
-        switch res {
-        case .success(let output):
-          store.error = nil
-          store.relationships = output.relationships
-          store.receivedPartnerRequests = output.receivedPartnerRequests
-        case .failure(let err):
-          store.error = ErrorRepr(err)
+        DispatchQueue.main.async {
+          switch res {
+          case .success(let output):
+            store.error = nil
+            store.relationships = output.relationships
+            store.receivedPartnerRequests = output.receivedPartnerRequests
+          case .failure(let err):
+            store.error = ErrorRepr(err)
+          }
         }
       }
     }
@@ -92,12 +94,12 @@ class Store: ObservableObject {
       do {
         let me = try res.get()
         try KeychainService().saveMe(me: me)
-        DispatchQueue.main.async { [weak self] in
-          self?.me = me
+        DispatchQueue.main.async {
+          self.me = me
         }
       } catch {
-        DispatchQueue.main.async { [weak self] in
-          self?.error = ErrorRepr(error)
+        DispatchQueue.main.async {
+          self.error = ErrorRepr(error)
         }
       }
     })
@@ -116,7 +118,9 @@ class Store: ObservableObject {
       case .success(()):
         onComplete(.success(()))
       case .failure(let err):
-        self.error = ErrorRepr(err)
+        DispatchQueue.main.async {
+          self.error = ErrorRepr(err)
+        }
         onComplete(.failure(err))
       }
     }
@@ -139,11 +143,13 @@ class Store: ObservableObject {
     
     // APIリクエスト
     ApiService.GraphqlApi().acceptPartnerRequest(me: me, requestId: requestId) { res in
-      switch res {
-      case .success(_):
-        self.receivedPartnerRequests.removeAll(where: { $0.id == requestId})
-      case .failure(let err):
-        self.error = ErrorRepr(err)
+      DispatchQueue.main.async {
+        switch res {
+        case .success(_):
+          self.receivedPartnerRequests.removeAll(where: { $0.id == requestId})
+        case .failure(let err):
+          self.error = ErrorRepr(err)
+        }
       }
       onComplete()
     }
@@ -168,17 +174,19 @@ class Store: ObservableObject {
     // APIリクエスト
     ApiService.GraphqlApi()
       .addCallSchedule(me: me,
-                      relationship: relationship,
-                      time: time,
-                      weekdays: weekdays) { res in
-      switch res {
-      case .success(let newRelationship):
-        let idx = self.relationships.firstIndex(where: { $0.id == relationship.id })!
-        self.relationships[idx] = newRelationship
-      case .failure(let err):
-        self.error = ErrorRepr(err)
-      }
-      onComplete()
+                       relationship: relationship,
+                       time: time,
+                       weekdays: weekdays) { res in
+        DispatchQueue.main.async {
+          switch res {
+          case .success(let newRelationship):
+            let idx = self.relationships.firstIndex(where: { $0.id == relationship.id })!
+            self.relationships[idx] = newRelationship
+          case .failure(let err):
+            self.error = ErrorRepr(err)
+          }
+        }
+        onComplete()
     }
   }
 }

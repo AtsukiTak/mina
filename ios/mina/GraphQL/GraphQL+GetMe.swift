@@ -49,18 +49,15 @@ extension GraphQL {
     var variables: [String : JSON]? = nil
     
     struct Data: Decodable {
-      
       var me: Data.Me
       
       struct Me: Decodable {
-        
         var id: String
-        var name: String
+        var name: String?
         var relationships: [Me.Relationship]
         var receivedPartnerRequests: [Me.ReceivedPartnerRequest]
         
         struct Relationship: Decodable {
-          
           var id: String
           var partner: Relationship.Partner
           var callSchedules: [Relationship.CallSchedule]
@@ -79,7 +76,6 @@ extension GraphQL {
         }
         
         struct ReceivedPartnerRequest: Decodable {
-          
           var id: String
           var from: ReceivedPartnerRequest.From
           var to: ReceivedPartnerRequest.To
