@@ -31,6 +31,7 @@
 		ED80F0F325A6F2A400FE094D /* GraphQL+SendPartnerRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED80F0F225A6F2A400FE094D /* GraphQL+SendPartnerRequest.swift */; };
 		ED80F0F625A6F4BE00FE094D /* GraphQL+AcceptPartnerRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED80F0F525A6F4BE00FE094D /* GraphQL+AcceptPartnerRequest.swift */; };
 		ED80F0F925A6F6B600FE094D /* GraphQL+AddCallSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED80F0F825A6F6B600FE094D /* GraphQL+AddCallSchedule.swift */; };
+		ED80F0FC25A829E500FE094D /* GraphQLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED80F0FB25A829E400FE094D /* GraphQLTests.swift */; };
 		ED83F2022564CC8C00D97059 /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = ED83F2012564CC8C00D97059 /* Apollo */; };
 		ED878A4F2514A3B60030A575 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A4E2514A3B60030A575 /* AppDelegate.swift */; };
 		ED878A512514A3B60030A575 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED878A502514A3B60030A575 /* SceneDelegate.swift */; };
@@ -105,6 +106,7 @@
 		ED80F0F225A6F2A400FE094D /* GraphQL+SendPartnerRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphQL+SendPartnerRequest.swift"; sourceTree = "<group>"; };
 		ED80F0F525A6F4BE00FE094D /* GraphQL+AcceptPartnerRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphQL+AcceptPartnerRequest.swift"; sourceTree = "<group>"; };
 		ED80F0F825A6F6B600FE094D /* GraphQL+AddCallSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphQL+AddCallSchedule.swift"; sourceTree = "<group>"; };
+		ED80F0FB25A829E400FE094D /* GraphQLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphQLTests.swift; sourceTree = "<group>"; };
 		ED878A4B2514A3B60030A575 /* mina.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mina.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED878A4E2514A3B60030A575 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		ED878A502514A3B60030A575 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -261,6 +263,7 @@
 			children = (
 				ED878A652514A3B90030A575 /* minaTests.swift */,
 				EDC4978E2570DD5E0053B1F1 /* RelationshipTest.swift */,
+				ED80F0FB25A829E400FE094D /* GraphQLTests.swift */,
 				ED878A672514A3B90030A575 /* Info.plist */,
 			);
 			path = minaTests;
@@ -464,6 +467,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ED878A662514A3B90030A575 /* minaTests.swift in Sources */,
+				ED80F0FC25A829E500FE094D /* GraphQLTests.swift in Sources */,
 				EDC4978F2570DD5E0053B1F1 /* RelationshipTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
