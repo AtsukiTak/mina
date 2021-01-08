@@ -8,7 +8,6 @@
 
 import Foundation
 import Combine
-import Apollo
 
 struct ApiService {
   enum ApiError: Error {
@@ -301,23 +300,5 @@ struct ApiService {
       }
       task.resume()
     }
-  }
-  
-  struct PublicApi {
-    let apollo: ApolloClient
-    
-    init() {
-      let graphqlEndpoint = Secrets.shared.graphqlEndpoint
-      self.init(graphqlEndpoint: graphqlEndpoint)
-    }
-    
-    init (graphqlEndpoint: String) {
-      
-      self.apollo = ApolloClient(url: URL(string: graphqlEndpoint)!)
-    }
-    
-    
-    
-    
   }
 }
