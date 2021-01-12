@@ -13,6 +13,7 @@ class Store: ObservableObject {
   @Published private(set) var me: Me?
   @Published private(set) var relationships: [Relationship]
   @Published private(set) var receivedPartnerRequests: [PartnerRequest]
+  private(set) var applePushToken: String?
   @Published var error: ErrorRepr?
   
   // alertのトリガーにするためには、それがIdentifiableに準拠している必要がある。
@@ -43,11 +44,15 @@ class Store: ObservableObject {
   // フルイニシャライザ
   // イニシャライザはデバッグ時などに使用する
   // 本番環境では `createWithInitialData` メソッドを使用する
-  init(me: Me?, relationships: [Relationship], receivedPartnerRequests: [PartnerRequest]) {
+  init(me: Me?,
+       relationships: [Relationship],
+       receivedPartnerRequests: [PartnerRequest]
+  ) {
     self.callMode = false
     self.me = me
     self.relationships = relationships
     self.receivedPartnerRequests = receivedPartnerRequests
+    self.applePushToken = nil
     self.error = nil
   }
   
@@ -68,6 +73,7 @@ class Store: ObservableObject {
           switch res {
           case .success(let output):
             store.error = nil
+            store.applePushToken = output.applePushToken
             store.relationships = output.relationships
             store.receivedPartnerRequests = output.receivedPartnerRequests
           case .failure(let err):

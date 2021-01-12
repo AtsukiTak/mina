@@ -120,6 +120,8 @@ struct ApiService {
      ==============
      */
     struct GetMyDataOutput {
+      var name: String?
+      var applePushToken: String?
       var relationships: [Relationship]
       var receivedPartnerRequests: [PartnerRequest]
     }
@@ -132,6 +134,8 @@ struct ApiService {
       GraphqlApi.send(request: req) { res in
         do {
           let data = try res.get()
+          
+          // relationshipsのパース
           let relationships = try data.me.relationships.map { rel -> Relationship in
             let id = try ApiService.Parser.parseUUID(rel.id)
             let partner = User(id: rel.partner.id)
@@ -149,14 +153,17 @@ struct ApiService {
                                 nextCallTime: nextCallTime)
           }
           
+          // receivedPartnerRequestsのパース
           let receivedPartnerRequests = try data.me.receivedPartnerRequests.map { req in
             PartnerRequest(id: try ApiService.Parser.parseUUID(req.id),
                            from: User(id: req.from.id),
                            to: User(id: req.to.id))
           }
           
-          let output = GetMyDataOutput(relationships: relationships,
-                                   receivedPartnerRequests: receivedPartnerRequests)
+          let output = GetMyDataOutput(name: data.me.name,
+                                       applePushToken: data.me.applePushToken,
+                                       relationships: relationships,
+                                       receivedPartnerRequests: receivedPartnerRequests)
           
           callback(.success(output))
         } catch {

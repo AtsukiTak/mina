@@ -17,6 +17,7 @@ extension GraphQL {
         me {
             id
             name
+            applePushToken
             relationships {
                 id
                 partner {
@@ -54,6 +55,7 @@ extension GraphQL {
       struct Me: Decodable {
         var id: String
         var name: String?
+        var applePushToken: String?
         var relationships: [Me.Relationship]
         var receivedPartnerRequests: [Me.ReceivedPartnerRequest]
         
