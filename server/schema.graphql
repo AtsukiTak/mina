@@ -8,6 +8,7 @@ type Query {
 type Me {
 	id: String!
 	name: String
+	applePushToken: String
 	relationships: [MyRelationship!]!
 	receivedPartnerRequests: [PartnerRequest!]!
 }
@@ -50,7 +51,10 @@ type Mutation {
 	anonymousとして登録する
 	"""
 	signupAsAnonymous: UserAndSecret!
-	setApplePushToken(applePushToken: String!): User!
+	"""
+	自分のAPNS用のtokenを設定する
+	"""
+	setApplePushToken(applePushToken: String!): Me!
 	"""
 	パートナーリクエストを送信する
 	"""

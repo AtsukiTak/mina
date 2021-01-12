@@ -267,6 +267,18 @@
             "deprecationReason": null,
             "description": null,
             "isDeprecated": false,
+            "name": "applePushToken",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            }
+          },
+          {
+            "args": [],
+            "deprecationReason": null,
+            "description": null,
+            "isDeprecated": false,
             "name": "relationships",
             "type": {
               "kind": "NON_NULL",
@@ -355,7 +367,7 @@
               }
             ],
             "deprecationReason": null,
-            "description": null,
+            "description": "自分のAPNS用のtokenを設定する",
             "isDeprecated": false,
             "name": "setApplePushToken",
             "type": {
@@ -363,7 +375,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "User",
+                "name": "Me",
                 "ofType": null
               }
             }
