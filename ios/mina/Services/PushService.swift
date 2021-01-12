@@ -27,8 +27,6 @@ final class PushService {
     // Push通知用のクレデンシャルの生成を開始する
     func register() {
         registry.desiredPushTypes = [.voIP]
-        
-        
     }
     
     // Push通知用TokenのHex文字列を取得する

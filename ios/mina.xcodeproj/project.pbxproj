@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		ED2153FC25AD6A1E003973D7 /* GraphQL+SetApplePushToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED2153FB25AD6A1E003973D7 /* GraphQL+SetApplePushToken.swift */; };
 		ED26B14E251C969A00957F06 /* PushService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED26B14D251C969A00957F06 /* PushService.swift */; };
 		ED26B151251C9D4200957F06 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED26B150251C9D4200957F06 /* User.swift */; };
 		ED26B153251C9EF400957F06 /* ApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED26B152251C9EF400957F06 /* ApiService.swift */; };
@@ -82,6 +83,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		ED2153FB25AD6A1E003973D7 /* GraphQL+SetApplePushToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphQL+SetApplePushToken.swift"; sourceTree = "<group>"; };
 		ED26B14D251C969A00957F06 /* PushService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushService.swift; sourceTree = "<group>"; };
 		ED26B150251C9D4200957F06 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		ED26B152251C9EF400957F06 /* ApiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiService.swift; sourceTree = "<group>"; };
@@ -181,6 +183,7 @@
 				ED80F0F525A6F4BE00FE094D /* GraphQL+AcceptPartnerRequest.swift */,
 				ED80F0F825A6F6B600FE094D /* GraphQL+AddCallSchedule.swift */,
 				ED80F0FF25A8510E00FE094D /* GraphQL+SearchPartner.swift */,
+				ED2153FB25AD6A1E003973D7 /* GraphQL+SetApplePushToken.swift */,
 			);
 			path = GraphQL;
 			sourceTree = "<group>";
@@ -440,6 +443,7 @@
 				ED26B153251C9EF400957F06 /* ApiService.swift in Sources */,
 				ED80F0E625A45D5800FE094D /* OnboardingView.swift in Sources */,
 				ED80F0F325A6F2A400FE094D /* GraphQL+SendPartnerRequest.swift in Sources */,
+				ED2153FC25AD6A1E003973D7 /* GraphQL+SetApplePushToken.swift in Sources */,
 				ED80F0F625A6F4BE00FE094D /* GraphQL+AcceptPartnerRequest.swift in Sources */,
 				ED54ED5025835B0D00E01A41 /* RelationshipView.swift in Sources */,
 				EDFDC904252E1AEC004E0C00 /* Store.swift in Sources */,
