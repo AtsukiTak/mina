@@ -50,6 +50,7 @@ type Mutation {
 	anonymousとして登録する
 	"""
 	signupAsAnonymous: UserAndSecret!
+	setApplePushToken(applePushToken: String!): User!
 	"""
 	パートナーリクエストを送信する
 	"""

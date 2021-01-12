@@ -24,6 +24,21 @@ impl Mutation {
             })
     }
 
+    async fn set_apple_push_token(
+        &self,
+        context: &Context<'_>,
+        apple_push_token: String,
+    ) -> Result<GQLUser, Error> {
+        let data = context.data::<ContextData>()?;
+        let repos = data.repos();
+        let me = data.me_or_err()?;
+
+        mina_usecase::user::set_apple_push_token(apple_push_token, me, repos)
+            .await
+            .map_err(Error::from)
+            .map(GQLUser::from)
+    }
+
     /// パートナーリクエストを送信する
     async fn send_partner_request(
         &self,
