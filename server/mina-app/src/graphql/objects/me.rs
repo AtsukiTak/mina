@@ -20,6 +20,10 @@ impl GQLMe {
         self.me.as_ref().name()
     }
 
+    async fn apple_push_token(&self) -> Option<&str> {
+        self.me.as_ref().apple_push_token()
+    }
+
     async fn relationships(&self, context: &Context<'_>) -> Result<Vec<GQLMyRelationship>, Error> {
         let data = context.data::<ContextData>()?;
 

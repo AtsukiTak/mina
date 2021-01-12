@@ -1,5 +1,5 @@
 use super::{
-    objects::{GQLMyRelationship, GQLUser},
+    objects::{GQLMe, GQLMyRelationship, GQLUser},
     ContextData,
 };
 use async_graphql::{Context, Error, InputObject, Object, SimpleObject};
@@ -29,15 +29,15 @@ impl Mutation {
         &self,
         context: &Context<'_>,
         apple_push_token: String,
-    ) -> Result<GQLUser, Error> {
+    ) -> Result<GQLMe, Error> {
         let data = context.data::<ContextData>()?;
         let repos = data.repos();
-        let me = data.me_or_err()?;
+        let me = data.me_or_err()?.clone();
 
         mina_usecase::user::set_apple_push_token(apple_push_token, me, repos)
             .await
             .map_err(Error::from)
-            .map(GQLUser::from)
+            .map(GQLMe::from)
     }
 
     /// パートナーリクエストを送信する

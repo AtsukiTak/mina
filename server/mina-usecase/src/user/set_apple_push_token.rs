@@ -1,24 +1,19 @@
 use super::auth::AuthenticatedUser;
-use mina_domain::{
-    user::{User, UserRepository as _},
-    RepositorySet,
-};
+use mina_domain::{user::UserRepository as _, RepositorySet};
 use rego::Error;
 
 pub async fn set_apple_push_token<R>(
     apple_push_token: String,
-    me: &AuthenticatedUser,
+    mut me: AuthenticatedUser,
     repos: &R,
-) -> Result<User, Error>
+) -> Result<AuthenticatedUser, Error>
 where
     R: RepositorySet,
 {
-    let mut user = me.as_ref().clone();
-
-    user.set_apple_push_token(apple_push_token);
+    me.as_mut().set_apple_push_token(apple_push_token);
 
     // Relationshipの更新
-    repos.user_repo().update(&user).await?;
+    repos.user_repo().update(me.as_ref()).await?;
 
-    Ok(user)
+    Ok(me)
 }
