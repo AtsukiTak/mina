@@ -192,6 +192,21 @@ struct ApiService {
     }
     
     /*
+     ====================
+     SetApplePushToken
+     ====================
+     */
+    func setApplePushToken(me: Me, token: String, callback: @escaping (Result<(), Error>) -> Void) {
+      let query = GraphQL.SetApplePushToken(applePushToken: token)
+      var req = GraphQL.Request(endpoint: self.endpoint, query: query)
+      req.req.addValue(GraphqlApi.basicAuthVal(me), forHTTPHeaderField: "Authorization")
+      
+      GraphqlApi.send(request: req) { res in
+        callback(res.map({ _ in }))
+      }
+    }
+    
+    /*
      ======================
      Send Partner Request
      ======================

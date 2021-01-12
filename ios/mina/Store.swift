@@ -76,6 +76,8 @@ class Store: ObservableObject {
             store.applePushToken = output.applePushToken
             store.relationships = output.relationships
             store.receivedPartnerRequests = output.receivedPartnerRequests
+            // 念のため、毎回pushTokenの確認を行う
+            store.updateApplePushToken()
           case .failure(let err):
             store.error = ErrorRepr(err)
           }
@@ -109,6 +111,16 @@ class Store: ObservableObject {
         }
       }
     })
+  }
+  
+  func updateApplePushToken() {
+    guard let me = self.me else { return; }
+    
+    if let token = AppDelegate.shared.pushService?.getTokenHex() {
+      if token != self.applePushToken {
+        ApiService.GraphqlApi().setApplePushToken(me: me, token: token) { _ in }
+      }
+    }
   }
   
   func sendPartnerRequest(toUserId: String, onComplete: @escaping (Result<(), Error>) -> Void) {
