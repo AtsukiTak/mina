@@ -24,6 +24,7 @@ impl Mutation {
             })
     }
 
+    /// 自分のAPNS用のtokenを設定する
     async fn set_apple_push_token(
         &self,
         context: &Context<'_>,
