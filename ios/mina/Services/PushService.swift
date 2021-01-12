@@ -8,6 +8,7 @@
 
 import Foundation
 import PushKit
+import UserNotifications
 
 final class PushService {
   
@@ -41,6 +42,20 @@ final class PushService {
   
   static func toHex(token: Data) -> String {
     return token.map { String(format: "%02hhx", $0) }.joined()
+  }
+  
+  // Push通知の承認をユーザーにリクエストする
+  static func requestAuth(onComplete: @escaping (Bool, Error?) -> Void) {
+    UNUserNotificationCenter.current()
+      .requestAuthorization(options: [.alert, .badge, .sound], completionHandler: onComplete)
+  }
+  
+  // 現在のPush通知の承認状況を取得する
+  static func getAuthStatus(callback: @escaping (Bool) -> Void) {
+    UNUserNotificationCenter.current()
+      .getNotificationSettings { settings in
+        callback(settings.authorizationStatus == .authorized)
+      }
   }
 }
 

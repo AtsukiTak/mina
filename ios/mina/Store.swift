@@ -14,7 +14,17 @@ class Store: ObservableObject {
   @Published private(set) var relationships: [Relationship]
   @Published private(set) var receivedPartnerRequests: [PartnerRequest]
   private(set) var applePushToken: String?
+  
+  // Push通知が承認されているか
+  @Published private(set) var isPushAuthorized: Loadable<Bool>
+  
+  // すべてのUnexpectedなエラー
   @Published var error: ErrorRepr?
+  
+  enum Loadable<T: Equatable>: Equatable {
+    case loading
+    case loaded(T)
+  }
   
   // alertのトリガーにするためには、それがIdentifiableに準拠している必要がある。
   // 単純なStringはIdentifiableに準拠していないので新しくErrorRepr構造体を作る。
@@ -46,19 +56,25 @@ class Store: ObservableObject {
   // 本番環境では `createWithInitialData` メソッドを使用する
   init(me: Me?,
        relationships: [Relationship],
-       receivedPartnerRequests: [PartnerRequest]
+       receivedPartnerRequests: [PartnerRequest],
+       isPushAuthorized: Loadable<Bool> = .loading
   ) {
     self.callMode = false
     self.me = me
     self.relationships = relationships
     self.receivedPartnerRequests = receivedPartnerRequests
     self.applePushToken = nil
+    self.isPushAuthorized = isPushAuthorized
     self.error = nil
   }
   
   // 初期データと共にStoreを生成する
   static func createWithInitialData() -> Store {
     let store = Store()
+    
+    PushService.getAuthStatus(callback: { authed in
+      DispatchQueue.main.async { store.isPushAuthorized = .loaded(authed) }
+    })
     
     do {
       store.me = try KeychainService().readMe()
@@ -86,6 +102,22 @@ class Store: ObservableObject {
     }
     
     return store
+  }
+  
+  // Push通知を送る承認をもらう
+  func requestPushNotificationAuth() {
+    self.isPushAuthorized = .loading
+    
+    PushService.requestAuth(onComplete: { authed, error in
+      DispatchQueue.main.async {
+        if let error = error {
+          self.error = ErrorRepr(error)
+          return;
+        }
+      
+        self.isPushAuthorized = .loaded(authed)
+      }
+    })
   }
   
   // ユーザー登録を行うユースケース

@@ -35,6 +35,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // ログインするたびにstore.updateApplePushTokenを呼び出している
     pushDelegate.onRegistered = { _ in store.updateApplePushToken() }
     let pushService = PushService(delegate: pushDelegate)
+    PushService.requestAuth(onComplete: { _, _ in })
     pushService.register()
     
     self.callService = callService

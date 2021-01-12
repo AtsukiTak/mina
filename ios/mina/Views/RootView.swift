@@ -15,6 +15,8 @@ struct RootView: View {
     Group {
       if (store.me == nil) {
         OnboardingView().transition(.opacity)
+      } else if (store.isPushAuthorized != .loaded(true)) {
+        RequestPushNotification().transition(.opacity)
       } else if (store.callMode) {
         VideoView().transition(.opacity)
       } else {

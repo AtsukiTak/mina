@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		ED2153FC25AD6A1E003973D7 /* GraphQL+SetApplePushToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED2153FB25AD6A1E003973D7 /* GraphQL+SetApplePushToken.swift */; };
+		ED2153FF25AD9308003973D7 /* RequestPushNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED2153FE25AD9308003973D7 /* RequestPushNotification.swift */; };
 		ED26B14E251C969A00957F06 /* PushService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED26B14D251C969A00957F06 /* PushService.swift */; };
 		ED26B151251C9D4200957F06 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED26B150251C9D4200957F06 /* User.swift */; };
 		ED26B153251C9EF400957F06 /* ApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED26B152251C9EF400957F06 /* ApiService.swift */; };
@@ -84,6 +85,7 @@
 
 /* Begin PBXFileReference section */
 		ED2153FB25AD6A1E003973D7 /* GraphQL+SetApplePushToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GraphQL+SetApplePushToken.swift"; sourceTree = "<group>"; };
+		ED2153FE25AD9308003973D7 /* RequestPushNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestPushNotification.swift; sourceTree = "<group>"; };
 		ED26B14D251C969A00957F06 /* PushService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushService.swift; sourceTree = "<group>"; };
 		ED26B150251C9D4200957F06 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		ED26B152251C9EF400957F06 /* ApiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiService.swift; sourceTree = "<group>"; };
@@ -206,6 +208,7 @@
 				ED3C37DD25651799006F550B /* PartnerSearchView.swift */,
 				EDD036EF258391B2000C75CE /* AddCallScheduleView.swift */,
 				ED80F0E525A45D5800FE094D /* OnboardingView.swift */,
+				ED2153FE25AD9308003973D7 /* RequestPushNotification.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -454,6 +457,7 @@
 				ED26B151251C9D4200957F06 /* User.swift in Sources */,
 				ED80F0E925A6AABB00FE094D /* GraphQL.swift in Sources */,
 				EDFDC8F6252CBCB5004E0C00 /* VideoView.swift in Sources */,
+				ED2153FF25AD9308003973D7 /* RequestPushNotification.swift in Sources */,
 				ED4FE189251E61A20009420C /* CallService.swift in Sources */,
 				EDC49784256D037F0053B1F1 /* PartnerRequest.swift in Sources */,
 				EDFDC8FD252D7CA0004E0C00 /* SkyWayService.swift in Sources */,
