@@ -14,6 +14,7 @@ struct PartnerSearchView: View {
   @State var foundUserId: String? = nil
   
   @EnvironmentObject var store: Store
+  @EnvironmentObject var errorStore: ErrorStore
   
   init(foundUserId: String? = nil) {
     self.foundUserId = foundUserId // for preview
@@ -74,7 +75,7 @@ struct PartnerSearchView: View {
         case .success(let user):
           self.foundUserId = user.id
         case .failure(let error):
-          self.store.error = Store.ErrorRepr(error)
+          self.errorStore.set(error)
         }
       }
     }
@@ -203,7 +204,8 @@ struct PartnerSearchView_Previews: PreviewProvider {
       NavigationView {
         let store = Store(me: Me(id: "usr_Ida84js", password: ""),
                           relationships: [],
-                          receivedPartnerRequests: [])
+                          receivedPartnerRequests: [],
+                          errorStore: ErrorStore())
         PartnerSearchView()
           .environmentObject(store)
           .previewDevice(PreviewDevice(rawValue: "init"))

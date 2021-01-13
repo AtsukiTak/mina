@@ -8,8 +8,9 @@
 
 import SwiftUI
 
+// この画面が表示されるのは、UNAuthorizationStatusがnotDeterminedのときのみ
 struct RequestPushNotification: View {
-  @EnvironmentObject var store: Store
+  var onAuthed: (Bool, Error?) -> Void
   
   var body: some View {
     VStack {
@@ -17,22 +18,22 @@ struct RequestPushNotification: View {
         .font(.body)
         .padding()
       
-      Button(action: {
-        store.requestPushNotificationAuth()
-      }, label: {
+      Button(action: requestAuth, label: {
         Card(bgColor: .main) {
           Text("許可する")
             .foregroundColor(.white)
         }
       })
-      .disabled(store.isPushAuthorized == .loading)
     }
+  }
+  
+  func requestAuth() {
+    PushService.requestAuth(onComplete: onAuthed)
   }
 }
 
 struct RequestPushNotification_Previews: PreviewProvider {
   static var previews: some View {
-    RequestPushNotification()
-      .environmentObject(Store())
+    RequestPushNotification(onAuthed: { _, _ in })
   }
 }

@@ -161,7 +161,6 @@ struct AddCallScheduleView_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       AddCallScheduleView(relationship: Relationship.demo)
-        .environmentObject(Store())
     }
   }
 }

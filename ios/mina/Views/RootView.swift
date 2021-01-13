@@ -9,42 +9,116 @@
 import SwiftUI
 
 struct RootView: View {
-  @ObservedObject private var storeInitializer: StoreInitializer
+  @ObservedObject private var loader: InitDataLoader = InitDataLoader()
+  @ObservedObject private var errorStore: ErrorStore = ErrorStore()
   
   init() {
-    self.storeInitializer = StoreInitializer()
+    self.loader.load(errorStore: errorStore)
   }
   
+  // Storeの初期化が終わるまではLoadingViewを表示し、
+  // 終わった後はInitializedViewを表示する
   var body: some View {
-    switch storeInitializer.store {
-    case .uninitialized:
-      OnboardingView()
-    case .initialized(let store):
-      InitializedView()
-        .environmentObject(store)
-    }
-  }
-  
-  // Storeの初期化を管理するクラス
-  // 当初、RootViewに、 @State var store: Store? のようなStateを持たせようとしたが、
-  // Stateをbody関数外で更新するのは問題がある（コンパイルもできなかった）ので
-  // ObservableObjectなクラスを導入した。
-  class StoreInitializer: ObservableObject {
-    @Published var store: Initializing<Store>
-    
-    enum Initializing<T> {
-      case uninitialized
-      case initialized(T)
-    }
-    
-    init() {
-      self.store = .uninitialized
-      
-      Store.createWithInitialData { store in
-        DispatchQueue.main.async {
-          self.store = .initialized(store)
+    Group {
+      switch (loader.pushAuthStatus, loader.store) {
+      case (.loading, _), (_, .loading):
+        LoadingView()
+      case let (.loaded(auth), .loaded(store)):
+        if store == nil {
+          // ユーザー未登録
+          OnboardingView(onSignup: onSignup)
+        }
+        let store = store!
+        
+        switch auth {
+        case .notDetermined:
+          RequestPushNotification(onAuthed: onAuthed)
+        case .authorized:
+          InitializedView()
+            .environmentObject(store)
+            .environmentObject(errorStore)
+        case .denied, .provisional, .ephemeral:
+          // TODO: PushNotificationDeniedView
+          RequestPushNotification(onAuthed: onAuthed)
+        @unknown default:
+          // TODO: PushNotificationDeniedView
+          RequestPushNotification(onAuthed: onAuthed)
         }
       }
+    }.alert(item: $errorStore.err) { err in
+      Alert(title: Text("Unexpected Error"), message: Text(err.desc))
+    }
+  }
+  
+  func onSignup(res: Result<Me, Error>) {
+    switch res {
+    case .success(let me):
+      // いま新規登録したばかりなのでGetMeをする必要はない
+      let store = Store(me: me, errorStore: errorStore)
+      self.loader.updateStore(store)
+    case .failure(let err):
+      self.errorStore.set(err)
+    }
+  }
+  
+  func onAuthed(ok: Bool, err: Error?) {
+    if let err = err {
+      self.errorStore.set(err)
+      return;
+    }
+    if ok {
+      self.loader.updatePushAuthStatus(.authorized)
+    } else {
+      self.loader.updatePushAuthStatus(.denied)
+    }
+  }
+  
+  class InitDataLoader: ObservableObject {
+    @Published var pushAuthStatus: Load<UNAuthorizationStatus> = .loading
+    @Published var store: Load<Store?> = .loading
+    
+    enum Load<T> {
+      case loading
+      case loaded(T)
+    }
+    
+    func load(errorStore: ErrorStore) {
+      // PushAuthStatusの取得
+      PushService.getAuthStatus(callback: { authStatus in
+        self.updatePushAuthStatus(authStatus)
+      })
+      
+      // Meの取得
+      let maybeMe = try! KeychainService().readMe()
+      guard let me = maybeMe else {
+        self.store = .loaded(nil)
+        return;
+      }
+      
+      // Storeの初期化
+      let store = Store(me: me, errorStore: errorStore)
+      store.fetchMyData() {
+        self.updateStore(store)
+      }
+    }
+    
+    func updateStore(_ store: Store) {
+      DispatchQueue.main.async {
+        self.store = .loaded(store)
+      }
+    }
+    
+    func updatePushAuthStatus(_ auth: UNAuthorizationStatus) {
+      DispatchQueue.main.async {
+        self.pushAuthStatus = .loaded(auth)
+      }
+    }
+  }
+  
+  // Storeの初期化が終わるまで表示される画面
+  struct LoadingView: View {
+    var body: some View {
+      Text("Loading...")
     }
   }
   
@@ -54,15 +128,11 @@ struct RootView: View {
     
     var body: some View {
       Group {
-        if (store.isPushAuthorized != .loaded(true)) {
-          RequestPushNotification().transition(.opacity)
-        } else if (store.callMode) {
+        if (store.callMode) {
           VideoView().transition(.opacity)
         } else {
           FirstView().transition(.opacity)
         }
-      }.alert(item: $store.error) { err in
-        Alert(title: Text("Unexpected Error"), message: Text(err.desc))
       }
     }
   }

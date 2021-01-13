@@ -9,9 +9,12 @@
 import SwiftUI
 
 struct OnboardingView: View {
-  @EnvironmentObject var store: Store
-  
   @State var processing: Bool = false
+  private let onSignup: (Result<Me, Error>) -> Void
+  
+  init(onSignup: @escaping (Result<Me, Error>) -> Void) {
+    self.onSignup = onSignup
+  }
   
   var body: some View {
     VStack {
@@ -19,10 +22,7 @@ struct OnboardingView: View {
         .font(.largeTitle)
         .padding(.bottom, 50)
       
-      Button(action: {
-        processing = true
-        store.signup()
-      }, label: {
+      Button(action: signup, label: {
         Card(bgColor: .main) {
           Text(buttonText)
             .foregroundColor(.white)
@@ -35,16 +35,30 @@ struct OnboardingView: View {
   
   var buttonText: String {
     if processing {
-      return "Loading..."
+      return "Starting.."
     } else {
       return "Start"
     }
+  }
+  
+  func signup() {
+    processing = true
+    ApiService.GraphqlApi().signupAsAnonymous(callback: { res in
+      defer { processing = false }
+      
+      do {
+        let me = try res.get()
+        try KeychainService().saveMe(me: me)
+        self.onSignup(.success(me))
+      } catch {
+        self.onSignup(.failure(error))
+      }
+    })
   }
 }
 
 struct OnboardingView_Previews: PreviewProvider {
   static var previews: some View {
-    OnboardingView()
-      .environmentObject(Store())
+    OnboardingView(onSignup: { _ in })
   }
 }

@@ -51,10 +51,10 @@ final class PushService {
   }
   
   // 現在のPush通知の承認状況を取得する
-  static func getAuthStatus(callback: @escaping (Bool) -> Void) {
+  static func getAuthStatus(callback: @escaping (UNAuthorizationStatus) -> Void) {
     UNUserNotificationCenter.current()
       .getNotificationSettings { settings in
-        callback(settings.authorizationStatus == .authorized)
+        callback(settings.authorizationStatus)
       }
   }
 }
