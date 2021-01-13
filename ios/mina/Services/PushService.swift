@@ -62,17 +62,16 @@ final class PushService {
 final class PushDelegate: NSObject, PKPushRegistryDelegate {
   
   private let callService: CallService
-  var onRegistered: (String) -> Void
   
   init(_ callService: CallService) {
     self.callService = callService
-    self.onRegistered = { _ in }
     super.init()
   }
   
   // Push通知用クレデンシャルの更新に成功したとき
   func pushRegistry(_ registry: PKPushRegistry, didUpdate pushCredentials: PKPushCredentials, for type: PKPushType) {
-    self.onRegistered(PushService.toHex(token: pushCredentials.token))
+    // ここでは何もしない
+    // 適当なタイミングで pushService.getTokenHexによりトークンを取得している
   }
   
   // Push通知用クレデンシャルの更新に失敗したとき

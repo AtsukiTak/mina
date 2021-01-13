@@ -32,17 +32,17 @@ struct RootView: View {
         
         switch auth {
         case .notDetermined:
-          RequestPushNotification(onAuthed: onAuthed)
+          RequestPushNotification(onAuthed: { ok, err in onAuthed(ok, err, store) })
         case .authorized:
           InitializedView()
             .environmentObject(store)
             .environmentObject(errorStore)
         case .denied, .provisional, .ephemeral:
           // TODO: PushNotificationDeniedView
-          RequestPushNotification(onAuthed: onAuthed)
+          RequestPushNotification(onAuthed: { ok, err in onAuthed(ok, err, store) })
         @unknown default:
           // TODO: PushNotificationDeniedView
-          RequestPushNotification(onAuthed: onAuthed)
+          RequestPushNotification(onAuthed: { ok, err in onAuthed(ok, err, store) })
         }
       }
     }.alert(item: $errorStore.err) { err in
@@ -61,12 +61,14 @@ struct RootView: View {
     }
   }
   
-  func onAuthed(ok: Bool, err: Error?) {
+  // Push通知の承認が得られた時/得られなかった時
+  func onAuthed(_ ok: Bool, _ err: Error?, _ store: Store) {
     if let err = err {
       self.errorStore.set(err)
       return;
     }
     if ok {
+      store.updateApplePushToken()
       self.loader.updatePushAuthStatus(.authorized)
     } else {
       self.loader.updatePushAuthStatus(.denied)
@@ -98,6 +100,7 @@ struct RootView: View {
       // Storeの初期化
       let store = Store(me: me, errorStore: errorStore)
       store.fetchMyData() {
+        store.updateApplePushToken()
         self.updateStore(store)
       }
     }

@@ -27,7 +27,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     let pushDelegate = PushDelegate(callService)
     let pushService = PushService(delegate: pushDelegate)
-    PushService.requestAuth(onComplete: { _, _ in })
     pushService.register()
     
     self.callService = callService

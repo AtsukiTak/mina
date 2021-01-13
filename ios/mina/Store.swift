@@ -51,7 +51,8 @@ class Store: ObservableObject {
     }
   }
   
-  func updateApplePushToken() {if let token = AppDelegate.shared.pushService?.getTokenHex() {
+  func updateApplePushToken() {
+    if let token = AppDelegate.shared.pushService?.getTokenHex() {
       if token != self.applePushToken {
         ApiService.GraphqlApi().setApplePushToken(me: me, token: token) { _ in }
       }
