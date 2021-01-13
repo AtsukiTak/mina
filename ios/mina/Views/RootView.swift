@@ -9,21 +9,61 @@
 import SwiftUI
 
 struct RootView: View {
-  @EnvironmentObject var store: Store
+  @ObservedObject private var storeInitializer: StoreInitializer
+  
+  init() {
+    self.storeInitializer = StoreInitializer()
+  }
   
   var body: some View {
-    Group {
-      if (store.me == nil) {
-        OnboardingView().transition(.opacity)
-      } else if (store.isPushAuthorized != .loaded(true)) {
-        RequestPushNotification().transition(.opacity)
-      } else if (store.callMode) {
-        VideoView().transition(.opacity)
-      } else {
-        FirstView().transition(.opacity)
+    switch storeInitializer.store {
+    case .uninitialized:
+      OnboardingView()
+    case .initialized(let store):
+      InitializedView()
+        .environmentObject(store)
+    }
+  }
+  
+  // Storeの初期化を管理するクラス
+  // 当初、RootViewに、 @State var store: Store? のようなStateを持たせようとしたが、
+  // Stateをbody関数外で更新するのは問題がある（コンパイルもできなかった）ので
+  // ObservableObjectなクラスを導入した。
+  class StoreInitializer: ObservableObject {
+    @Published var store: Initializing<Store>
+    
+    enum Initializing<T> {
+      case uninitialized
+      case initialized(T)
+    }
+    
+    init() {
+      self.store = .uninitialized
+      
+      Store.createWithInitialData { store in
+        DispatchQueue.main.async {
+          self.store = .initialized(store)
+        }
       }
-    }.alert(item: $store.error) { err in
-      Alert(title: Text("Unexpected Error"), message: Text(err.desc))
+    }
+  }
+  
+  // Storeの初期化が終わった後に表示されるView
+  struct InitializedView: View {
+    @EnvironmentObject var store: Store
+    
+    var body: some View {
+      Group {
+        if (store.isPushAuthorized != .loaded(true)) {
+          RequestPushNotification().transition(.opacity)
+        } else if (store.callMode) {
+          VideoView().transition(.opacity)
+        } else {
+          FirstView().transition(.opacity)
+        }
+      }.alert(item: $store.error) { err in
+        Alert(title: Text("Unexpected Error"), message: Text(err.desc))
+      }
     }
   }
 }
@@ -31,6 +71,5 @@ struct RootView: View {
 struct RootView_Previews: PreviewProvider {
   static var previews: some View {
     RootView()
-      .environmentObject(Store())
   }
 }

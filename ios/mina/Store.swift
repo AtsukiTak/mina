@@ -69,39 +69,53 @@ class Store: ObservableObject {
   }
   
   // 初期データと共にStoreを生成する
-  static func createWithInitialData() -> Store {
-    let store = Store()
-    
-    PushService.getAuthStatus(callback: { authed in
-      DispatchQueue.main.async { store.isPushAuthorized = .loaded(authed) }
-    })
-    
-    do {
-      store.me = try KeychainService().readMe()
-    } catch {
-      store.error = ErrorRepr(error)
-      return store;
+  static func createWithInitialData(callback: @escaping (Store) -> Void) {
+    // Push通知の承認状態を取得する
+    func getPushAuthStatus(_ store: Store, callback: @escaping (Store) -> Void) {
+      PushService.getAuthStatus(callback: { authed in
+        DispatchQueue.main.async {
+          store.isPushAuthorized = .loaded(authed)
+          callback(store)
+        }
+      })
     }
     
-    if let me = store.me {
-      ApiService.GraphqlApi().getMyData(me: me) { res in
-        DispatchQueue.main.async {
-          switch res {
-          case .success(let output):
-            store.error = nil
-            store.applePushToken = output.applePushToken
-            store.relationships = output.relationships
-            store.receivedPartnerRequests = output.receivedPartnerRequests
-            // 念のため、毎回pushTokenの確認を行う
-            store.updateApplePushToken()
-          case .failure(let err):
-            store.error = ErrorRepr(err)
+    // API経由でユーザーデータを取得する
+    func getMyData(_ store: Store, callback: @escaping (Store) -> Void) {
+      if let me = store.me {
+        ApiService.GraphqlApi().getMyData(me: me) { res in
+          DispatchQueue.main.async {
+            switch res {
+            case .success(let output):
+              store.error = nil
+              store.applePushToken = output.applePushToken
+              store.relationships = output.relationships
+              store.receivedPartnerRequests = output.receivedPartnerRequests
+              // 念のため、毎回pushTokenの確認を行う
+              store.updateApplePushToken()
+            case .failure(let err):
+              store.error = ErrorRepr(err)
+            }
+            callback(store)
           }
         }
       }
     }
     
-    return store
+    let store = Store()
+    
+    do {
+      store.me = try KeychainService().readMe()
+    } catch {
+      store.error = ErrorRepr(error)
+      return callback(store);
+    }
+    
+    getMyData(store) {
+      getPushAuthStatus($0) {
+        callback($0)
+      }
+    }
   }
   
   // Push通知を送る承認をもらう

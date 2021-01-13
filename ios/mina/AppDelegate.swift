@@ -14,7 +14,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   
   var callService: CallService?
   var pushService: PushService?
-  var store: Store?
   
   class var shared: AppDelegate {
     return UIApplication.shared.delegate! as! AppDelegate
@@ -26,20 +25,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let callDelegate = CallDelegate()
     let callService = CallService(delegate: callDelegate)
     
-    let store = Store.createWithInitialData()
-    self.store = store
-    
     let pushDelegate = PushDelegate(callService)
-    // tokenがAPNsで登録された時に、アプリケーションにもそれを登録する
-    // このパスが何らかの理由で実行されなかったときのために、
-    // ログインするたびにstore.updateApplePushTokenを呼び出している
-    pushDelegate.onRegistered = { _ in store.updateApplePushToken() }
     let pushService = PushService(delegate: pushDelegate)
     PushService.requestAuth(onComplete: { _, _ in })
     pushService.register()
     
     self.callService = callService
     self.pushService = pushService
+    
     
     return true
   }

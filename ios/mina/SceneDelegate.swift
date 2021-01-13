@@ -21,7 +21,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     // RootViewを生成する
     let rootView = RootView()
-      .environmentObject(AppDelegate.shared.store!)
     
     // Use a UIHostingController as window root view controller.
     if let windowScene = scene as? UIWindowScene {
