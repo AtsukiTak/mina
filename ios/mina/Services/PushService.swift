@@ -83,9 +83,11 @@ final class PushDelegate: NSObject, PKPushRegistryDelegate {
   // PushPayloadから情報を抽出し、CallServiceに着信を知らせる
   func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType, completion: @escaping () -> Void) {
     
-    let callId = UUID()
-    let callerId = "424242"
-    let callerName = "atsuki"
+    let callIdStr = payload.dictionaryPayload["call_id"] as! String
+    let callId = UUID(uuidString: callIdStr)!
+    let callerId = payload.dictionaryPayload["caller_id"] as! String
+    let callerName = payload.dictionaryPayload["caller_name"] as! String
+
     self.callService.reportIncomingCall(callId: callId, callerId: callerId, callerName: callerName, completion: completion)
   }
 }
