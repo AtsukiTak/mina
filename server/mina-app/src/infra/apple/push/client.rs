@@ -27,6 +27,9 @@ impl Client {
         }
     }
 
+    /// `req_id` を設定した場合、エラー時のAPNsサーバーから
+    /// のレスポンスにそれが含まれる。省略した場合は
+    /// APNsサーバーが独自に設定する。
     pub async fn req<D: Serialize>(
         &self,
         req_id: Option<Uuid>,

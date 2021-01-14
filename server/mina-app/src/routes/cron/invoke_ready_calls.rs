@@ -27,8 +27,10 @@ pub fn route(config: Config) -> impl Filter<Extract = (Json,), Error = Rejection
 }
 
 #[derive(Serialize, Clone, Copy)]
-struct PushPayload {
+struct PushPayload<'a> {
     call_id: Uuid,
+    caller_id: &'a str,
+    caller_name: &'a str,
 }
 
 async fn handler(config: Config) -> Result<Json, Error> {
@@ -40,18 +42,32 @@ async fn handler(config: Config) -> Result<Json, Error> {
 
     // push通知を送る
     for call in res.calls {
-        let payload = PushPayload {
+        let user1 = res.users.get(call.users()[0].user_id()).unwrap();
+        let user2 = res.users.get(call.users()[1].user_id()).unwrap();
+
+        let payload_for_user1 = PushPayload {
             call_id: *call.id().as_ref(),
+            caller_id: user2.id().as_str(),
+            caller_name: user2.name().unwrap_or(user2.id().as_str()),
         };
 
-        for call_user in call.users() {
-            let user = res.users.get(call_user.user_id()).unwrap();
+        let payload_for_user2 = PushPayload {
+            call_id: *call.id().as_ref(),
+            caller_id: user1.id().as_str(),
+            caller_name: user1.name().unwrap_or(user1.id().as_str()),
+        };
 
-            if let Some(device_token) = user.apple_push_token() {
-                let fut = push_client.req(Some(Uuid::new_v4()), device_token, Utc::now(), payload);
-                futures.push(fut);
-            }
-        }
+        let (u1_device_token, u2_device_token) =
+            match (user1.apple_push_token(), user2.apple_push_token()) {
+                (Some(token1), Some(token2)) => (token1, token2),
+                _ => break,
+            };
+
+        let now = Utc::now();
+        let fut1 = push_client.req(None, u1_device_token, now, payload_for_user1);
+        let fut2 = push_client.req(None, u2_device_token, now, payload_for_user2);
+        futures.push(fut1);
+        futures.push(fut2);
     }
 
     futures.for_each(futures::future::ready).await;
