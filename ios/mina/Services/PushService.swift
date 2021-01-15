@@ -10,19 +10,26 @@ import Foundation
 import PushKit
 import UserNotifications
 
-final class PushService {
+final class PushService: NSObject, PKPushRegistryDelegate {
+
+  private var onReceivePush: (PushPayload, @escaping () -> Void) -> Void
+  private var registry: PKPushRegistry
+  
+  struct PushPayload {
+    var callId: UUID
+    var callerId: String
+    var callerName: String
+  }
   
   enum RegisterError: Error {
     case unhandled
   }
   
-  private var registry: PKPushRegistry
-  var delegate: PushDelegate
-  
-  init(delegate: PushDelegate) {
-    self.delegate = delegate
+  init(onReceivePush: @escaping (PushPayload, @escaping () -> Void) -> Void) {
+    self.onReceivePush = onReceivePush
     self.registry = PKPushRegistry(queue: nil)
-    self.registry.delegate = delegate
+    super.init()
+    self.registry.delegate = self
   }
   
   // Push通知用のクレデンシャルの生成を開始する
@@ -40,33 +47,11 @@ final class PushService {
     }
   }
   
-  static func toHex(token: Data) -> String {
-    return token.map { String(format: "%02hhx", $0) }.joined()
-  }
-  
-  // Push通知の承認をユーザーにリクエストする
-  static func requestAuth(onComplete: @escaping (Bool, Error?) -> Void) {
-    UNUserNotificationCenter.current()
-      .requestAuthorization(options: [.alert, .badge, .sound], completionHandler: onComplete)
-  }
-  
-  // 現在のPush通知の承認状況を取得する
-  static func getAuthStatus(callback: @escaping (UNAuthorizationStatus) -> Void) {
-    UNUserNotificationCenter.current()
-      .getNotificationSettings { settings in
-        callback(settings.authorizationStatus)
-      }
-  }
-}
-
-final class PushDelegate: NSObject, PKPushRegistryDelegate {
-  
-  private let callService: CallService
-  
-  init(_ callService: CallService) {
-    self.callService = callService
-    super.init()
-  }
+  /*
+   =========================
+   PKPushRegistryDelegate
+   =========================
+   */
   
   // Push通知用クレデンシャルの更新に成功したとき
   func pushRegistry(_ registry: PKPushRegistry, didUpdate pushCredentials: PKPushCredentials, for type: PKPushType) {
@@ -87,7 +72,32 @@ final class PushDelegate: NSObject, PKPushRegistryDelegate {
     let callId = UUID(uuidString: callIdStr)!
     let callerId = payload.dictionaryPayload["caller_id"] as! String
     let callerName = payload.dictionaryPayload["caller_name"] as! String
-
-    self.callService.reportIncomingCall(callId: callId, callerId: callerId, callerName: callerName, completion: completion)
+    let push = PushPayload(callId: callId, callerId: callerId, callerName: callerName)
+    
+    self.onReceivePush(push, completion)
+  }
+  
+  /*
+   ===================
+   Static functions
+   ===================
+   */
+  
+  static private func toHex(token: Data) -> String {
+    return token.map { String(format: "%02hhx", $0) }.joined()
+  }
+  
+  // Push通知の承認をユーザーにリクエストする
+  static func requestAuth(onComplete: @escaping (Bool, Error?) -> Void) {
+    UNUserNotificationCenter.current()
+      .requestAuthorization(options: [.alert, .badge, .sound], completionHandler: onComplete)
+  }
+  
+  // 現在のPush通知の承認状況を取得する
+  static func getAuthStatus(callback: @escaping (UNAuthorizationStatus) -> Void) {
+    UNUserNotificationCenter.current()
+      .getNotificationSettings { settings in
+        callback(settings.authorizationStatus)
+      }
   }
 }

@@ -25,8 +25,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let callDelegate = CallDelegate()
     let callService = CallService(delegate: callDelegate)
     
-    let pushDelegate = PushDelegate(callService)
-    let pushService = PushService(delegate: pushDelegate)
+    let pushService = PushService(onReceivePush: { push, completion in
+      callService.reportIncomingCall(callId: push.callId,
+                                     callerId: push.callerId,
+                                     callerName: push.callerName,
+                                     completion: completion)
+    })
     pushService.register()
     
     self.callService = callService
