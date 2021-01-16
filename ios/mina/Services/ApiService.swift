@@ -111,7 +111,11 @@ struct ApiService {
     let endpoint: URL
     
     init() {
-      self.endpoint = URL(string: Secrets.shared.graphqlEndpoint)!
+      self.init(endpoint: URL(string: Secrets.shared.graphqlEndpoint)!)
+    }
+    
+    init(endpoint: URL) {
+      self.endpoint = endpoint
     }
     
     /*

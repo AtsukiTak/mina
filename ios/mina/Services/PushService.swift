@@ -25,11 +25,15 @@ final class PushService: NSObject, PKPushRegistryDelegate {
     case unhandled
   }
   
-  init(onReceivePush: @escaping (PushPayload, @escaping () -> Void) -> Void) {
-    self.onReceivePush = onReceivePush
+  override init() {
+    self.onReceivePush = { _, _ in }
     self.registry = PKPushRegistry(queue: nil)
     super.init()
     self.registry.delegate = self
+  }
+  
+  func onReceivePush(handler: @escaping (PushPayload, @escaping () -> Void) -> Void) {
+    self.onReceivePush = handler
   }
   
   // Push通知用のクレデンシャルの生成を開始する

@@ -9,7 +9,6 @@
 import Foundation
 
 class Store: ObservableObject {
-  @Published var callMode: Bool
   @Published private(set) var relationships: [Relationship]
   @Published private(set) var receivedPartnerRequests: [PartnerRequest]
   private(set) var applePushToken: String?
@@ -25,7 +24,6 @@ class Store: ObservableObject {
        receivedPartnerRequests: [PartnerRequest] = [],
        errorStore: ErrorStore
   ) {
-    self.callMode = false
     self.me = me
     self.relationships = relationships
     self.receivedPartnerRequests = receivedPartnerRequests
@@ -52,7 +50,7 @@ class Store: ObservableObject {
   }
   
   func updateApplePushToken() {
-    if let token = AppDelegate.shared.pushService?.getTokenHex() {
+    if let token = AppDelegate.shared.pushService.getTokenHex() {
       if token != self.applePushToken {
         ApiService.GraphqlApi().setApplePushToken(me: me, token: token) { _ in }
       }

@@ -20,7 +20,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
     
     // RootViewを生成する
+    let initialDataStore = InitialDataStore(errorStore: AppDelegate.shared.errorStore)
+    initialDataStore.load()
     let rootView = RootView()
+      .environmentObject(AppDelegate.shared.errorStore)
+      .environmentObject(initialDataStore)
+    
     
     // Use a UIHostingController as window root view controller.
     if let windowScene = scene as? UIWindowScene {

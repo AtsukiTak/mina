@@ -9,27 +9,19 @@
 import SwiftUI
 
 struct VideoView: View {
-  // TODO
-  // CallSessionをStoreにもたせ、StoreへのEnvironmentObjectを保持する
-  @ObservedObject var callSession: CallSessionManager = CallSessionManager.shared
+  @EnvironmentObject var callStore: CallStore
   
   var body: some View {
     VStack {
       // remoteVideo
       VideoWindow(frame: CGRect(x: 0, y: 0, width: 200, height: 200),
-                  stream: callSession.remoteStream)
+                  stream: callStore.remoteStream)
       
       Spacer()
       
-      Text("My PeerId : \(callSession.peerId ?? "")")
-      
-      if let errMsg = callSession.errMsg {
-        Text("Error \(errMsg)")
-      }
-      
       // localVideo
       VideoWindow(frame: CGRect(x: 0, y: 0, width: 200, height: 200),
-                  stream: callSession.localStream)
+                  stream: callStore.localStream)
         .frame(width: 200, height: 200, alignment: .bottomLeading)
     }
   }

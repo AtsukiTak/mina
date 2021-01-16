@@ -9,40 +9,48 @@
 import SwiftUI
 
 struct RootView: View {
-  @ObservedObject private var loader: InitDataLoader = InitDataLoader()
-  @ObservedObject private var errorStore: ErrorStore = ErrorStore()
-  
-  init() {
-    self.loader.load(errorStore: errorStore)
-  }
+  @EnvironmentObject var initialDataStore: InitialDataStore
+  @EnvironmentObject var callStore: CallStore
+  @EnvironmentObject var errorStore: ErrorStore
   
   // Storeの初期化が終わるまではLoadingViewを表示し、
   // 終わった後はInitializedViewを表示する
   var body: some View {
     Group {
-      switch (loader.pushAuthStatus, loader.store) {
-      case (.loading, _), (_, .loading):
-        LoadingView()
-      case let (.loaded(auth), .loaded(store)):
-        if store == nil {
-          // ユーザー未登録
-          OnboardingView(onSignup: onSignup)
-        }
-        let store = store!
-        
-        switch auth {
-        case .notDetermined:
-          RequestPushNotification(onAuthed: { ok, err in onAuthed(ok, err, store) })
-        case .authorized:
-          InitializedView()
-            .environmentObject(store)
-            .environmentObject(errorStore)
-        case .denied, .provisional, .ephemeral:
-          // TODO: PushNotificationDeniedView
-          RequestPushNotification(onAuthed: { ok, err in onAuthed(ok, err, store) })
-        @unknown default:
-          // TODO: PushNotificationDeniedView
-          RequestPushNotification(onAuthed: { ok, err in onAuthed(ok, err, store) })
+      if callStore.peer != nil {
+        // 通話状態の時
+        VideoView()
+      } else {
+        /*
+        通話状態じゃない時
+        */
+        switch (initialDataStore.pushAuthStatus, initialDataStore.store) {
+        // Storeの初期化が終わるまではLoadingViewを表示する
+        case (.loading, _), (_, .loading):
+          LoadingView()
+          
+        // 必要なデータの読み込みが終わったとき
+        case let (.loaded(auth), .loaded(store)):
+          if store == nil {
+            // ユーザー未登録のとき
+            OnboardingView(onSignup: onSignup)
+          }
+          let store = store!
+          
+          // Push通知を許可しているかどうかによって分岐
+          switch auth {
+          case .notDetermined:
+            RequestPushNotification(onAuthed: { ok, err in onAuthed(ok, err, store) })
+          case .authorized:
+            FirstView()
+              .environmentObject(store)
+          case .denied, .provisional, .ephemeral:
+            // TODO: PushNotificationDeniedView
+            RequestPushNotification(onAuthed: { ok, err in onAuthed(ok, err, store) })
+          @unknown default:
+            // TODO: PushNotificationDeniedView
+            RequestPushNotification(onAuthed: { ok, err in onAuthed(ok, err, store) })
+          }
         }
       }
     }.alert(item: $errorStore.err) { err in
@@ -55,7 +63,7 @@ struct RootView: View {
     case .success(let me):
       // いま新規登録したばかりなのでGetMeをする必要はない
       let store = Store(me: me, errorStore: errorStore)
-      self.loader.updateStore(store)
+      self.initialDataStore.updateStore(store)
     case .failure(let err):
       self.errorStore.set(err)
     }
@@ -69,52 +77,9 @@ struct RootView: View {
     }
     if ok {
       store.updateApplePushToken()
-      self.loader.updatePushAuthStatus(.authorized)
+      self.initialDataStore.updatePushAuthStatus(.authorized)
     } else {
-      self.loader.updatePushAuthStatus(.denied)
-    }
-  }
-  
-  class InitDataLoader: ObservableObject {
-    @Published var pushAuthStatus: Load<UNAuthorizationStatus> = .loading
-    @Published var store: Load<Store?> = .loading
-    
-    enum Load<T> {
-      case loading
-      case loaded(T)
-    }
-    
-    func load(errorStore: ErrorStore) {
-      // PushAuthStatusの取得
-      PushService.getAuthStatus(callback: { authStatus in
-        self.updatePushAuthStatus(authStatus)
-      })
-      
-      // Meの取得
-      let maybeMe = try! KeychainService().readMe()
-      guard let me = maybeMe else {
-        self.store = .loaded(nil)
-        return;
-      }
-      
-      // Storeの初期化
-      let store = Store(me: me, errorStore: errorStore)
-      store.fetchMyData() {
-        store.updateApplePushToken()
-        self.updateStore(store)
-      }
-    }
-    
-    func updateStore(_ store: Store) {
-      DispatchQueue.main.async {
-        self.store = .loaded(store)
-      }
-    }
-    
-    func updatePushAuthStatus(_ auth: UNAuthorizationStatus) {
-      DispatchQueue.main.async {
-        self.pushAuthStatus = .loaded(auth)
-      }
+      self.initialDataStore.updatePushAuthStatus(.denied)
     }
   }
   
@@ -122,21 +87,6 @@ struct RootView: View {
   struct LoadingView: View {
     var body: some View {
       Text("Loading...")
-    }
-  }
-  
-  // Storeの初期化が終わった後に表示されるView
-  struct InitializedView: View {
-    @EnvironmentObject var store: Store
-    
-    var body: some View {
-      Group {
-        if (store.callMode) {
-          VideoView().transition(.opacity)
-        } else {
-          FirstView().transition(.opacity)
-        }
-      }
     }
   }
 }

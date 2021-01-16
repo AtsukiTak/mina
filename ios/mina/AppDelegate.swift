@@ -12,8 +12,21 @@ import PushKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
   
-  var callService: CallService?
-  var pushService: PushService?
+  let errorStore: ErrorStore
+  let callStore: CallStore
+  
+  let callService: CallService
+  let pushService: PushService
+  
+  override init() {
+    self.errorStore = ErrorStore()
+    self.callStore = CallStore(errorStore: errorStore)
+    
+    self.callService = CallService()
+    self.pushService = PushService()
+    
+    super.init()
+  }
   
   class var shared: AppDelegate {
     return UIApplication.shared.delegate! as! AppDelegate
@@ -22,21 +35,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   // アプリケーションの起動後に呼ばれる
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
     
-    let callDelegate = CallDelegate()
-    let callService = CallService(delegate: callDelegate)
-    
-    let pushService = PushService(onReceivePush: { push, completion in
-      callService.reportIncomingCall(callId: push.callId,
+    self.pushService.onReceivePush { [weak self] push, completion in
+      self!.callService.reportIncomingCall(callId: push.callId,
                                      callerId: push.callerId,
-                                     callerName: push.callerName,
-                                     completion: completion)
-    })
+                                     callerName: push.callerName) { err in
+        if let err = err {
+          self!.errorStore.set(err)
+        }
+        completion() // push通知の処理の完了通知
+      }
+      self!.callStore.startCallProcess()
+    }
     pushService.register()
-    
-    self.callService = callService
-    self.pushService = pushService
-    
-    
+
     return true
   }
   
