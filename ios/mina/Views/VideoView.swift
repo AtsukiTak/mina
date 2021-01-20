@@ -30,5 +30,6 @@ struct VideoView: View {
 struct VideoView_Previews: PreviewProvider {
   static var previews: some View {
     VideoView()
+      .environmentObject(CallStore(errorStore: ErrorStore()))
   }
 }

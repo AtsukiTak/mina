@@ -24,6 +24,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     initialDataStore.load()
     let rootView = RootView()
       .environmentObject(AppDelegate.shared.errorStore)
+      .environmentObject(AppDelegate.shared.callStore)
       .environmentObject(initialDataStore)
     
     
